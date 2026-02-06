@@ -8,6 +8,8 @@ Instead of using something like protobuf to serialize the data, I decided to use
 
 A lightweight, fast Python-based satellite communication protocol using `struct` for binary packing/unpacking.
 
+> the data the the satellite and gs will send will have extra header bytes that as of right now are not part of this protocol. but could be implemented here
+
 ## 📁 Project Structure
 
 ```
