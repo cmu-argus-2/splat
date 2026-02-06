@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SPLAT Protocol Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SPLAT Protocol Analyzer</h1>
+            <div class="subtitle">Struct Packed Lightweight Argus Telemetry</div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Unpack Panel -->
+            <div class="panel">
+                <h2>Unpack Binary Data</h2>
+                <div class="input-group">
+                    <label for="hexInput">Hex Input (with or without 0x):</label>
+                    <textarea id="hexInput" placeholder="0x03 0x09 0x64 0x00 ..."></textarea>
+                </div>
+                <button onclick="unpackData()">Unpack & Decode</button>
+                
+                <div id="unpackResult" class="result"></div>
+            </div>
+            
+            <!-- Pack Panel -->
+            <div class="panel">
+                <h2>Pack Data to Binary</h2>
+                <div class="input-group">
+                    <label for="packType">Type:</label>
+                    <select id="packType" onchange="updatePackForm()">
+                        <option value="">Select type...</option>
+                        <option value="report">Report</option>
+                        <option value="command">Command</option>
+                    </select>
+                </div>
+                
+                <div id="packFormReport" class="pack-form">
+                    <div class="input-group">
+                        <label for="reportSelect">Report Name:</label>
+                        <select id="reportSelect" onchange="loadReportVariables()">
+                            <option value="">Select report...</option>
+                        </select>
+                    </div>
+                    <div id="reportVariables"></div>
+                </div>
+                
+                <div id="packFormCommand" class="pack-form">
+                    <div class="input-group">
+                        <label for="commandSelect">Command Name:</label>
+                        <select id="commandSelect" onchange="loadCommandArguments()">
+                            <option value="">Select command...</option>
+                        </select>
+                    </div>
+                    <div id="commandArguments"></div>
+                </div>
+                
+                <button onclick="packData()" id="packButton" style="display:none;">Pack to Binary</button>
+                
+                <div id="packResult" class="result"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
