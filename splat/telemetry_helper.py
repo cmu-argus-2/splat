@@ -104,6 +104,22 @@ def get_command_size(cmd_name):
     
     return cmd_size
 
+def get_argument_type(arg_name):
+    """
+    Given the name of a argument, it will look in the argument dict the type of the argument
+    and return the struct format string for that type
+    as of right now, this will be used to see ir argument is int, float or string
+
+    not returning the endianness
+    
+    """
+    
+    if arg_name not in argument_dict:
+        raise ValueError(f"Argument '{arg_name}' not found in argument_dict")
+    
+    arg_type = argument_dict[arg_name]
+    return arg_type
+
 # [check] - could have a function that would add endianness to all the formats
 def get_report_format(report_name):
     """
