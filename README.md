@@ -31,6 +31,12 @@ satellite-comms/
 5. **Organized**: Subsystem-based organization
 6. **Testable**: Built-in validation and testing tools
 
+## We are currently implementing ack packets
+
+The idea of these packets is to let know that the satellite has received the packet. it will be sent after running the given command in the satellite. So it will contain data.
+
+It will say if the command was successfull or not and it will also contain the arguments it responded. the arguments will be sent as strings. so you need to make sure that they will fit in a single packet. If not they will be truncated.
+
 
 ## WebUi
 There is a simple web UI made with python using flask. It has a simple UI that allows to paste bytes and it will try and decode them. It also allows to create reports and commands and pack them to bytes. 

@@ -25,6 +25,7 @@ from .telemetry_definition import (
     ENDIANNESS,
     MSG_TYPE_DICT,
     MSG_TYPE_SIZE,
+    MAX_PACKET_SIZE,
     COMMAND_ID_SIZE,
     REPORT_ID_SIZE,
     VARIABLE_SS_SIZE,
@@ -37,6 +38,7 @@ from .telemetry_helper import (
     get_variable_format,
     format_bytes  # Kept if used for debugging prints, otherwise safe to remove
 )
+
 
 class Report:
     """
@@ -54,7 +56,7 @@ class Report:
         """
         if report_name not in report_dict:
             raise ValueError(f"Report '{report_name}' not found in report_dict")
-        
+
         self.name = report_name
         self.report_id = REPORT_IDS[report_name]
         self.variables = {}
@@ -270,6 +272,63 @@ class Variable:
     def __repr__(self):
         return f"Variable('{self.name}', subsystem='{self.subsystem}', value={self.value})"
 
+class Ack:
+    """
+    Template class for acknowledgments.
+    Ack will be special as they will support variable size strings, as long as they fit in the maximum frame size
+    it will contain the header, the response_id, and the rest of the message will be optional string with the response args
+    """
+    
+    def __init__(self, response_id, ack_args=None):
+        """
+        Initialize an acknowledgment.
+        
+        Args:
+            ack_name: Name of the acknowledgment (must exist in ack_dict)
+        """
+        self.response_id = response_id
+        if ack_args is not None and not isinstance(ack_args, str):
+            ack_args = str(ack_args)  # convert to string if not already a string
+        self.ack_args = ack_args    # this has to be a string
+    
+    def __repr__(self):
+        return f"Ack('rid={self.response_id}', args={self.ack_args})"
+        
+def pack_ack(ack):
+    """
+    Pack an Ack object.
+    Byte 0: [MsgType (3 bits)] + [ResponseID (5 bits)]
+    Byte 1+: UTF-8 encoded string arguments
+    """
+    if not isinstance(ack, Ack):
+        raise TypeError("Expected Ack object")
+        
+    msg_type = MSG_TYPE_DICT["ack"]
+    
+    # --- 1. Validation ---
+    # Msg Type must fit in 3 bits (0-7)
+    if msg_type > 7:
+        raise ValueError("Message type > 7 cannot fit in 3 bits")
+        
+    # Response ID must fit in 5 bits (0-31)
+    if ack.response_id > 31:
+        raise ValueError(f"Response ID {ack.response_id} is too large for 5 bits (Max 31)")
+
+    # --- 2. Bitwise Packing ---
+    # Shift msg_type 5 spots to the left to occupy the top 3 bits
+    # OR (|) it with the response_id to fill the bottom 5 bits
+    header_byte_val = (msg_type << 5) | ack.response_id
+    
+    # Convert integer to a single byte
+    header_bytes = struct.pack('B', header_byte_val)
+    
+    # --- 3. Payload Encoding ---
+    payload_bytes = b''
+    if ack.ack_args:
+        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 1]  # Ensure total size does not exceed max packet size (accounting for header)
+        
+    return header_bytes + payload_bytes
+    
 
 def pack_report(report):
     """
@@ -375,6 +434,20 @@ def unpack_report(data):
     
     return report
 
+def unpack_ack(data):
+    # Get the first byte as an integer
+    header = data[0] 
+    
+    # Extract Msg Type: Shift right 5 bits to drop the ID
+    msg_type = header >> 5
+    
+    # Extract ID: Mask with 0001 1111 (0x1F) to keep only bottom 5 bits
+    response_id = header & 0x1F
+    
+    # The rest is the string
+    ack_args = data[1:].decode('utf-8')
+    
+    return Ack(response_id, ack_args)
 
 def pack_command(command):
     """
@@ -630,6 +703,8 @@ def pack(data):
         return pack_command(data)
     elif isinstance(data, Response):
         return pack_response(data)
+    elif isinstance(data, Ack):
+        return pack_ack(data)
     else:
         raise TypeError(f"Cannot pack object of type {type(data)}")
 
@@ -660,5 +735,9 @@ def unpack(data, **kwargs):
     if msg_type == MSG_TYPE_DICT["responses"]:
         cmd_name = kwargs.get('cmd_name')
         return unpack_response(cmd_name, data)
+    
+    if msg_type == MSG_TYPE_DICT["ack"]:
+        # For now, we will just return the raw data for acks, as they are variable length and format
+        return unpack_ack(data)
     
     raise ValueError("Unable to unpack data - unknown format")

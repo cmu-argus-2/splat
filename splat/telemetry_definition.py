@@ -38,6 +38,7 @@ MSG_TYPE_DICT = {
     "responses": 3,
     "ota": 4,
     "image_data": 5,
+    "ack": 6,
     
 }
 
