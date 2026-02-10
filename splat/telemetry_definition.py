@@ -148,7 +148,7 @@ var_dict = {
     "GPS_ECEF_VY": ["GPS", "i", 100],
     "GPS_ECEF_VZ": ["GPS", "i", 100],
     # --- STORAGE ---
-    "STORAGE_TOTAL": ["STORAGE", "I", None],
+    "SD_TOTAL_USAGE": ["STORAGE", "I", None],
     "CDH_NUM_FILES": ["STORAGE", "I", None],
     "CDH_DIR_SIZE": ["STORAGE", "I", None],
     "EPS_NUM_FILES": ["STORAGE", "I", None],
@@ -277,7 +277,7 @@ report_dict = {
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
-        "STORAGE_TOTAL": "STORAGE",
+        "SD_TOTAL_USAGE": "STORAGE",
         "CDH_NUM_FILES": "STORAGE",
         "CDH_DIR_SIZE": "STORAGE",
         "EPS_NUM_FILES": "STORAGE",
@@ -290,8 +290,8 @@ report_dict = {
         "GPS_DIR_SIZE": "STORAGE",
         "PAYLOAD_NUM_FILES": "STORAGE",
         "PAYLOAD_DIR_SIZE": "STORAGE",
-        "COMMAND_NUM_FILES": "STORAGE",
-        "COMMAND_DIR_SIZE": "STORAGE",
+        "CMD_LOGS_NUM_FILES": "STORAGE",
+        "CMD_LOGS_DIR_SIZE": "STORAGE",
     },
     # Corresponds to MSG_ID_SAT_TM_HAL (0x02)
     "TM_HAL": {
