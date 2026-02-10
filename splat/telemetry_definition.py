@@ -161,8 +161,8 @@ var_dict = {
     "GPS_DIR_SIZE": ["STORAGE", "I", None],
     "PAYLOAD_NUM_FILES": ["STORAGE", "I", None],
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I", None],
-    "COMMAND_NUM_FILES": ["STORAGE", "I", None],
-    "COMMAND_DIR_SIZE": ["STORAGE", "I", None],
+    "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
+    "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
 }
 
 # Report definitions
