@@ -484,19 +484,23 @@ def pack_command(command):
         # Handle string arguments
         arg_type = argument_dict[arg_name]
         if 's' in arg_type:
-            raise NotImplementedError("String arguments are not currently supported in packing")
-            # # Encode string to bytes and pad/truncate to fixed length
-            # if isinstance(value, str):
-            #     value = value.encode('utf-8')
-            # # pad and truncate the data
-            # # [check] - Here might be more interesting to raise an error if too long 
-            # value = value[:100].ljust(100, b'\x00')
+            # remove s from the format string
+            cmd_format = cmd_format.replace('s', '')
+            continue # will not be handled here
             
         values.append(value)
 
     # Pack the data
     packed_data = struct.pack(cmd_format, *values)
     
+    if any('s' in argument_dict[arg_name] for arg_name in command.arg_names):
+        # Handle string arguments separately (append them as UTF-8 encoded bytes)
+        for arg_name in command.arg_names:
+            arg_type = argument_dict[arg_name]
+            if 's' in arg_type:
+                string_value = command.arguments.get(arg_name, "")
+                packed_data += string_value.encode('utf-8')
+                    
     return header.to_bytes(header_size // 8, 'big') + packed_data
 
 
@@ -521,6 +525,7 @@ def unpack_command(data):
         raise ValueError(f"Unknown command ID: {command_id}")
     
     data = data[(header_size) // 8:]  # remove the header bytes
+
         
     cmd_name = all_cmd_names[command_id]
     # print("Command name:", cmd_name)
@@ -528,24 +533,41 @@ def unpack_command(data):
     # Get the format string
     cmd_format = get_command_format(cmd_name)
     # print("Format string:", cmd_format)
+
+
+    # check if there is a string argument in the command
+    # for now there can only be one string argument and it should be the last one
+    # i want to calculate the size of the other arguments and seperate the bytes
+    string_arg_value = None # default value if there is no string argument
+    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+        # Handle string arguments separately (the string will be the remaining bytes after unpacking the other arguments)
+        cmd_format = cmd_format.replace('s', '')
+        non_string_size = struct.calcsize(cmd_format)
+
+        string_data = data[non_string_size:]
+        data = data[:non_string_size]  # only keep the non-string part for unpacking        
+        
+        string_arg_value = string_data.decode('utf-8')
     
     # Unpack the data
     unpacked = struct.unpack(cmd_format, data[:struct.calcsize(cmd_format)])
-    # print("Unpacked data:", unpacked)
+    if string_arg_value is not None:
+        unpacked += (string_arg_value,)  # add the string argument back to the unpacked tuple
     
     # Create the command object
     command = Command(cmd_name)
-    
+
     # Fill in the arguments (skip first value which is command ID)
     for i, arg_name in enumerate(command.arg_names):
         value = unpacked[i]
         
-        # Handle string arguments
-        arg_type = argument_dict[arg_name]
-        if 's' in arg_type:
-            # Decode bytes to string and strip null bytes
-            value = value.rstrip(b'\x00').decode('utf-8')
-            
+        # this would be a way to handle the string, but I am doing it seperately above
+        # # Handle string arguments
+        # arg_type = argument_dict[arg_name]
+        # if 's' in arg_type:
+        #     # Decode bytes to string and strip null bytes
+        #     value = value.rstrip(b'\x00').decode('utf-8')
+        
         
         command.add_argument(arg_name, value)
     

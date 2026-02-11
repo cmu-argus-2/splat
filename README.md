@@ -138,6 +138,7 @@ unpacked_value = var.unpack(packed_var)  # unpack to get original value
 ## Limitations
 1. As of right now responses are not implemented.
 2. As of right now it is not possible to use string as arguments
+    - have implemented a first version to support this, but it has some limitations. There can only be one string and has to be the last argument. To use it you need to declare the argument with type `s` in the argument dict
 3. It is not possible to have strings as variables as well
 4. scaling is not implemented yet
 

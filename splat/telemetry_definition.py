@@ -28,6 +28,7 @@ SS_map = {
     "GPS": 3,
     "STORAGE": 4,
     "COMMS": 5,
+    "PAYLOAD_TM": 6,
 }
 
 # this is to map the id to a specific message (cmd, reponse, report... )
@@ -390,6 +391,8 @@ argument_dict = {
     "op1": "I",  # Operand 1 for math operations
     "op2": "I",  # Operand 2 for math operations
     
+    "string_command": "s",  # String command for evaluation
+    
 }
 
 # Return type definitions
@@ -423,6 +426,7 @@ command_list = [
     ("REQUEST_FILE_PKT", "file_id_exists", ["file_id", "file_time"], "REQUEST_FILE_PKT"),
     ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
     ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
+    ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
 ]
 
 
