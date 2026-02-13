@@ -205,33 +205,6 @@ class Command:
     def __repr__(self):
         return f"Command('{self.name}', id={self.command_id}, args: {self.arg_names})"
 
-
-class Response:
-    """
-    Template class for command responses.
-    """
-    
-    def __init__(self, cmd_name, data=None):
-        """
-        Initialize a response.
-        
-        Args:
-            cmd_name: Name of the command this is responding to
-            data: Response data (optional)
-        """
-        if cmd_name not in command_dict:
-            raise ValueError(f"Command '{cmd_name}' not found in command_dict")
-        
-        self.command_name = cmd_name
-        self.return_type = command_dict[cmd_name][2]
-        self.data = data
-    
-    def set_data(self, data):
-        """Set the response data."""
-        self.data = data
-    
-    def __repr__(self):
-        return f"Response(command='{self.command_name}', data={self.data})"
     
 class Variable:
     """
@@ -574,64 +547,6 @@ def unpack_command(data):
     return command
 
 
-def pack_response(response):
-    """
-    Pack a Response object into bytes.
-    
-    Args:
-        response: Response object to pack
-        
-    Returns:
-        Packed bytes or None if response type is variable
-    """
-    if not isinstance(response, Response):
-        raise TypeError("Expected Response object")
-    
-    if response.return_type is None or response.return_type == '?':
-        # Variable or no return type
-        return None
-    
-    # Get the format string
-    _, response_format = get_command_format(response.command_name)
-    
-    if response_format is None:
-        return None
-    
-    # Pack the response data
-    packed_data = struct.pack(response_format, response.data)
-    return packed_data
-
-
-def unpack_response(cmd_name, data):
-    """
-    Unpack bytes into a Response object.
-    
-    Args:
-        cmd_name: Name of the command this is a response to
-        data: Packed bytes
-        
-    Returns:
-        Response object with unpacked data
-    """
-    if cmd_name not in command_dict:
-        raise ValueError(f"Command '{cmd_name}' not found in command_dict")
-    
-    return_type = command_dict[cmd_name][2]
-    
-    if return_type is None or return_type == '?':
-        # Variable or no return type - return raw data
-        response = Response(cmd_name, data)
-        return response
-    
-    # Get the format string
-    _, response_format = get_command_format(cmd_name)
-    
-    # Unpack the data
-    unpacked = struct.unpack(response_format, data[:struct.calcsize(response_format)])
-    
-    # Create response object (single value expected)
-    response = Response(cmd_name, unpacked[0])
-    return response
 
 
 def pack_variable(variable):
@@ -708,10 +623,10 @@ def unpack_variable(data):
 
 def pack(data):
     """
-    Universal pack function that handles Reports, Commands, and Responses.
+    Universal pack function that handles Reports, Commands, Variables, and Acks.
     
     Args:
-        data: Report, Command, or Response object to pack
+        data: Report, Command, Variable, or Ack object to pack
         
     Returns:
         Packed bytes
@@ -723,8 +638,6 @@ def pack(data):
         return pack_variable(data)
     elif isinstance(data, Command):
         return pack_command(data)
-    elif isinstance(data, Response):
-        return pack_response(data)
     elif isinstance(data, Ack):
         return pack_ack(data)
     else:
@@ -733,15 +646,15 @@ def pack(data):
 
 def unpack(data, **kwargs):
     """
-    Universal unpack function that handles Reports, Commands, and Responses.
+    Universal unpack function that handles Reports, Commands, Variables, and Acks.
     Use the msg_type contained in the header (the first byte) to determine the type.
     
     Args:
         data: Packed bytes to unpack
-        **kwargs: Additional arguments (e.g., cmd_name for responses)
+        **kwargs: Additional arguments (e.g., cmd_name for unpacking commands)
         
     Returns:
-        Unpacked Report, Command, or Response object
+        Unpacked Report, Command, Variable, or Ack object
     """
     msg_type = (data[0] >> (8 - MSG_TYPE_SIZE)) & ((1 << MSG_TYPE_SIZE) - 1)
 
@@ -753,10 +666,6 @@ def unpack(data, **kwargs):
     
     if msg_type == MSG_TYPE_DICT["commands"]:
         return unpack_command(data)
-            
-    if msg_type == MSG_TYPE_DICT["responses"]:
-        cmd_name = kwargs.get('cmd_name')
-        return unpack_response(cmd_name, data)
     
     if msg_type == MSG_TYPE_DICT["ack"]:
         # For now, we will just return the raw data for acks, as they are variable length and format
