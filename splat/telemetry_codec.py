@@ -249,23 +249,23 @@ class Ack:
     """
     Template class for acknowledgments.
     Ack will be special as they will support variable size strings, as long as they fit in the maximum frame size
-    it will contain the header, the response_id, and the rest of the message will be optional string with the response args
+    it will contain the header, the response_status, and the rest of the message will be optional string with the response args
     """
     
-    def __init__(self, response_id, ack_args=None):
+    def __init__(self, response_status, ack_args=None):
         """
         Initialize an acknowledgment.
         
         Args:
             ack_name: Name of the acknowledgment (must exist in ack_dict)
         """
-        self.response_id = response_id
+        self.response_status = response_status
         if ack_args is not None and not isinstance(ack_args, str):
             ack_args = str(ack_args)  # convert to string if not already a string
         self.ack_args = ack_args    # this has to be a string
     
     def __repr__(self):
-        return f"Ack('rid={self.response_id}', args={self.ack_args})"
+        return f"Ack('rid={self.response_status}', args={self.ack_args})"
         
 def pack_ack(ack):
     """
@@ -284,13 +284,13 @@ def pack_ack(ack):
         raise ValueError("Message type > 7 cannot fit in 3 bits")
         
     # Response ID must fit in 5 bits (0-31)
-    if ack.response_id > 31:
-        raise ValueError(f"Response ID {ack.response_id} is too large for 5 bits (Max 31)")
+    if ack.response_status > 31:
+        raise ValueError(f"Response ID {ack.response_status} is too large for 5 bits (Max 31)")
 
     # --- 2. Bitwise Packing ---
     # Shift msg_type 5 spots to the left to occupy the top 3 bits
-    # OR (|) it with the response_id to fill the bottom 5 bits
-    header_byte_val = (msg_type << 5) | ack.response_id
+    # OR (|) it with the response_status to fill the bottom 5 bits
+    header_byte_val = (msg_type << 5) | ack.response_status
     
     # Convert integer to a single byte
     header_bytes = struct.pack('B', header_byte_val)
@@ -415,12 +415,12 @@ def unpack_ack(data):
     msg_type = header >> 5
     
     # Extract ID: Mask with 0001 1111 (0x1F) to keep only bottom 5 bits
-    response_id = header & 0x1F
+    response_status = header & 0x1F
     
     # The rest is the string
     ack_args = data[1:].decode('utf-8')
     
-    return Ack(response_id, ack_args)
+    return Ack(response_status, ack_args)
 
 def pack_command(command):
     """
