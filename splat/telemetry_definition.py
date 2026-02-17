@@ -393,6 +393,13 @@ argument_dict = {
     
     "string_command": "s",  # String command for evaluation
     
+    "tid": "B",  # Transaction ID for image transfer commands
+    "number_of_packets": "H",  # File size for image transfer commands
+    "hash_MSB": "Q",  # File hash for image transfer commands
+    "hash_LSB": "Q",  # File hash for image transfer commands
+    
+    "seq_number": "H",  # Sequence number for transaction packets
+    "payload_frag": "p",  # Binary payload data for file fragments
 }
 
 # Return type definitions
