@@ -454,11 +454,11 @@ def pack_command(command):
         if value is None:
             raise ValueError(f"Argument '{arg_name}' not set for command '{command.name}'")
         
-        # Handle string arguments
+        # Handle string and binary arguments
         arg_type = argument_dict[arg_name]
-        if 's' in arg_type:
-            # remove s from the format string
-            cmd_format = cmd_format.replace('s', '')
+        if 's' in arg_type or 'p' in arg_type:
+            # remove from the format string
+            cmd_format = cmd_format.replace('s', '').replace('p', '')
             continue # will not be handled here
             
         values.append(value)
@@ -466,13 +466,18 @@ def pack_command(command):
     # Pack the data
     packed_data = struct.pack(cmd_format, *values)
     
-    if any('s' in argument_dict[arg_name] for arg_name in command.arg_names):
-        # Handle string arguments separately (append them as UTF-8 encoded bytes)
+    if any('s' in argument_dict[arg_name] or 'b' in argument_dict[arg_name] or 'p' in argument_dict[arg_name] for arg_name in command.arg_names):
+        # Handle string and binary arguments separately
         for arg_name in command.arg_names:
             arg_type = argument_dict[arg_name]
             if 's' in arg_type:
                 string_value = command.arguments.get(arg_name, "")
                 packed_data += string_value.encode('utf-8')
+            elif 'p' in arg_type:
+                binary_value = command.arguments.get(arg_name, b"")
+                # Append raw bytes directly
+                # [check] - here we should assume that it is already byte data
+                packed_data += binary_value if isinstance(binary_value, bytes) else binary_value.encode('utf-8')
                     
     return header.to_bytes(header_size // 8, 'big') + packed_data
 
@@ -508,24 +513,31 @@ def unpack_command(data):
     # print("Format string:", cmd_format)
 
 
-    # check if there is a string argument in the command
-    # for now there can only be one string argument and it should be the last one
+    # check if there is a string or binary argument in the command
+    # for now there can only be one string/binary argument and it should be the last one
     # i want to calculate the size of the other arguments and seperate the bytes
-    string_arg_value = None # default value if there is no string argument
-    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
-        # Handle string arguments separately (the string will be the remaining bytes after unpacking the other arguments)
-        cmd_format = cmd_format.replace('s', '')
-        non_string_size = struct.calcsize(cmd_format)
+    variable_arg_value = None # default value if there is no string/binary argument
+    if any('s' in argument_dict[arg_name] or 'p' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+        # Handle string/binary arguments separately (will be the remaining bytes after unpacking the other arguments)
+        cmd_format = cmd_format.replace('s', '').replace('p', '')
+        non_variable_size = struct.calcsize(cmd_format)
 
-        string_data = data[non_string_size:]
-        data = data[:non_string_size]  # only keep the non-string part for unpacking        
+        variable_data = data[non_variable_size:]
+        data = data[:non_variable_size]  # only keep the non-variable part for unpacking
         
-        string_arg_value = string_data.decode('utf-8')
+        # Check if it's a string or binary argument
+        for arg_name in command_list[command_id][2]:
+            if 's' in argument_dict.get(arg_name, ''):
+                variable_arg_value = variable_data.decode('utf-8')
+                break
+            elif 'p' in argument_dict.get(arg_name, ''):
+                variable_arg_value = variable_data  # keep as raw bytes
+                break
     
     # Unpack the data
     unpacked = struct.unpack(cmd_format, data[:struct.calcsize(cmd_format)])
-    if string_arg_value is not None:
-        unpacked += (string_arg_value,)  # add the string argument back to the unpacked tuple
+    if variable_arg_value is not None:
+        unpacked += (variable_arg_value,)  # add the string/binary argument back to the unpacked tuple
     
     # Create the command object
     command = Command(cmd_name)
