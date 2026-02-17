@@ -434,6 +434,8 @@ command_list = [
     ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
     ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
+
+    ("RF_STOP", None, [], "RF_STOP"),
     
     # Commands to downlink images (should add pre conditions to these commands)
     ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
