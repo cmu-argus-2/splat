@@ -383,9 +383,11 @@ ENDIANNESS = '<'  # Little-endian
 |--------|----------|-------------|---------------------------|
 | c      | char     | bytes       | Exactly 1 byte            |
 | s      | char[]   | bytes       | Fixed-length string       |
-| p      | char[]   | bytes       | Pascal string (length byte) |
+| p      | char[]   | bytes       | NOT PASCAL,BYTES!         |
 | P      | void*    | int         | Pointer-sized, platform dependent |
 | x      | pad byte | —           | No value                  |
+
+> The `p` and `s` format are handled differently in the code. Please check the code for more details 
 
 
 ## 📡 Protocol Flow
