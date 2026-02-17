@@ -427,6 +427,16 @@ command_list = [
     ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
     ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
+    
+    # Commands to downlink images (should add pre conditions to these commands)
+    ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
+    ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+
+    ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
+
 ]
 
 
