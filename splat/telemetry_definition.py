@@ -395,8 +395,9 @@ argument_dict = {
     
     "tid": "B",  # Transaction ID for image transfer commands
     "number_of_packets": "H",  # File size for image transfer commands
-    "hash_MSB": "Q",  # File hash for image transfer commands
-    "hash_LSB": "Q",  # File hash for image transfer commands
+    "hash_MSB": "Q",  # File hash MSB (8 bytes) for image transfer commands
+    "hash_middlesb": "Q",  # File hash middle (8 bytes) for image transfer commands
+    "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
     
     "seq_number": "H",  # Sequence number for transaction packets
     "payload_frag": "p",  # Binary payload data for file fragments
@@ -441,7 +442,7 @@ command_list = [
     
     # Commands to downlink images (should add pre conditions to these commands)
     ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_middlesb", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
@@ -449,7 +450,6 @@ command_list = [
     ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
 
 ]
-
 
 
 # Command IDs (sorted alphabetically to ensure consistency)

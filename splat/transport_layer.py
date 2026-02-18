@@ -437,7 +437,8 @@ class Transaction:
         Returns the MD5 digest (16 bytes).
         [check] - using md5 for now, maybe should change to blake2s
         """
-        return hashlib.md5(file_bytes).digest()
+        return hashlib.new("sha1", file_bytes).digest()
+    
     
     def calculate_file_hash(self):
         """
@@ -452,24 +453,28 @@ class Transaction:
     
     def get_hash_as_integers(self):
         """
-        Returns the file hash as two 64-bit integers (MSB, LSB)
+        Returns the file hash as three integers (MSB, MiddleSB, LSB)
         for transmission in INIT_TRANS command.
+        SHA1 hash is 20 bytes: split as 8 + 8 + 4 bytes
         """
         if self.file_hash is None:
-            return (0, 0)
+            return (0, 0, 0)
         
         hash_MSB = int.from_bytes(self.file_hash[:8], byteorder='big')
-        hash_LSB = int.from_bytes(self.file_hash[8:], byteorder='big')
-        return (hash_MSB, hash_LSB)
+        hash_middlesb = int.from_bytes(self.file_hash[8:16], byteorder='big')
+        hash_LSB = int.from_bytes(self.file_hash[16:20], byteorder='big')
+        return (hash_MSB, hash_middlesb, hash_LSB)
     
-    def set_hash_from_integers(self, hash_MSB, hash_LSB):
+    def set_hash_from_integers(self, hash_MSB, hash_middlesb, hash_LSB):
         """
-        Reconstructs the file hash from two 64-bit integers (MSB, LSB)
+        Reconstructs the file hash from three integers (MSB, MiddleSB, LSB)
         received from INIT_TRANS command.
+        SHA1 hash is 20 bytes: 8 + 8 + 4 bytes
         """
         hash_bytes_MSB = hash_MSB.to_bytes(8, byteorder='big')
-        hash_bytes_LSB = hash_LSB.to_bytes(8, byteorder='big')
-        self.file_hash = hash_bytes_MSB + hash_bytes_LSB
+        hash_bytes_middlesb = hash_middlesb.to_bytes(8, byteorder='big')
+        hash_bytes_LSB = hash_LSB.to_bytes(4, byteorder='big')
+        self.file_hash = hash_bytes_MSB + hash_bytes_middlesb + hash_bytes_LSB
     
     def change_state(self, new_state):
         """

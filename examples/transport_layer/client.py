@@ -4,6 +4,12 @@ Lets change this to send a command instead of a normal message
 this will be the GS
 """
 
+import os
+import sys
+
+
+# Add the parent directory (project root) to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 import socket
 import time
@@ -42,8 +48,9 @@ def process_command(cmd):
         tid = cmd.get_argument("tid")
         number_of_packets = cmd.get_argument("number_of_packets")
         hash_MSB = cmd.get_argument("hash_MSB")
+        hash_middlesb = cmd.get_argument("hash_middlesb")
         hash_LSB = cmd.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(8, byteorder='big')
+        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
         
         trans = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
         if trans is None:
@@ -149,8 +156,9 @@ def single_packet_loop(client):
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
         hash_MSB = unpacked.get_argument("hash_MSB")
+        hash_middlesb = unpacked.get_argument("hash_middlesb")
         hash_LSB = unpacked.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(8, byteorder='big')
+        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
         transaction = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
         if transaction is None:
             print(f"[ERROR] Could not create transaction for INIT_TRANS")
@@ -236,8 +244,9 @@ def single_packet_and_dump_loop(client):
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
         hash_MSB = unpacked.get_argument("hash_MSB")
+        hash_middlesb = unpacked.get_argument("hash_middlesb")
         hash_LSB = unpacked.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(8, byteorder='big')
+        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
         transaction = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
         if transaction is None:
             print(f"[ERROR] Could not create transaction for INIT_TRANS")
