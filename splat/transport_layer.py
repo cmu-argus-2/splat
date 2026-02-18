@@ -402,6 +402,12 @@ class Transaction:
         if self.file_path is None:
             return None
         
+        # compatibility with circuitpython
+        device = os.uname()[0]
+        if device[0:2] == "rp":
+            # on circuitpython we will use os.stat to get the file size
+            return os.stat(self.file_path)[6]
+        
         return os.path.getsize(self.file_path)
         
     def get_number_of_packets(self):
