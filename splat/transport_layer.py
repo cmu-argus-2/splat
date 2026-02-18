@@ -1,5 +1,3 @@
-# create a enum with the transaction state
-from enum import Enum
 import os
 import time
 import hashlib
