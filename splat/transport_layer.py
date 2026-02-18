@@ -387,7 +387,8 @@ class Transaction:
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
         self.file_size = self.get_file_size() if self.file_path is not None else None   # this will be used to calculate the number of packets, and will be None on the client side
         self.number_of_packets = self.get_number_of_packets() if number_of_packets is None else number_of_packets    # this will be used to know how many packets to expect, and will be None on the client side until the init packet is received
-        self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
+        # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
+        self.file_hash = None
         
         # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
         self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
