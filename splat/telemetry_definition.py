@@ -1,7 +1,7 @@
 
 # Configuration
 ENDIANNESS = ">"  # '>' for big-endian, '<' for little-endian
-MAX_PACKET_SIZE = 256  # Maximum packet size in bytes
+MAX_PACKET_SIZE = 230  # Maximum packet size in bytes
 
 
 # define the header sizes (ideally they are byte matched)
