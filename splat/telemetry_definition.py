@@ -436,9 +436,6 @@ command_list = [
     ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
     ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
-
-    #("RF_STOP", None, [], "RF_STOP"),
-    #("RF_RESUME", None, [], "RF_RESUME"),
     
     # Commands to downlink images (should add pre conditions to these commands)
     ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
@@ -448,6 +445,11 @@ command_list = [
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
 
     ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
+    ("RF_STOP", None, [], "RF_STOP"),
+    ("RF_RESUME", None, [], "RF_RESUME"),
+    ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
+    ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
+    ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
 
 ]
 
