@@ -37,6 +37,47 @@ The idea of these packets is to let know that the satellite has received the pac
 
 It will say if the command was successfull or not and it will also contain the arguments it responded. the arguments will be sent as strings. so you need to make sure that they will fit in a single packet. If not they will be truncated.
 
+## Transport Layer
+Implemented a new transport layer. Maybe calling it a transport layers is a bit of a stretch as it is very manual and it is kind of implemneted in the application layer. The main idea is that we needed a way to be able to send big packets. But I wanted to avoid having to set up a connection and manage a connection. And I wanted to be albe to download those packets over the course of a week, or even a month for example... So this was born.
+
+We are using transactions as an abstraction. The idea is that one side can innitiate a transaction by requesting a file. They will change a couple of message to setup the transaction. From that point onwards fragments of the transaction can be requested and the file can be built progressively.
+
+
+### Implementation
+There is a separate file in splat called `transport_layer.py`. Two classes are implemented:
+
+- `Transaction`: This class is where most of the logic is implemented. It will be the same for the receiver and the sender. It has the necessary functions to set everything up. It allows to read the full file and generate all the packets at once, generate the packets one by one or generate a specific number of packets. There is this idea of missing fragments. When requesting all the packets or a specific number of packets, only the missing fragments will be sent. The receiver can update the missing fragments list by telling the fragments that are missing or telling the fragments it already has. This will also deal with writting the file once all the fragments have been received. When the sender sends the `init_trans` command, it will calculate the hash of the file and send it to the receiver. When writing the file, the receiver will check if the hash matches to guarantee that the file was received correctly.
+
+- `TransactionManager`: We will be able to have multiple active transactions at the same time. This still needs to be tested to see how it will work in terms of memory, but at least on the ground that will not be a problem. If that is a problem in the satellite, we can use the functions that limit the memory usage. This class is responsible for managing the transactions, it will keep track of the active transactions (tx transactions and rx transactions), delete the transactions, list them, dump them to disk (mostly for debugging purposes)
+
+#### tx transactions vs rx transactions
+Ideally the ground station will be able to request files from the satellite and the satellite will also able to request files from the ground station (this would be eventually for OTA, and it would not be the satellite requesting). That is why we are keeping them separate. When the ground station requests a file from the satellite, the satellite will create a tx transaction. The main difference is that the tx transaction will calculate a certain `tid` and the rx transaction will use the `tid` received from the respective command. In the case of the ground station requesting a file from the satellite, the `tid` of the satellite tx transaction will match the `tid` of the ground station rx transaction. 
+
+The logic was implemented as commands, so to interact with the transactions you need to send commands. Currently `CREATE_TRANS` command will have a string argument with is the file path, might have to change that in the satellite, it would be cool to address the images without the strings. `TRANS_PAYLOAD` will be the packet that will contain the data. It is also a command, ideally it would be a message type, but this way it was faster to implement. It will come with the respective `tid`, the `seq_number` and the `fragment_data`.
+
+
+> The datatype `p` was substituted from its original value. It now represents the fragments (raw bytes).
+
+### Flow
+The current flow for requesting a file is the following:
+1. Ground station sends `CREATE_TRANS` command with the file reference as argument
+2. Satellite receives the command, checks if the file exists, created a tx transaction (if possible, it will also calculate the hash and the number of packets). If there are no errors, it will generate a `INIT_TRANS` message with the `tid`, `hash` and `num_packets` fields.
+3. Ground station receives the `INIT_TRANS` message, creates a rx transaction with the received `tid`, `hash` and `num_packets`.
+4. Ground station now has multiple ways to request the packets. 
+    1. `GENERATE_ALL_PACKETS` command will request all the missing packets in the transaction. The satellite will check the missing fragments list and generate a list with all the packed `TRANS_PAYLOAD` messages for the missing fragments. The satellite can then use that list to transmit the packet
+        - this mode will probably not be used in the satellite because we might not have the memory to generate all the packets at once, and we might not want to transmitt all at the same time
+    2. `GENERATE_X_PACKETS` command will request x packets from the missing fragments list. The satellite will check the missing fragments list and generate a list with x packed `TRANS_PAYLOAD` messages for the missing fragments. The satellite can then use that list to transmit the packet
+        - this has more pontential to be used, especially if we the ground station sends back information about which packets were received to the satellite can remove them from the missing fragments list
+    3. `GET_SINGLE_PACKET` command will request a specific packet by its sequence number. The satellite will check if the sequence number is in the missing fragments list, if it is, it will generate a `TRANS_PAYLOAD` message for that specific packet and transmit it.
+
+### Improvements
+
+- make the commands to interact with the missing fragment list
+- Maybe the transaction class should be a message field in splat
+- Allow partial write of files to save on memory (maybe once the `init_trans` command is received the receiver will know the size of the file, so it could create an empty file with the right size and then periodically write the fragments to the file)
+- Does it make sense to keep the state? it is not super useful as of right now
+- Could we implement `TRANS_PAYLOAD` as a message type instead of a command?
+- it would be interesting to have a mode where it would transmit packets periodically every 30 seconds or so. But this would be more of the code on the satellite side, maybe we would need to have a task implementing that
 
 ## WebUi
 There is a simple web UI made with python using flask. It has a simple UI that allows to paste bytes and it will try and decode them. It also allows to create reports and commands and pack them to bytes. 
@@ -342,9 +383,11 @@ ENDIANNESS = '<'  # Little-endian
 |--------|----------|-------------|---------------------------|
 | c      | char     | bytes       | Exactly 1 byte            |
 | s      | char[]   | bytes       | Fixed-length string       |
-| p      | char[]   | bytes       | Pascal string (length byte) |
+| p      | char[]   | bytes       | NOT PASCAL,BYTES!         |
 | P      | void*    | int         | Pointer-sized, platform dependent |
 | x      | pad byte | —           | No value                  |
+
+> The `p` and `s` format are handled differently in the code. Please check the code for more details 
 
 
 ## 📡 Protocol Flow

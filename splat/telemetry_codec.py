@@ -249,23 +249,23 @@ class Ack:
     """
     Template class for acknowledgments.
     Ack will be special as they will support variable size strings, as long as they fit in the maximum frame size
-    it will contain the header, the response_id, and the rest of the message will be optional string with the response args
+    it will contain the header, the response_status, and the rest of the message will be optional string with the response args
     """
     
-    def __init__(self, response_id, ack_args=None):
+    def __init__(self, response_status, ack_args=None):
         """
         Initialize an acknowledgment.
         
         Args:
             ack_name: Name of the acknowledgment (must exist in ack_dict)
         """
-        self.response_id = response_id
+        self.response_status = response_status
         if ack_args is not None and not isinstance(ack_args, str):
             ack_args = str(ack_args)  # convert to string if not already a string
         self.ack_args = ack_args    # this has to be a string
     
     def __repr__(self):
-        return f"Ack('rid={self.response_id}', args={self.ack_args})"
+        return f"Ack('rid={self.response_status}', args={self.ack_args})"
         
 def pack_ack(ack):
     """
@@ -284,13 +284,13 @@ def pack_ack(ack):
         raise ValueError("Message type > 7 cannot fit in 3 bits")
         
     # Response ID must fit in 5 bits (0-31)
-    if ack.response_id > 31:
-        raise ValueError(f"Response ID {ack.response_id} is too large for 5 bits (Max 31)")
+    if ack.response_status > 31:
+        raise ValueError(f"Response ID {ack.response_status} is too large for 5 bits (Max 31)")
 
     # --- 2. Bitwise Packing ---
     # Shift msg_type 5 spots to the left to occupy the top 3 bits
-    # OR (|) it with the response_id to fill the bottom 5 bits
-    header_byte_val = (msg_type << 5) | ack.response_id
+    # OR (|) it with the response_status to fill the bottom 5 bits
+    header_byte_val = (msg_type << 5) | ack.response_status
     
     # Convert integer to a single byte
     header_bytes = struct.pack('B', header_byte_val)
@@ -415,12 +415,12 @@ def unpack_ack(data):
     msg_type = header >> 5
     
     # Extract ID: Mask with 0001 1111 (0x1F) to keep only bottom 5 bits
-    response_id = header & 0x1F
+    response_status = header & 0x1F
     
     # The rest is the string
     ack_args = data[1:].decode('utf-8')
     
-    return Ack(response_id, ack_args)
+    return Ack(response_status, ack_args)
 
 def pack_command(command):
     """
@@ -454,11 +454,11 @@ def pack_command(command):
         if value is None:
             raise ValueError(f"Argument '{arg_name}' not set for command '{command.name}'")
         
-        # Handle string arguments
+        # Handle string and binary arguments
         arg_type = argument_dict[arg_name]
-        if 's' in arg_type:
-            # remove s from the format string
-            cmd_format = cmd_format.replace('s', '')
+        if 's' in arg_type or 'p' in arg_type:
+            # remove from the format string
+            cmd_format = cmd_format.replace('s', '').replace('p', '')
             continue # will not be handled here
             
         values.append(value)
@@ -466,13 +466,18 @@ def pack_command(command):
     # Pack the data
     packed_data = struct.pack(cmd_format, *values)
     
-    if any('s' in argument_dict[arg_name] for arg_name in command.arg_names):
-        # Handle string arguments separately (append them as UTF-8 encoded bytes)
+    if any('s' in argument_dict[arg_name] or 'b' in argument_dict[arg_name] or 'p' in argument_dict[arg_name] for arg_name in command.arg_names):
+        # Handle string and binary arguments separately
         for arg_name in command.arg_names:
             arg_type = argument_dict[arg_name]
             if 's' in arg_type:
                 string_value = command.arguments.get(arg_name, "")
                 packed_data += string_value.encode('utf-8')
+            elif 'p' in arg_type:
+                binary_value = command.arguments.get(arg_name, b"")
+                # Append raw bytes directly
+                # [check] - here we should assume that it is already byte data
+                packed_data += binary_value if isinstance(binary_value, bytes) else binary_value.encode('utf-8')
                     
     return header.to_bytes(header_size // 8, 'big') + packed_data
 
@@ -508,24 +513,31 @@ def unpack_command(data):
     # print("Format string:", cmd_format)
 
 
-    # check if there is a string argument in the command
-    # for now there can only be one string argument and it should be the last one
+    # check if there is a string or binary argument in the command
+    # for now there can only be one string/binary argument and it should be the last one
     # i want to calculate the size of the other arguments and seperate the bytes
-    string_arg_value = None # default value if there is no string argument
-    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
-        # Handle string arguments separately (the string will be the remaining bytes after unpacking the other arguments)
-        cmd_format = cmd_format.replace('s', '')
-        non_string_size = struct.calcsize(cmd_format)
+    variable_arg_value = None # default value if there is no string/binary argument
+    if any('s' in argument_dict[arg_name] or 'p' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+        # Handle string/binary arguments separately (will be the remaining bytes after unpacking the other arguments)
+        cmd_format = cmd_format.replace('s', '').replace('p', '')
+        non_variable_size = struct.calcsize(cmd_format)
 
-        string_data = data[non_string_size:]
-        data = data[:non_string_size]  # only keep the non-string part for unpacking        
+        variable_data = data[non_variable_size:]
+        data = data[:non_variable_size]  # only keep the non-variable part for unpacking
         
-        string_arg_value = string_data.decode('utf-8')
+        # Check if it's a string or binary argument
+        for arg_name in command_list[command_id][2]:
+            if 's' in argument_dict.get(arg_name, ''):
+                variable_arg_value = variable_data.decode('utf-8')
+                break
+            elif 'p' in argument_dict.get(arg_name, ''):
+                variable_arg_value = variable_data  # keep as raw bytes
+                break
     
     # Unpack the data
     unpacked = struct.unpack(cmd_format, data[:struct.calcsize(cmd_format)])
-    if string_arg_value is not None:
-        unpacked += (string_arg_value,)  # add the string argument back to the unpacked tuple
+    if variable_arg_value is not None:
+        unpacked += (variable_arg_value,)  # add the string/binary argument back to the unpacked tuple
     
     # Create the command object
     command = Command(cmd_name)

@@ -1,7 +1,7 @@
 
 # Configuration
 ENDIANNESS = ">"  # '>' for big-endian, '<' for little-endian
-MAX_PACKET_SIZE = 256  # Maximum packet size in bytes
+MAX_PACKET_SIZE = 230  # Maximum packet size in bytes
 
 
 # define the header sizes (ideally they are byte matched)
@@ -120,10 +120,10 @@ var_dict = {
     "LIGHT_SENSOR_XM": ["ADCS", "H", None],
     "LIGHT_SENSOR_YP": ["ADCS", "H", None],
     "LIGHT_SENSOR_YM": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP1": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP2": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP3": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP4": ["ADCS", "H", None],
+    "LIGHT_SENSOR_ZP_1": ["ADCS", "H", None],
+    "LIGHT_SENSOR_ZP_2": ["ADCS", "H", None],
+    "LIGHT_SENSOR_ZP_3": ["ADCS", "H", None],
+    "LIGHT_SENSOR_ZP_4": ["ADCS", "H", None],
     "LIGHT_SENSOR_ZM": ["ADCS", "H", None],
     # Coil Status flags
     "XP_COIL_STATUS": ["ADCS", "B", None],
@@ -272,10 +272,10 @@ report_dict = {
         "LIGHT_SENSOR_XM": "ADCS",
         "LIGHT_SENSOR_YP": "ADCS",
         "LIGHT_SENSOR_YM": "ADCS",
-        "LIGHT_SENSOR_ZP1": "ADCS",
-        "LIGHT_SENSOR_ZP2": "ADCS",
-        "LIGHT_SENSOR_ZP3": "ADCS",
-        "LIGHT_SENSOR_ZP4": "ADCS",
+        "LIGHT_SENSOR_ZP_1": "ADCS",
+        "LIGHT_SENSOR_ZP_2": "ADCS",
+        "LIGHT_SENSOR_ZP_3": "ADCS",
+        "LIGHT_SENSOR_ZP_4": "ADCS",
         "LIGHT_SENSOR_ZM": "ADCS",
         "XP_COIL_STATUS": "ADCS",
         "XM_COIL_STATUS": "ADCS",
@@ -393,6 +393,15 @@ argument_dict = {
     
     "string_command": "s",  # String command for evaluation
     
+    "tid": "B",  # Transaction ID for image transfer commands
+    "number_of_packets": "H",  # File size for image transfer commands
+    "hash_MSB": "Q",  # File hash MSB (8 bytes) for image transfer commands
+    "hash_middlesb": "Q",  # File hash middle (8 bytes) for image transfer commands
+    "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
+    
+    "seq_number": "H",  # Sequence number for transaction packets
+    "payload_frag": "p",  # Binary payload data for file fragments
+    "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
 }
 
 # Return type definitions
@@ -427,8 +436,20 @@ command_list = [
     ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
     ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
-]
 
+    #("RF_STOP", None, [], "RF_STOP"),
+    #("RF_RESUME", None, [], "RF_RESUME"),
+    
+    # Commands to downlink images (should add pre conditions to these commands)
+    ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_middlesb", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
+    ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+
+    ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
+
+]
 
 
 # Command IDs (sorted alphabetically to ensure consistency)
