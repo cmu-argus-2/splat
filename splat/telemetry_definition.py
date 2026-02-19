@@ -511,4 +511,3 @@ for report_name in report_dict:
     packing_list.sort(key=lambda x: (x[1], x[0]))
     
     ORDERED_REPORT_DICT[report_name] = packing_list
-
