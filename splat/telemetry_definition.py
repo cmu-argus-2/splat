@@ -37,7 +37,7 @@ MSG_TYPE_DICT = {
     "variable": 1,
     "commands": 2,
     "responses": 3,
-    "ota": 4,
+    "fragments": 4,
     "image_data": 5,
     "ack": 6,
     
@@ -50,7 +50,7 @@ var_dict = {
     # --- CDH / SYSTEM ---
     "TIME": ["CDH", "I", None],  # Unix timestamp
     "SC_STATE": ["CDH", "B", None],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I", None],  # Bytes
+    "SD_USAGE": ["CDH", "I", None],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
     "REBOOT_COUNT": ["CDH", "B", None],  # Count
     "WATCHDOG_TIMER": ["CDH", "B", None],  # Status
@@ -400,7 +400,6 @@ argument_dict = {
     "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
     
     "seq_number": "H",  # Sequence number for transaction packets
-    "payload_frag": "p",  # Binary payload data for file fragments
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
 }
@@ -445,7 +444,6 @@ command_list = [
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
 
-    ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
