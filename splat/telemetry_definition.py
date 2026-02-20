@@ -438,7 +438,7 @@ command_list = [
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
     
     # Commands to downlink images (should add pre conditions to these commands)
-    ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("CREATE_TRANS", None, ["tid", "string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_middlesb", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list

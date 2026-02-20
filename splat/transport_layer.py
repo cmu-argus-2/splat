@@ -48,38 +48,36 @@ class TransactionManager:
         Create a new transaction and allocate it a tid.
         
         Args:
-            tid: Transaction ID (required for RX side to use server-provided tid, optional for TX)
-            file_path: Path to file (for TX side, creating new transactions)
-            file_hash: Hash of file (for RX side, receiving transactions)
-            number_of_packets: Number of packets (for RX side, receiving transactions)
-            is_tx: True for TX dict (server), False for RX dict (client). Auto-detected if None.
+            tid: Transaction ID (required for the TX side, will be set by RX side)
+            file_path: Path to file (necessary on both sides)
+            file_hash: Hash of file (currently disabled, does not make sense for sending images and files)
+            number_of_packets: Number of packets (On the rx side this will only be set after init transaction)
+            is_tx: True for TX dict (server), False for RX dict (client).
         
         Returns:
             Transaction object if successful, None if max transactions exceeded
         """
-        # Auto-detect which dict to use based on parameters if not specified
-        if is_tx is None:
-            is_tx = file_path is not None
         
         target_dict = self.tx_dict if is_tx else self.rx_dict
         dict_name = "TX" if is_tx else "RX"
         
         # For RX side (client), tid must be provided by server
-        if not is_tx and tid is None:
-            print(f"[ERROR] RX transaction creation requires tid from server INIT_TRANS message.")
+        if is_tx and tid is None:
+            print(f"[ERROR] TX transaction creation requires tid from server INIT_TRANS message.")
             return None
         
         # For TX side (server), allocate tid if not provided
-        if is_tx and tid is None:
+        if not is_tx and tid is None:
             if len(target_dict) >= self.MAX_TRANSACTIONS:
                 print(f"[ERROR] Maximum number of {dict_name} transactions ({self.MAX_TRANSACTIONS}) reached.")
                 return None
             tid = min(set(range(self.MAX_TRANSACTIONS)) - set(target_dict.keys()))
         
-        # Check if tid already exists
+        # In tx side if the tid already exists overwrite it
         if tid in target_dict:
-            print(f"[ERROR] Transaction with tid={tid} already exists in {dict_name} dict.")
-            return None
+            print(f"[INFO] Overwriting existing TX transaction with tid={tid}")
+            # [check] - it would be good to return that it has been overwritten in the ack from the command
+            del target_dict[tid]
         
         # Create the transaction
         trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets)
@@ -382,13 +380,13 @@ class Transaction:
         self.packet_list = []   # this will contain the command packets (already packet) ready to be sent to the client
 
         self.tid = tid
-        self.file_path = file_path    # this will be used to save the file on the server side, and will be None on the client side
+        self.file_path = file_path    # this will be used to save the file on the server side, the client will use to know what to call the file
         
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
         self.file_size = self.get_file_size() if self.file_path is not None else None   # this will be used to calculate the number of packets, and will be None on the client side
-        self.number_of_packets = self.get_number_of_packets() if number_of_packets is None else number_of_packets    # this will be used to know how many packets to expect, and will be None on the client side until the init packet is received
+        self.number_of_packets = self.get_number_of_packets() if number_of_packets is None  else None  # this will be used to know how many packets to expect, None in client until init_trans command is received
         # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
-        self.file_hash = None
+        self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
         # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
         self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
@@ -433,6 +431,15 @@ class Transaction:
         return self.calculate_file_hash()
     
     # normal functions
+    
+    def set_number_packets(self, number_of_packets):
+        """
+        This function will be called on the client side when it receives the init_trans command
+        in the command it will contain info about the number of packets
+        will also set the missing_fragments list
+        """
+        self.number_of_packets = number_of_packets
+        self.missing_fragments = [x for x in range(0, self.number_of_packets)]
     
     def is_completed(self):
         """
