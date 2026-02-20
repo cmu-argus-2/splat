@@ -245,6 +245,36 @@ class Variable:
     def __repr__(self):
         return f"Variable('{self.name}', subsystem='{self.subsystem}', value={self.value})"
 
+class Fragment:
+    """
+    Template class for the fragments that will send while doing a transaction
+    the actual data from the file that we are trying do downlink will be contained here
+    Here I am not dealing with the payload size, transport layer will be the one to deal with that
+    and fragment the data. Maybe should also add it here?
+    at least should remove the hard code from the fragment
+    """
+    
+    def __init__(self, tid, seq_number):
+
+        self.tid = tid # this is the number that will identify which transaction the fragment belongs to
+        self.seq_number = seq_number
+        self.payload = None   # this will contain the actual size 
+        
+    def add_payload(self, payload):
+        """
+        Will receive the payload for the fragment in bytes
+        """
+        # [check] - should we add here a check for the fragment size
+
+        if type(payload) != bytes:
+            raise TypeError("Payload must be of type bytes")
+        
+        self.payload = payload
+    
+    def __repr__(self):
+        return f"Fragment(seq_number={self.seq_number}, payload_size={len(self.payload) if self.payload else -1})"
+
+
 class Ack:
     """
     Template class for acknowledgments.
@@ -456,7 +486,7 @@ def pack_command(command):
         
         # Handle string and binary arguments
         arg_type = argument_dict[arg_name]
-        if 's' in arg_type or 'p' in arg_type:
+        if 's' in arg_type:
             # remove from the format string
             cmd_format = cmd_format.replace('s', '').replace('p', '')
             continue # will not be handled here
@@ -473,12 +503,7 @@ def pack_command(command):
             if 's' in arg_type:
                 string_value = command.arguments.get(arg_name, "")
                 packed_data += string_value.encode('utf-8')
-            elif 'p' in arg_type:
-                binary_value = command.arguments.get(arg_name, b"")
-                # Append raw bytes directly
-                # [check] - here we should assume that it is already byte data
-                packed_data += binary_value if isinstance(binary_value, bytes) else binary_value.encode('utf-8')
-                    
+
     return header.to_bytes(header_size // 8, 'big') + packed_data
 
 
@@ -517,7 +542,7 @@ def unpack_command(data):
     # for now there can only be one string/binary argument and it should be the last one
     # i want to calculate the size of the other arguments and seperate the bytes
     variable_arg_value = None # default value if there is no string/binary argument
-    if any('s' in argument_dict[arg_name] or 'p' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
         # Handle string/binary arguments separately (will be the remaining bytes after unpacking the other arguments)
         cmd_format = cmd_format.replace('s', '').replace('p', '')
         non_variable_size = struct.calcsize(cmd_format)
@@ -529,9 +554,6 @@ def unpack_command(data):
         for arg_name in command_list[command_id][2]:
             if 's' in argument_dict.get(arg_name, ''):
                 variable_arg_value = variable_data.decode('utf-8')
-                break
-            elif 'p' in argument_dict.get(arg_name, ''):
-                variable_arg_value = variable_data  # keep as raw bytes
                 break
     
     # Unpack the data
@@ -557,6 +579,75 @@ def unpack_command(data):
         command.add_argument(arg_name, value)
     
     return command
+
+def pack_fragment(fragment):
+    """
+    Pack a Fragment object into bytes.
+    the first 3 bits are the message type
+    the next 5 bits are the tid
+    the next 2 bytes are the seq_number
+    and the rest is the payload
+    
+    I guess I could use the seq number as a variable in teleme_def, but it would clutter it a bit
+    I will just assume here the type
+    Args:
+        fragment: Fragment object to pack
+        
+    Returns:
+        Packed bytes
+    """
+    if not isinstance(fragment, Fragment):
+        raise TypeError("Expected Fragment object")
+    
+    msg_type = MSG_TYPE_DICT["fragments"]
+    
+    # Msg Type must fit in 3 bits (0-7)
+    if msg_type > 7:    # [check] - should not hardcode this
+        raise ValueError("Message type > 7 cannot fit in 3 bits")
+    
+    # tid must fit in 5 bits
+    if fragment.tid > 31:
+        raise ValueError(f"Transaction ID {fragment.tid} is too large for 5 bits (Max 31)")
+    
+        
+    # --- 2. Bitwise Packing ---
+    # Shift msg_type 5 spots to the left to occupy the top 3 bits
+    # OR (|) it with the response_status to fill the bottom 5 bits
+    header_byte_val = (msg_type << 5) | fragment.tid
+    
+    # Convert integer to a single byte
+    header_bytes = struct.pack('>BH', header_byte_val, fragment.seq_number) # [check] - remove hard code endianess here
+    
+    # no need to encode the payload becuase it will already be bytes
+    return header_bytes + fragment.payload
+
+def unpack_fragment(data):
+    """
+    Unpack bytes into a Fragment object.
+    Args:
+        data: Bytes to unpack
+        
+    Returns:
+        Fragment object
+    """
+    if not isinstance(data, bytes):
+        raise TypeError("Expected bytes")
+    
+    # Extract header byte and seq_number
+    header_byte = data[0]
+    seq_number = struct.unpack('>H', data[1:3])[0]  # [check] - remove hard code endianess here
+    
+    # Extract msg_type and tid from header byte
+    msg_type = (header_byte >> 5) & 0x07  # Top 3 bits   [check] - remove hardcode here. Should have a seperate file to def sizes
+    tid = header_byte & 0x1F  # Bottom 5 bits
+    
+    if msg_type != MSG_TYPE_DICT["fragments"]:
+        raise ValueError(f"Expected fragment message type {MSG_TYPE_DICT['fragments']}, got {msg_type}")
+    
+    fragment = Fragment(tid, seq_number)
+    fragment.add_payload(data[3:])
+    
+    return fragment
 
 
 
@@ -652,6 +743,8 @@ def pack(data):
         return pack_command(data)
     elif isinstance(data, Ack):
         return pack_ack(data)
+    elif isinstance(data, Fragment):
+        return pack_fragment(data)
     else:
         raise TypeError(f"Cannot pack object of type {type(data)}")
 
@@ -678,6 +771,9 @@ def unpack(data, **kwargs):
     
     if msg_type == MSG_TYPE_DICT["commands"]:
         return unpack_command(data)
+    
+    if msg_type == MSG_TYPE_DICT["fragments"]:
+        return unpack_fragment(data)
     
     if msg_type == MSG_TYPE_DICT["ack"]:
         # For now, we will just return the raw data for acks, as they are variable length and format
