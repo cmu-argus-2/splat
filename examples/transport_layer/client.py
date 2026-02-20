@@ -120,7 +120,7 @@ def program_loop(client):
             print(f"[RECEIVED] Received fragment tid={unpacked.tid} seq={unpacked.seq_number}")
             if isCompleted:
                 print(f"[INFO] Transaction {unpacked.tid} has received all packets. Writing file to disk.")
-                transaction.write_file("received_image.jpg")
+                transaction.write_file("results")
         else:
             print(f"[ERROR] unknown type received: {type(unpacked)} {unpacked}")
 
@@ -335,7 +335,7 @@ def single_packet_and_dump_loop(client):
     # Check if transaction is complete
     if transaction.is_completed():
         print(f"[INFO] Transaction {tid} has received all packets. Writing file to disk.")
-        transaction.write_file("received_image.jpg")
+        transaction.write_file("result")
     else:
         print(f"[ERROR] Transaction {tid} is not complete, missing fragments: {transaction.missing_fragments}")
         

@@ -547,7 +547,7 @@ class Transaction:
     
         return False
         
-    def write_file(self):
+    def write_file(self, folder=None):
         """
         This will take all the information in the fragment_dict and will write the file to disk
         this will be a dump version that will write everything, later better version will be written
@@ -555,9 +555,19 @@ class Transaction:
         will also check the hash of the file after it is written
         """
         
+        if folder is not None:
+            file_path = os.path.join(folder,self.file_path)
+        else:
+            file_path = self.file_path
+            
+        # check if destination needs folders to be created
+        file_dir = os.path.dirname(file_path)
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+        
         total_bytes_written = 0
         
-        with open(self.file_path, "wb") as f:
+        with open(file_path, "wb") as f:
             for i in range(self.number_of_packets):
                 fragment = self.fragment_dict.get(i, None)
                 if fragment is None:
@@ -569,7 +579,7 @@ class Transaction:
         
         # Verify hash if provided
         if self.file_hash is not None:
-            with open(self.file_path, "rb") as f:
+            with open(file_path, "rb") as f:
                 file_data = f.read()
                 calculated_hash = self.calculate_hash(file_data)
             
@@ -586,7 +596,7 @@ class Transaction:
             print(f"[INFO] Hash verification PASSED: {calculated_hash.hex()}")
         
         # File written and verified successfully
-        print(f"[INFO] File for transaction {self.tid} has been written to disk at {self.file_path}. Total bytes written: {total_bytes_written}")
+        print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
         
         self.change_state(trans_state.SUCCESS)
         return True
