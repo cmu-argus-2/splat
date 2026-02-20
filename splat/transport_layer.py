@@ -80,7 +80,7 @@ class TransactionManager:
             del target_dict[tid]
         
         # Create the transaction
-        trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets)
+        trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=is_tx)
         target_dict[tid] = trans
         
         print(f"[INFO] Created {dict_name} transaction with tid={tid}")
@@ -368,7 +368,7 @@ class Transaction:
     on the other side will have all the packets received
     """
     
-    def __init__(self, tid: str, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None):
+    def __init__(self, tid: str, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None, is_tx=False):
 
 
         self.state = trans_state.REQUESTED   # we currently have no state, will switch to receiving once the first packet is received 
@@ -383,8 +383,8 @@ class Transaction:
         self.file_path = file_path    # this will be used to save the file on the server side, the client will use to know what to call the file
         
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
-        self.file_size = self.get_file_size() if self.file_path is not None else None   # this will be used to calculate the number of packets, and will be None on the client side
-        self.number_of_packets = self.get_number_of_packets() if number_of_packets is None  else None  # this will be used to know how many packets to expect, None in client until init_trans command is received
+        self.file_size = self.get_file_size() if is_tx else None   # this will be used to calculate the number of packets, and will be None on the client side
+        self.number_of_packets = self.get_number_of_packets() if is_tx else number_of_packets   # this will be used to know how many packets to expect, None in client until init_trans command is received
         # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
         self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
@@ -562,7 +562,7 @@ class Transaction:
             
         # check if destination needs folders to be created
         file_dir = os.path.dirname(file_path)
-        if not os.path.exists(file_dir):
+        if file_dir != "" and not os.path.exists(file_dir):
             os.makedirs(file_dir)
         
         total_bytes_written = 0
