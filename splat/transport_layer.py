@@ -418,7 +418,9 @@ class Transaction:
         if self.file_size is None:
             return None
         
-        return (self.file_size // MAX_PACKET_SIZE) + 1
+        if self.file_size <= 0:
+            return 0
+        return (self.file_size + MAX_PACKET_SIZE - 1) // MAX_PACKET_SIZE
         
     def get_file_hash(self):
         """
