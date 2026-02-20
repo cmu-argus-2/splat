@@ -402,6 +402,7 @@ argument_dict = {
     "seq_number": "H",  # Sequence number for transaction packets
     "payload_frag": "p",  # Binary payload data for file fragments
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
+    "mode_id": "B", # Mode ID for COMMS_MODE command
 }
 
 # Return type definitions
