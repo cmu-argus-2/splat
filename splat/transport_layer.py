@@ -3,7 +3,7 @@ import time
 import hashlib
 
 
-from .telemetry_codec import Command, pack, unpack, Ack
+from .telemetry_codec import Command, pack, unpack, Ack, Fragment
 from .telemetry_definition import MAX_PACKET_SIZE
 from .telemetry_helper import format_bytes
 
@@ -489,6 +489,20 @@ class Transaction:
         it will receive the new state and will update the state variable accordingly
         """
         self.state = new_state
+        
+    def add_fragment(self, fragment):
+        """
+        This will be a function that will facilitate adding the fragments to the transaction
+        Will receive the fragments as Fragments class
+        """
+        
+        if not isinstance(fragment, Fragment):
+            raise TypeError(f"Expected Fragment object, got {type(fragment)}")
+        
+        # [check] - maybe i could just store the fragments as fragemnets
+        # but for now to maintain compatibility will not change
+        
+        return self.add_packet(fragment.seq_number, fragment.payload, check=True)
     
     def add_packet(self, seq_number, fragment, check=True):
         """
@@ -584,9 +598,10 @@ class Transaction:
             for i in self.missing_fragments:
                 payload_frag = file_data[i*MAX_PACKET_SIZE:(i+1)*MAX_PACKET_SIZE]
                 # Keep as raw bytes - codec will handle it
-                cmd = Command("TRANS_PAYLOAD")
-                cmd.set_arguments(tid=self.tid, seq_number=i, payload_frag=payload_frag)
-                self.packet_list.append(pack(cmd))
+                frag = Fragment(self.tid, i)
+                frag.add_payload(payload_frag)
+                self.packet_list.append(pack(frag))
+
         return self.packet_list
     
     def generate_x_packets(self, x):
@@ -604,9 +619,10 @@ class Transaction:
             with open(self.file_path, "rb") as f:
                 f.seek(seq_number * MAX_PACKET_SIZE)
                 payload_frag = f.read(MAX_PACKET_SIZE)
-            cmd = Command("TRANS_PAYLOAD")
-            cmd.set_arguments(tid=self.tid, seq_number=seq_number, payload_frag=payload_frag)
-            generated_packets.append(pack(cmd))
+            
+            frag = Fragment(self.tid, seq_number)
+            frag.add_payload(payload_frag)
+            generated_packets.append(pack(frag))
         return generated_packets
     
     def generate_specific_packet(self, seq_number):
@@ -631,9 +647,9 @@ class Transaction:
             # Read only the bytes for this fragment
             payload_frag = f.read(MAX_PACKET_SIZE)
             
-            cmd = Command("TRANS_PAYLOAD")
-            cmd.set_arguments(tid=self.tid, seq_number=seq_number, payload_frag=payload_frag)
-            return pack(cmd)
+            frag = Fragment(self.tid, seq_number)
+            frag.add_payload(payload_frag)
+            return pack(frag)
         
     # these are functions that will run in the transmitter to allow the receiver to control the packets that are being sent
         
