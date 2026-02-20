@@ -1,7 +1,9 @@
 
 # Configuration
 ENDIANNESS = ">"  # '>' for big-endian, '<' for little-endian
-MAX_PACKET_SIZE = 230  # Maximum packet size in bytes
+MAX_PACKET_SIZE = 249  # Maximum packet size in bytes this is already disconting the header
+# but we are not considering encryption here
+# it would be nice to handle encryption here but we are not sending in all of the commands
 
 
 # define the header sizes (ideally they are byte matched)
@@ -15,9 +17,9 @@ VARIABLE_ID_SIZE = 10
 
 COMMAND_ID_SIZE = 13
 
-JPACKET_TID_SIZE = 3
-JPACKET_NUM_SIZE = 13   # this is the number of packets for the transaction
-JPACKET_SEQ_SIZE = 13   # this is the sequence number of the packet in the transaction
+
+TID_SIZE = 5
+FRAGMENT_SEQ_SIZE = 16
 
 # index for the available subsystems
 # [check] - should add a check to make sure that I do not have more ss than what I can have according to the  VARIABLE_SS_SIZE and COMMAND_SS_SIZE

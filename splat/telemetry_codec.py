@@ -7,6 +7,7 @@ import struct
 
 from .telemetry_definition import (
     # 1. Data Structures (Dicts & Lists)
+    TID_SIZE,
     var_dict,
     report_dict,
     command_list,
@@ -602,18 +603,18 @@ def pack_fragment(fragment):
     msg_type = MSG_TYPE_DICT["fragments"]
     
     # Msg Type must fit in 3 bits (0-7)
-    if msg_type > 7:    # [check] - should not hardcode this
-        raise ValueError("Message type > 7 cannot fit in 3 bits")
+    if msg_type > 2**MSG_TYPE_SIZE - 1:    # [check] - should not hardcode this
+        raise ValueError(f"Message type {msg_type} > {2**MSG_TYPE_SIZE - 1} cannot fit in {MSG_TYPE_SIZE} bits")
     
     # tid must fit in 5 bits
-    if fragment.tid > 31:
-        raise ValueError(f"Transaction ID {fragment.tid} is too large for 5 bits (Max 31)")
+    if fragment.tid > 2**TID_SIZE - 1:
+        raise ValueError(f"Transaction ID {fragment.tid} is too large for {TID_SIZE} bits (Max {2**TID_SIZE - 1})")
     
         
     # --- 2. Bitwise Packing ---
-    # Shift msg_type 5 spots to the left to occupy the top 3 bits
-    # OR (|) it with the response_status to fill the bottom 5 bits
-    header_byte_val = (msg_type << 5) | fragment.tid
+    # Shift msg_type TID_SIZE spots to the left to occupy the top MSG_TYPE_SIZE bits
+    # OR (|) it with the response_status to fill the bottom TID_SIZE bits
+    header_byte_val = (msg_type << TID_SIZE) | fragment.tid
     
     # Convert integer to a single byte
     header_bytes = struct.pack('>BH', header_byte_val, fragment.seq_number) # [check] - remove hard code endianess here
@@ -634,12 +635,11 @@ def unpack_fragment(data):
         raise TypeError("Expected bytes")
     
     # Extract header byte and seq_number
-    header_byte = data[0]
-    seq_number = struct.unpack('>H', data[1:3])[0]  # [check] - remove hard code endianess here
+    header_byte, seq_number = struct.unpack('>BH', data[:3])  # [check] - remove hard code endianess here
     
     # Extract msg_type and tid from header byte
-    msg_type = (header_byte >> 5) & 0x07  # Top 3 bits   [check] - remove hardcode here. Should have a seperate file to def sizes
-    tid = header_byte & 0x1F  # Bottom 5 bits
+    msg_type = (header_byte >> TID_SIZE) & (2**MSG_TYPE_SIZE - 1)  # Top MSG_TYPE_SIZE bits   [check] - remove hardcode here. Should have a seperate file to def sizes
+    tid = header_byte & (2**TID_SIZE - 1)  # Bottom TID_SIZE bits
     
     if msg_type != MSG_TYPE_DICT["fragments"]:
         raise ValueError(f"Expected fragment message type {MSG_TYPE_DICT['fragments']}, got {msg_type}")

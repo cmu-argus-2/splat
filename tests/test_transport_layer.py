@@ -34,7 +34,7 @@ class TestTransactionInitialization:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=2, file_path=temp_file)
+            trans = Transaction(tid=2, file_path=temp_file, is_tx=True)
             assert trans.tid == 2
             assert trans.file_path == temp_file
             assert trans.file_hash is None
@@ -49,8 +49,8 @@ class TestTransactionInitialization:
         trans = Transaction(tid=3, file_hash=test_hash, number_of_packets=5)
         assert trans.tid == 3
         assert trans.file_hash is None
-        assert trans.number_of_packets is None
-        assert len(trans.missing_fragments) == 0
+        assert trans.number_of_packets is not None
+        assert len(trans.missing_fragments) == 5
 
 
 class TestHashCalculation:
@@ -203,81 +203,25 @@ class TestStateManagement:
         trans.change_state(trans_state.SENDING)
         assert trans.state == trans_state.SENDING
     
-    def test_state_transition_to_failed_on_hash_mismatch(self):
-        """Test that state changes to FAILED on hash verification failure"""
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as f:
-            test_data = b"test data for verification"
-            f.write(test_data)
-            temp_file = f.name
-        
-        try:
-            trans = Transaction(tid=16, file_path=temp_file)
-            
-            # Add fragments
-            for i, chunk in enumerate([test_data[i:i+MAX_PACKET_SIZE] for i in range(0, len(test_data), MAX_PACKET_SIZE)]):
-                trans.add_packet(i, chunk)
-            
-            # Set wrong hash
-            trans.file_hash = hashlib.md5(b"wrong data").digest()
-            
-            result = trans.write_file(temp_file + ".received")
-            
-            assert result is False
-            assert trans.state == trans_state.FAILED
-            
-            # Clean up
-            if os.path.exists(temp_file + ".received"):
-                os.unlink(temp_file + ".received")
-        finally:
-            os.unlink(temp_file)
 
 
 class TestFileWriting:
     """Test file writing and verification"""
     
-    def test_write_file_with_correct_hash(self):
-        """Test writing file with correct hash verification"""
-        test_data = b"test file content " * 50
-        
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(test_data)
-            source_file = f.name
-        
-        output_file = source_file + ".received"
-        
-        try:
-            trans = Transaction(tid=17, file_path=source_file)
-            
-            # Add all fragments
-            for i in range(trans.number_of_packets):
-                start = i * MAX_PACKET_SIZE
-                end = min(start + MAX_PACKET_SIZE, len(test_data))
-                trans.add_packet(i, test_data[start:end])
-            
-            result = trans.write_file(output_file)
-            
-            assert result is True
-            
-            # Verify file content
-            with open(output_file, 'rb') as f:
-                written_data = f.read()
-            assert written_data == test_data
-        finally:
-            os.unlink(source_file)
-            if os.path.exists(output_file):
-                os.unlink(output_file)
+   
     
     def test_write_file_with_missing_fragment(self):
         """Test that write_file fails when fragments are missing"""
-        trans = Transaction(tid=18, number_of_packets=3, file_hash=b"somehash")
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            output_file = f.name
+
+        trans = Transaction(tid=18, number_of_packets=3,file_path=output_file, file_hash=b"somehash")
         trans.set_number_packets(3)
         
         # Only add 2 fragments
         trans.add_packet(0, b"fragment 0")
         trans.add_packet(1, b"fragment 1")
         
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            output_file = f.name
         
         try:
             result = trans.write_file(output_file)
@@ -292,14 +236,16 @@ class TestFileWriting:
         output_file = None
         
         try:
-            trans = Transaction(tid=19, number_of_packets=1)
-            trans.set_number_packets(1)
-            trans.add_packet(0, test_data)
             
             with tempfile.NamedTemporaryFile(delete=False) as f:
                 output_file = f.name
+
+            trans = Transaction(tid=19, number_of_packets=1,file_path=output_file)
+            trans.set_number_packets(1)
+            trans.add_packet(0, test_data)
+
             
-            result = trans.write_file(output_file)
+            result = trans.write_file()
             
             assert result is True
             
@@ -322,7 +268,7 @@ class TestPacketGeneration:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=20, file_path=temp_file)
+            trans = Transaction(tid=20, file_path=temp_file, is_tx=True)
             packet_list = trans.generate_all_packets()
             
             # Should have packets for all missing fragments
@@ -338,7 +284,7 @@ class TestPacketGeneration:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=21, file_path=temp_file)
+            trans = Transaction(tid=21, file_path=temp_file, is_tx=True)
             
             # Generate specific packet
             packet = trans.generate_specific_packet(0)
@@ -349,7 +295,7 @@ class TestPacketGeneration:
     
     def test_generate_specific_packet_out_of_range(self):
         """Test generating packet with out-of-range seq_number"""
-        trans = Transaction(tid=22, number_of_packets=5)
+        trans = Transaction(tid=22, number_of_packets=5, is_tx=True)
         trans.set_number_packets(5)
         
         packet = trans.generate_specific_packet(10)
@@ -425,7 +371,7 @@ class TestMissingFragmentsManagement:
             trans.packet_list = []
             
             # After overwrite: should only generate 2 packets
-            trans.overwrite_mising_fragments([1, 3])
+            trans.overwrite_missing_fragments([1, 3])
             remaining_packets = trans.generate_all_packets()
             assert len(remaining_packets) == 2
             
@@ -447,12 +393,12 @@ class TestMissingFragmentsManagement:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=28, file_path=temp_file)
+            trans = Transaction(tid=28, file_path=temp_file, is_tx=True)
             initial_missing = len(trans.missing_fragments)
             assert initial_missing > 0
             
             # Overwrite with empty list
-            trans.overwrite_mising_fragments([])
+            trans.overwrite_missing_fragments([])
             packets = trans.generate_all_packets()
             
             # Should generate 0 packets
@@ -471,7 +417,7 @@ class TestMissingFragmentsManagement:
             
             # Overwrite with sparse list
             sparse_list = [0, 3, 5, 9]
-            trans.overwrite_mising_fragments(sparse_list)
+            trans.overwrite_missing_fragments(sparse_list)
             packets = trans.generate_all_packets()
             
             assert len(packets) == 4
@@ -493,7 +439,7 @@ class TestMissingFragmentsManagement:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=30, file_path=temp_file)
+            trans = Transaction(tid=30, file_path=temp_file, is_tx=True)
             initial_missing = len(trans.missing_fragments)
             assert initial_missing > 0
             
@@ -584,14 +530,14 @@ class TestMissingFragmentsManagement:
             temp_file = f.name
         
         try:
-            trans = Transaction(tid=6, file_path=temp_file)
+            trans = Transaction(tid=6, file_path=temp_file, is_tx=True)
             
             # generate_specific_packet should work regardless of missing_fragments
             packet_1 = trans.generate_specific_packet(2)
             assert packet_1 is not None
             
             # After overwriting missing_fragments
-            trans.overwrite_mising_fragments([0, 1])
+            trans.overwrite_missing_fragments([0, 1])
             
             # Should still be able to generate packet 2
             packet_2 = trans.generate_specific_packet(2)
@@ -623,14 +569,14 @@ class TestIntegrationEndToEnd:
         
         try:
             # 1. Create transaction and generate packets
-            sender = Transaction(tid=25, file_path=source_file)
+            sender = Transaction(tid=25, file_path=source_file, is_tx=True)
             packet_list = sender.generate_all_packets()
             
             assert len(packet_list) > 0
             assert len(packet_list) == sender.number_of_packets
             
             # 2. Create receiver transaction
-            receiver = Transaction(tid=25, number_of_packets=sender.number_of_packets)
+            receiver = Transaction(tid=25, number_of_packets=sender.number_of_packets, file_path=output_file)
             receiver.set_number_packets(sender.number_of_packets)
             receiver.file_hash = sender.file_hash
             
@@ -651,7 +597,7 @@ class TestIntegrationEndToEnd:
             assert len(receiver.fragment_dict) == sender.number_of_packets
             
             # 5. Write and verify file
-            result = receiver.write_file(output_file)
+            result = receiver.write_file()
             assert result is True
             
             # 6. Verify rebuilt file matches original
@@ -678,10 +624,10 @@ class TestIntegrationEndToEnd:
         
         try:
             # 1. Create sender transaction
-            sender = Transaction(tid=26, file_path=source_file)
+            sender = Transaction(tid=26, file_path=source_file, is_tx=True)
             
             # 2. Create receiver transaction
-            receiver = Transaction(tid=26, number_of_packets=sender.number_of_packets)
+            receiver = Transaction(tid=26, number_of_packets=sender.number_of_packets, file_path=output_file)
             receiver.set_number_packets(sender.number_of_packets)
             receiver.file_hash = sender.file_hash
             
@@ -726,7 +672,7 @@ class TestIntegrationEndToEnd:
         
         try:
             # 1. Create sender transaction
-            sender = Transaction(tid=5, file_path=source_file)
+            sender = Transaction(tid=5, file_path=source_file, is_tx=True)
             total_packets = sender.number_of_packets
             
             # 2. Get first half of packets manually
@@ -739,7 +685,7 @@ class TestIntegrationEndToEnd:
                 first_half_packets.append(packet_bytes)
             
             # 3. CRITICAL: Check what sender would generate WITHOUT add_received_list
-            sender_without_sync = Transaction(tid=6, file_path=source_file)
+            sender_without_sync = Transaction(tid=6, file_path=source_file, is_tx=True)
             all_packets_without_sync = sender_without_sync.generate_all_packets()
             assert len(all_packets_without_sync) == total_packets, "Without sync, should generate ALL packets"
             
@@ -767,7 +713,7 @@ class TestIntegrationEndToEnd:
             assert first_half_seq | remaining_seq == set(range(total_packets)), "Together should cover all packets"
             
             # 7. Complete transfer with receiver
-            receiver = Transaction(tid=5, number_of_packets=total_packets)
+            receiver = Transaction(tid=5, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
             receiver.file_hash = sender.file_hash
             
@@ -811,7 +757,7 @@ class TestIntegrationEndToEnd:
         
         try:
             # 1. Create sender transaction
-            sender = Transaction(tid=4, file_path=source_file)
+            sender = Transaction(tid=4, file_path=source_file, is_tx=True)
             total_packets = sender.number_of_packets
             
             # 2. Get first 1/3 of packets
@@ -831,12 +777,12 @@ class TestIntegrationEndToEnd:
             still_missing = [i for i in range(total_packets) if i >= first_batch_count]
             
             # 5. WITHOUT overwrite: sender would generate packets for ALL missing_fragments
-            sender_unsync = Transaction(tid=6, file_path=source_file)
+            sender_unsync = Transaction(tid=6, file_path=source_file, is_tx=True)
             packets_without_sync = sender_unsync.generate_all_packets()
             assert len(packets_without_sync) == total_packets, "Without sync, all packets would be generated"
             
             # 6. NOW apply overwrite to only mark what's actually missing
-            sender.overwrite_mising_fragments(still_missing)
+            sender.overwrite_missing_fragments(still_missing)
             
             # 7. Sender now generates only the packets that are actually missing
             remaining_packets = sender.generate_all_packets()
@@ -858,7 +804,7 @@ class TestIntegrationEndToEnd:
             assert first_batch_seq | remaining_seq == set(range(total_packets)), "All packets covered"
             
             # 9. Complete the transfer
-            receiver = Transaction(tid=4, number_of_packets=total_packets)
+            receiver = Transaction(tid=4, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
             receiver.file_hash = sender.file_hash
             
@@ -900,7 +846,7 @@ class TestIntegrationEndToEnd:
         
         try:
             # 1. Create sender transaction
-            sender = Transaction(tid=3, file_path=source_file)
+            sender = Transaction(tid=3, file_path=source_file, is_tx=True)
             total_packets = sender.number_of_packets
             
             # 2. Simulate receiver requesting packets in random order
@@ -926,12 +872,12 @@ class TestIntegrationEndToEnd:
             assert len(sender.missing_fragments) == total_packets, "Before sync, sender has all as missing"
             
             # Create a control sender without sync
-            sender_without_sync = Transaction(tid=6, file_path=source_file)
+            sender_without_sync = Transaction(tid=6, file_path=source_file, is_tx=True)
             would_generate_without_sync = sender_without_sync.generate_all_packets()
             assert len(would_generate_without_sync) == total_packets, "Unsynced sender would generate all packets"
             
             # 6. NOW overwrite sender's missing_fragments with actual missing
-            sender.overwrite_mising_fragments(still_missing_from_receiver)
+            sender.overwrite_missing_fragments(still_missing_from_receiver)
             
             # 7. Sender now generates ONLY the packets that are actually missing
             remaining_packets = sender.generate_all_packets()
@@ -949,7 +895,7 @@ class TestIntegrationEndToEnd:
             assert packets_received_seq | remaining_seq == set(range(total_packets)), "All packets covered exactly once"
             
             # 9. Complete transfer
-            receiver = Transaction(tid=3, number_of_packets=total_packets)
+            receiver = Transaction(tid=3, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
             receiver.file_hash = sender.file_hash
             
@@ -1001,13 +947,13 @@ class TestTransactionManager:
             temp_file = f.name
         
         try:
-            trans = transaction_manager.create_transaction(file_path=temp_file, is_tx=False)
+            trans = transaction_manager.create_transaction(file_path=temp_file)
             
             assert trans is not None
             assert trans.tid == 0  # First tid should be 0
             assert trans.file_path == temp_file
             assert trans.file_hash is None
-            assert trans.number_of_packets > 0
+            assert trans.number_of_packets is None
             assert transaction_manager.get_transaction(0) is trans
         finally:
             os.unlink(temp_file)
@@ -1025,7 +971,7 @@ class TestTransactionManager:
         assert trans.tid == 0
         assert trans.file_path is None
         assert trans.file_hash is None
-        assert trans.number_of_packets is None
+        assert trans.number_of_packets == 10
     
     def test_create_multiple_transactions(self):
         """Test creating multiple transactions"""

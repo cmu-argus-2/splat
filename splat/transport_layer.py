@@ -672,7 +672,7 @@ class Transaction:
         
     # these are functions that will run in the transmitter to allow the receiver to control the packets that are being sent
         
-    def overwrite_mising_fragments(self, new_missing_fragments):
+    def overwrite_missing_fragments(self, new_missing_fragments):
         """
         This function will allow the receiver to send a list of the missing fragments and overwrite the current missing list
         will be used when there are a few missing fragments
