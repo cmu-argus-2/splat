@@ -57,6 +57,9 @@ class TestAckUtilities:
         assert "rid=7" in repr_str
         assert "None" in repr_str
 
+# ------------------------------------------------------------
+# Pack/Unpacking Tests
+# ------------------------------------------------------------
 
 class TestAckPack:
     """

@@ -104,6 +104,10 @@ class TestReportUtilities:
         assert "variables=3" in repr_str
 
 
+# ------------------------------------------------------------
+# Pack/Unpacking Tests
+# ------------------------------------------------------------
+
 class TestReportPackUnpack:
 
     @pytest.mark.parametrize("report_id, report_name", REPORT_NAMES.items())

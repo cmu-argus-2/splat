@@ -122,6 +122,9 @@ class TestCommandHelpers:
     # check if command is an instance of Command
     # check len of get_command_size() and see
 
+# ------------------------------------------------------------
+# Pack/Unpacking Tests
+# ------------------------------------------------------------
 
 class TestCommandPack:
     
