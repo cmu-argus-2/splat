@@ -79,7 +79,7 @@ class TestReportUtilities:
         assert r.get_variable_name_list("CDH") == ["TIME","SC_STATE"]
         assert r.get_variable_name_list("GPS") == ["GPS_MESSAGE_ID"]
         
-    def test_get_variable_name_list_not_in_r(self):
+    def test_get_variable_name_list_not_in_report(self):
         r = Report("TM_TEST")
         with pytest.raises(ValueError, match="Subsystem 'BAD_SS' does not exist in report"):
             r.get_variable_name_list("BAD_SS")

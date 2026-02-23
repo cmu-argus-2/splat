@@ -464,9 +464,9 @@ REPORT_NAMES = {idx: report for report, idx in REPORT_IDS.items()}
 # Variable IDs
 # We filter the variables for the subsystem, then SORT them before assigning IDs
 VAR_ID_TO_NAME = {
-    ss_id: {
+    ss_id: { # iterate through ss items and using ss_id as key
         idx: name 
-        for idx, name in enumerate(
+        for idx, name in enumerate( # enumerate and sort the var names
             sorted(k for k, v in var_dict.items() if v[0] == ss_name)
         )
     } 
@@ -479,7 +479,7 @@ VAR_ID_TO_NAME = {
 # has all the varialbes as keys and value is a tuple of (subsystem, var_id)
 VAR_NAME_TO_ID = {name: (ss_id, var_id) for ss_id, vars in VAR_ID_TO_NAME.items() for var_id, name in vars.items()}
 # these are the dictionaries that will be used to force an order on packing and unpacking
-ORDERED_SS_LIST = sorted(SS_map, key=SS_map.get)
+ORDERED_SS_LIST = sorted(SS_map, key=SS_map.get) # type: ignore
 
 
 
