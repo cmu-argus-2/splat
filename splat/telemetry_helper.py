@@ -174,6 +174,7 @@ def get_command_format(cmd_name):
         cmd_name: Name of the command
         
     Returns:
+        NOTE: i dont think it returns a tuple
         Tuple of (command_format, response_format)
     """
     if cmd_name not in all_cmd_names:
