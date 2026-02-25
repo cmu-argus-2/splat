@@ -692,4 +692,12 @@ class Transaction:
                 print(f"[WARNING] Received list contains sequence number {seq_number} that is not in missing fragments for transaction {self.tid}.")
 
     def __repr__(self):
-        return f"Tid={self.tid}, st={self.state}, path={self.file_path}, hash={self.file_hash}, #pack={self.number_of_packets} missing={(len(self.missing_fragments)/self.number_of_packets)*100 if self.number_of_packets else 'N/A':.2f}%)"
+        if self.number_of_packets:
+            missing_val = (len(self.missing_fragments) / self.number_of_packets) * 100
+            missing_str = f"{missing_val:.2f}%"
+        else:
+            missing_str = "N/A"
+
+        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, "
+            f"hash={self.file_hash}, #pack={self.number_of_packets}, "
+            f"missing={missing_str}")
