@@ -391,6 +391,7 @@ class Transaction:
         # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
         self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
 
+        self.last_batch = [] # will contain the seq_number of the last batch of fragments that were generated
 
     # these are the init functions
 
@@ -614,13 +615,17 @@ class Transaction:
         with open(self.file_path, "rb") as f:
             file_data = f.read()
             
+            # discard the last batch
+            self.last_batch = []  # [check] - not the best place for this as the rest of the code will not support this feature with the max number of packets... But I will most likely use with less packets
+            
             for i in self.missing_fragments:
                 payload_frag = file_data[i*MAX_PACKET_SIZE:(i+1)*MAX_PACKET_SIZE]
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
                 frag.add_payload(payload_frag)
                 self.packet_list.append(pack(frag))
-
+                self.last_batch.append(i)
+        
         return self.packet_list
     
     def generate_x_packets(self, x):
@@ -630,11 +635,17 @@ class Transaction:
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
+        
         generated_packets = []
+
+        # discard the last batch
+        self.last_batch = []
+
         for i in range(x):
             if len(self.missing_fragments) == 0:
                 break
-            seq_number = self.missing_fragments.pop(0)
+            seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
+            self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
                 f.seek(seq_number * MAX_PACKET_SIZE)
                 payload_frag = f.read(MAX_PACKET_SIZE)
@@ -643,6 +654,26 @@ class Transaction:
             frag.add_payload(payload_frag)
             generated_packets.append(pack(frag))
         return generated_packets
+    
+    def confirm_last_batch(self, bitmap):
+        """
+        Will receive a bitmap to confirm the last batch of fragments
+        each bit in the bitmap will represent a number in the last_batch list
+        if its 1 it means that it received, if its 0 it did not receive
+        the bitmap will come in as a int value
+        """
+        # Convert bitmap to binary string and process each bit
+        bitmap_str = bin(bitmap)[2:]  # Remove '0b' prefix
+        
+        for i, bit in enumerate(bitmap_str):
+            if bit == '1':
+                # If the bit is 1, it means the fragment was received
+                seq_number = self.last_batch[i]
+                if seq_number in self.missing_fragments:
+                    self.missing_fragments.remove(seq_number)
+        
+        self.last_batch = []  # Clear last batch after confirmation
+        return len(self.missing_fragments)
     
     def generate_specific_packet(self, seq_number):
         """

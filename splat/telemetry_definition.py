@@ -402,6 +402,8 @@ argument_dict = {
     "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
     
     "seq_number": "H",  # Sequence number for transaction packets
+    "MSB": "H",  # MSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
+    "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
 }
@@ -445,6 +447,7 @@ command_list = [
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("CONFIRM_LAST_BATCH", None, ["tid", "MSB", "LSB"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
 
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
