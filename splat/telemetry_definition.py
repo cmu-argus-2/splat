@@ -448,6 +448,7 @@ command_list = [
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
     ("CONFIRM_LAST_BATCH", None, ["tid", "MSB", "LSB"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
+    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "MSB", "LSB"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 32 packets out of the missing_packet list
 
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
