@@ -1,7 +1,9 @@
 
 # Configuration
 ENDIANNESS = ">"  # '>' for big-endian, '<' for little-endian
-MAX_PACKET_SIZE = 230  # Maximum packet size in bytes
+MAX_PACKET_SIZE = 249  # Maximum packet size in bytes this is already disconting the header
+# but we are not considering encryption here
+# it would be nice to handle encryption here but we are not sending in all of the commands
 
 
 # define the header sizes (ideally they are byte matched)
@@ -15,9 +17,9 @@ VARIABLE_ID_SIZE = 10
 
 COMMAND_ID_SIZE = 13
 
-JPACKET_TID_SIZE = 3
-JPACKET_NUM_SIZE = 13   # this is the number of packets for the transaction
-JPACKET_SEQ_SIZE = 13   # this is the sequence number of the packet in the transaction
+
+TID_SIZE = 5
+FRAGMENT_SEQ_SIZE = 16
 
 # index for the available subsystems
 # [check] - should add a check to make sure that I do not have more ss than what I can have according to the  VARIABLE_SS_SIZE and COMMAND_SS_SIZE
@@ -37,7 +39,7 @@ MSG_TYPE_DICT = {
     "variable": 1,
     "commands": 2,
     "responses": 3,
-    "ota": 4,
+    "fragments": 4,
     "image_data": 5,
     "ack": 6,
     
@@ -50,7 +52,7 @@ var_dict = {
     # --- CDH / SYSTEM ---
     "TIME": ["CDH", "I", None],  # Unix timestamp
     "SC_STATE": ["CDH", "B", None],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I", None],  # Bytes
+    "SD_USAGE": ["CDH", "I", None],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
     "REBOOT_COUNT": ["CDH", "B", None],  # Count
     "WATCHDOG_TIMER": ["CDH", "B", None],  # Status
@@ -400,7 +402,9 @@ argument_dict = {
     "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
     
     "seq_number": "H",  # Sequence number for transaction packets
-    "payload_frag": "p",  # Binary payload data for file fragments
+    "seq_offset": "H",  # Offset of the sequence number for transaction packets
+    "MSB": "H",  # MSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
+    "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
 }
@@ -439,13 +443,14 @@ command_list = [
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
     
     # Commands to downlink images (should add pre conditions to these commands)
-    ("CREATE_TRANS", None, ["string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("CREATE_TRANS", None, ["tid", "string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_middlesb", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("CONFIRM_LAST_BATCH", None, ["tid", "MSB", "LSB"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
+    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "MSB", "LSB"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 32 packets out of the missing_packet list
 
-    ("TRANS_PAYLOAD", None, ["tid", "seq_number", "payload_frag"], "TRANS_PAYLOAD"), # sent from the sat to gs. will contain the actual data
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),

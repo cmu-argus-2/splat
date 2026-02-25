@@ -3,7 +3,7 @@ import time
 import hashlib
 
 
-from .telemetry_codec import Command, pack, unpack, Ack
+from .telemetry_codec import Command, pack, unpack, Ack, Fragment
 from .telemetry_definition import MAX_PACKET_SIZE
 from .telemetry_helper import format_bytes
 
@@ -48,41 +48,39 @@ class TransactionManager:
         Create a new transaction and allocate it a tid.
         
         Args:
-            tid: Transaction ID (required for RX side to use server-provided tid, optional for TX)
-            file_path: Path to file (for TX side, creating new transactions)
-            file_hash: Hash of file (for RX side, receiving transactions)
-            number_of_packets: Number of packets (for RX side, receiving transactions)
-            is_tx: True for TX dict (server), False for RX dict (client). Auto-detected if None.
+            tid: Transaction ID (required for the TX side, will be set by RX side)
+            file_path: Path to file (necessary on both sides)
+            file_hash: Hash of file (currently disabled, does not make sense for sending images and files)
+            number_of_packets: Number of packets (On the rx side this will only be set after init transaction)
+            is_tx: True for TX dict (server), False for RX dict (client).
         
         Returns:
             Transaction object if successful, None if max transactions exceeded
         """
-        # Auto-detect which dict to use based on parameters if not specified
-        if is_tx is None:
-            is_tx = file_path is not None
         
         target_dict = self.tx_dict if is_tx else self.rx_dict
         dict_name = "TX" if is_tx else "RX"
         
         # For RX side (client), tid must be provided by server
-        if not is_tx and tid is None:
-            print(f"[ERROR] RX transaction creation requires tid from server INIT_TRANS message.")
+        if is_tx and tid is None:
+            print(f"[ERROR] TX transaction creation requires tid from server INIT_TRANS message.")
             return None
         
         # For TX side (server), allocate tid if not provided
-        if is_tx and tid is None:
+        if not is_tx and tid is None:
             if len(target_dict) >= self.MAX_TRANSACTIONS:
                 print(f"[ERROR] Maximum number of {dict_name} transactions ({self.MAX_TRANSACTIONS}) reached.")
                 return None
             tid = min(set(range(self.MAX_TRANSACTIONS)) - set(target_dict.keys()))
         
-        # Check if tid already exists
+        # In tx side if the tid already exists overwrite it
         if tid in target_dict:
-            print(f"[ERROR] Transaction with tid={tid} already exists in {dict_name} dict.")
-            return None
+            print(f"[INFO] Overwriting existing TX transaction with tid={tid}")
+            # [check] - it would be good to return that it has been overwritten in the ack from the command
+            del target_dict[tid]
         
         # Create the transaction
-        trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets)
+        trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=is_tx)
         target_dict[tid] = trans
         
         print(f"[INFO] Created {dict_name} transaction with tid={tid}")
@@ -370,7 +368,7 @@ class Transaction:
     on the other side will have all the packets received
     """
     
-    def __init__(self, tid: str, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None):
+    def __init__(self, tid: str, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None, is_tx=False):
 
 
         self.state = trans_state.REQUESTED   # we currently have no state, will switch to receiving once the first packet is received 
@@ -382,17 +380,18 @@ class Transaction:
         self.packet_list = []   # this will contain the command packets (already packet) ready to be sent to the client
 
         self.tid = tid
-        self.file_path = file_path    # this will be used to save the file on the server side, and will be None on the client side
+        self.file_path = file_path    # this will be used to save the file on the server side, the client will use to know what to call the file
         
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
-        self.file_size = self.get_file_size() if self.file_path is not None else None   # this will be used to calculate the number of packets, and will be None on the client side
-        self.number_of_packets = self.get_number_of_packets() if number_of_packets is None else number_of_packets    # this will be used to know how many packets to expect, and will be None on the client side until the init packet is received
+        self.file_size = self.get_file_size() if is_tx else None   # this will be used to calculate the number of packets, and will be None on the client side
+        self.number_of_packets = self.get_number_of_packets() if is_tx else number_of_packets   # this will be used to know how many packets to expect, None in client until init_trans command is received
         # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
-        self.file_hash = None
+        self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
         # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
         self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
 
+        self.last_batch = [] # will contain the seq_number of the last batch of fragments that were generated
 
     # these are the init functions
 
@@ -418,7 +417,9 @@ class Transaction:
         if self.file_size is None:
             return None
         
-        return (self.file_size // MAX_PACKET_SIZE) + 1
+        if self.file_size <= 0:
+            return 0
+        return (self.file_size + MAX_PACKET_SIZE - 1) // MAX_PACKET_SIZE
         
     def get_file_hash(self):
         """
@@ -431,6 +432,15 @@ class Transaction:
         return self.calculate_file_hash()
     
     # normal functions
+    
+    def set_number_packets(self, number_of_packets):
+        """
+        This function will be called on the client side when it receives the init_trans command
+        in the command it will contain info about the number of packets
+        will also set the missing_fragments list
+        """
+        self.number_of_packets = number_of_packets
+        self.missing_fragments = [x for x in range(0, self.number_of_packets)]
     
     def is_completed(self):
         """
@@ -489,6 +499,20 @@ class Transaction:
         it will receive the new state and will update the state variable accordingly
         """
         self.state = new_state
+        
+    def add_fragment(self, fragment):
+        """
+        This will be a function that will facilitate adding the fragments to the transaction
+        Will receive the fragments as Fragments class
+        """
+        
+        if not isinstance(fragment, Fragment):
+            raise TypeError(f"Expected Fragment object, got {type(fragment)}")
+        
+        # [check] - maybe i could just store the fragments as fragemnets
+        # but for now to maintain compatibility will not change
+        
+        return self.add_packet(fragment.seq_number, fragment.payload, check=True)
     
     def add_packet(self, seq_number, fragment, check=True):
         """
@@ -524,7 +548,7 @@ class Transaction:
     
         return False
         
-    def write_file(self, filepath):
+    def write_file(self, folder=None):
         """
         This will take all the information in the fragment_dict and will write the file to disk
         this will be a dump version that will write everything, later better version will be written
@@ -532,9 +556,19 @@ class Transaction:
         will also check the hash of the file after it is written
         """
         
+        if folder is not None:
+            file_path = os.path.join(folder,self.file_path)
+        else:
+            file_path = self.file_path
+            
+        # check if destination needs folders to be created
+        file_dir = os.path.dirname(file_path)
+        if file_dir != "" and not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+        
         total_bytes_written = 0
         
-        with open(filepath, "wb") as f:
+        with open(file_path, "wb") as f:
             for i in range(self.number_of_packets):
                 fragment = self.fragment_dict.get(i, None)
                 if fragment is None:
@@ -546,7 +580,7 @@ class Transaction:
         
         # Verify hash if provided
         if self.file_hash is not None:
-            with open(filepath, "rb") as f:
+            with open(file_path, "rb") as f:
                 file_data = f.read()
                 calculated_hash = self.calculate_hash(file_data)
             
@@ -563,7 +597,7 @@ class Transaction:
             print(f"[INFO] Hash verification PASSED: {calculated_hash.hex()}")
         
         # File written and verified successfully
-        print(f"[INFO] File for transaction {self.tid} has been written to disk at {filepath}. Total bytes written: {total_bytes_written}")
+        print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
         
         self.change_state(trans_state.SUCCESS)
         return True
@@ -581,12 +615,17 @@ class Transaction:
         with open(self.file_path, "rb") as f:
             file_data = f.read()
             
+            # discard the last batch
+            self.last_batch = []  # [check] - not the best place for this as the rest of the code will not support this feature with the max number of packets... But I will most likely use with less packets
+            
             for i in self.missing_fragments:
                 payload_frag = file_data[i*MAX_PACKET_SIZE:(i+1)*MAX_PACKET_SIZE]
                 # Keep as raw bytes - codec will handle it
-                cmd = Command("TRANS_PAYLOAD")
-                cmd.set_arguments(tid=self.tid, seq_number=i, payload_frag=payload_frag)
-                self.packet_list.append(pack(cmd))
+                frag = Fragment(self.tid, i)
+                frag.add_payload(payload_frag)
+                self.packet_list.append(pack(frag))
+                self.last_batch.append(i)
+        
         return self.packet_list
     
     def generate_x_packets(self, x):
@@ -596,18 +635,131 @@ class Transaction:
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
+        
         generated_packets = []
+
+        # discard the last batch
+        self.last_batch = []
+
         for i in range(x):
             if len(self.missing_fragments) == 0:
                 break
-            seq_number = self.missing_fragments.pop(0)
+            seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
+            self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
                 f.seek(seq_number * MAX_PACKET_SIZE)
                 payload_frag = f.read(MAX_PACKET_SIZE)
-            cmd = Command("TRANS_PAYLOAD")
-            cmd.set_arguments(tid=self.tid, seq_number=seq_number, payload_frag=payload_frag)
-            generated_packets.append(pack(cmd))
+            
+            frag = Fragment(self.tid, seq_number)
+            frag.add_payload(payload_frag)
+            generated_packets.append(pack(frag))
         return generated_packets
+    
+    def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
+        """
+        Receives a seq_offset and a bitmap, from the seq_offset it will add remove all the indexes to the missing fragment list
+        if respective bit in bitmap is 0, it will add
+        if respective bit in bitmap is 1, it will remove
+        accepts bitmap as int or (msb, lsb) tuple/list
+        """
+        if self.number_of_packets is None or seq_offset is None:
+            return
+
+        if seq_offset < 0:
+            return
+
+        # Accept (msb, lsb) tuple/list
+        if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
+            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+
+        bitmap = int(bitmap)
+        width = min(max_bits, max(0, self.number_of_packets - seq_offset))
+        if width <= 0:
+            return
+
+        missing_set = set(self.missing_fragments)
+
+        for i in range(width):
+            seq_number = seq_offset + i
+            bit_pos = (width - 1) - i  # MSB-first within window
+            bit = (bitmap >> bit_pos) & 1
+            if bit == 0:
+                missing_set.add(seq_number)
+            else:
+                missing_set.discard(seq_number)
+
+        self.missing_fragments = sorted(missing_set)
+                    
+    def generate_missing_bitmaps(self, max_bits=32):
+        """
+        Helper function that will be used during transaction
+        meant to be used in the receiver, it will generate a list with all the missing fragments
+        missing fragments are represented with a seq_number (representing offset) and a bitmap
+        the receiver will be able to take the data generated here to send the commands         
+        bitmap will be represented as two ints (the first 16bits and the second 16bits)
+        """
+        
+        # bitmap_entry = [seq_offset, bitmap]
+        # self.bitmap_list = [bitmap_entry, ...]
+        
+            
+        if self.number_of_packets is None:
+            return []
+
+        bitmap_list = []
+
+        # Sort missing fragments for safety
+        missing_set = set(self.missing_fragments)
+
+        # Iterate in windows of max_bits
+        for seq_offset in range(0, self.number_of_packets, max_bits):
+
+            bitmap = 0
+            width = min(max_bits, self.number_of_packets - seq_offset)
+
+            for bit_index in range(width):
+                seq_number = seq_offset + bit_index
+
+                # If fragment is received → set bit to 1
+                if seq_number not in missing_set:
+                    bit_pos = (width - 1) - bit_index  # MSB-first within window
+                    bitmap |= (1 << bit_pos)
+
+            msb_bitmap = (bitmap >> 16) & 0xFFFF
+            lsb_bitmap = bitmap & 0xFFFF
+            bitmap_list.append([seq_offset, msb_bitmap, lsb_bitmap])
+        return bitmap_list
+        
+
+    def confirm_last_batch(self, bitmap):
+        """
+        Will receive a bitmap to confirm the last batch of fragments
+        each bit in the bitmap will represent a number in the last_batch list
+        if its 1 it means that it received, if its 0 it did not receive
+        the bitmap will come in as a int value
+        """
+        if not self.last_batch:
+            return len(self.missing_fragments)
+
+        # Accept (msb, lsb) tuple/list
+        if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
+            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+
+        bitmap = int(bitmap)
+        width = len(self.last_batch)
+
+        missing_set = set(self.missing_fragments)
+
+        for i in range(width):
+            bit_pos = (width - 1) - i  # MSB-first within window
+            if ((bitmap >> bit_pos) & 1) == 1:
+                seq_number = self.last_batch[i]
+                missing_set.discard(seq_number)
+
+        self.missing_fragments = sorted(missing_set)
+        
+        self.last_batch = []  # Clear last batch after confirmation
+        return len(self.missing_fragments)
     
     def generate_specific_packet(self, seq_number):
         """
@@ -631,13 +783,13 @@ class Transaction:
             # Read only the bytes for this fragment
             payload_frag = f.read(MAX_PACKET_SIZE)
             
-            cmd = Command("TRANS_PAYLOAD")
-            cmd.set_arguments(tid=self.tid, seq_number=seq_number, payload_frag=payload_frag)
-            return pack(cmd)
+            frag = Fragment(self.tid, seq_number)
+            frag.add_payload(payload_frag)
+            return pack(frag)
         
     # these are functions that will run in the transmitter to allow the receiver to control the packets that are being sent
         
-    def overwrite_mising_fragments(self, new_missing_fragments):
+    def overwrite_missing_fragments(self, new_missing_fragments):
         """
         This function will allow the receiver to send a list of the missing fragments and overwrite the current missing list
         will be used when there are a few missing fragments
@@ -657,4 +809,10 @@ class Transaction:
                 print(f"[WARNING] Received list contains sequence number {seq_number} that is not in missing fragments for transaction {self.tid}.")
 
     def __repr__(self):
-        return f"Tid={self.tid}, st={self.state}, path={self.file_path}, hash={self.file_hash}, #pack={self.number_of_packets} missing={(len(self.missing_fragments)/self.number_of_packets)*100 if self.number_of_packets else 'N/A':.2f}%)"
+        if self.number_of_packets:
+            missing_val = (len(self.missing_fragments) / self.number_of_packets) * 100
+            missing_str = f"{missing_val:.2f}%"
+        else:
+            missing_str = "N/A"
+
+        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, hash={self.file_hash}, #pack={self.number_of_packets}, missing={missing_str}")
