@@ -729,6 +729,4 @@ class Transaction:
         else:
             missing_str = "N/A"
 
-        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, "
-            f"hash={self.file_hash}, #pack={self.number_of_packets}, "
-            f"missing={missing_str}")
+        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, hash={self.file_hash}, #pack={self.number_of_packets}, missing={missing_str}")
