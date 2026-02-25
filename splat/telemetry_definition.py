@@ -402,6 +402,7 @@ argument_dict = {
     "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
     
     "seq_number": "H",  # Sequence number for transaction packets
+    "seq_offset": "H",  # Offset of the sequence number for transaction packets
     "MSB": "H",  # MSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
