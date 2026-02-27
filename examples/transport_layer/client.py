@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 import socket
 import time
 
-from splat.telemetry_codec import Command, pack, unpack, Ack
+from splat.telemetry_codec import Command, Fragment, pack, unpack, Ack
 from splat.telemetry_helper import format_bytes
 from splat.telemetry_definition import COMMAND_IDS, MAX_PACKET_SIZE
 
@@ -44,23 +44,25 @@ def process_command(cmd):
     if cmd.name == "INIT_TRANS":
         print(f"[INIT_TRANS RECEIVED] Command: {cmd}")
         
-        #1. create the transaction on the client side using tid from server
+        # 1. get the transaction created during CREATE_TRANS
         tid = cmd.get_argument("tid")
         number_of_packets = cmd.get_argument("number_of_packets")
         hash_MSB = cmd.get_argument("hash_MSB")
         hash_middlesb = cmd.get_argument("hash_middlesb")
         hash_LSB = cmd.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
         
-        trans = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
+        trans = transaction_manager.get_transaction(tid, is_tx=False)
         if trans is None:
-            print(f"[ERROR] Could not create transaction for INIT_TRANS")
+            print(f"[ERROR] Could not retrieve transaction for INIT_TRANS with tid={tid}")
             return
+        
+        trans.set_number_packets(number_of_packets)
+        trans.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
         
         # change the state of the transaction to Init
         trans.change_state(2)
         
-        #2. generate the dump command and add it to the transmit list
+        # 2. generate the dump command and add it to the transmit list
         cmd = generate_dump_packet(tid)
         transmit_list.append(pack(cmd))
 
@@ -69,21 +71,7 @@ def process_command(cmd):
         print(f"  {format_bytes(pack(cmd))}")
         return
     
-    if cmd.name == "TRANS_PAYLOAD":
-
-        tid = cmd.get_argument("tid")
-        seq_number = cmd.get_argument("seq_number")
-        payload_frag = cmd.get_argument("payload_frag")
-        transaction = transaction_manager.get_transaction(tid)
-        if transaction is None:
-            print(f"[ERROR] Transaction with id {tid} not found.")
-            return
-        isCompleted = transaction.add_packet(seq_number, payload_frag)
-        print(f"[COMMAND PROCESSED] Added payload fragment for transaction id {tid} with sequence number {seq_number} to transaction")
-        if isCompleted:
-            print(f"[INFO] Transaction {tid} has received all packets. Writing file to disk.")
-            transaction.write_file("received_image.jpg")
-        return
+    return
         
     
 def start_client():
@@ -100,8 +88,12 @@ def start_client():
 def program_loop(client):
     # Send the command to request the image
     image_name = "image_test.jpg"
+    trans = transaction_manager.create_transaction(file_path=image_name, is_tx=False)
+    if trans is None:
+        print("[ERROR] Could not create RX transaction")
+        return
     cmd = Command("CREATE_TRANS")
-    cmd.set_arguments(string_command=image_name)
+    cmd.set_arguments(tid=trans.tid, string_command=image_name)
     packed_cmd = pack(cmd)
     client.sendall(packed_cmd)
     print(f"[SENT] Sent command to request image: {image_name}")
@@ -119,6 +111,16 @@ def program_loop(client):
         elif isinstance(unpacked, Command):
             print(f"[COMMAND RECEIVED] Command: {unpacked}")
             process_command(unpacked)
+        elif isinstance(unpacked, Fragment):
+            transaction = transaction_manager.get_transaction(unpacked.tid, is_tx=False)
+            if transaction is None:
+                print(f"[WARNING] Fragment for unknown tid {unpacked.tid}")
+                continue
+            isCompleted = transaction.add_fragment(unpacked)
+            print(f"[RECEIVED] Received fragment tid={unpacked.tid} seq={unpacked.seq_number}")
+            if isCompleted:
+                print(f"[INFO] Transaction {unpacked.tid} has received all packets. Writing file to disk.")
+                transaction.write_file("results")
         else:
             print(f"[ERROR] unknown type received: {type(unpacked)} {unpacked}")
 
@@ -139,10 +141,17 @@ def single_packet_loop(client):
     """
     # Send the command to request the image
     image_name = "image_test.jpg"
+    trans = transaction_manager.create_transaction(file_path=image_name, is_tx=False)
+    if trans is None:
+        print("[ERROR] Could not create RX transaction")
+        return
+
+    # create the command
     cmd = Command("CREATE_TRANS")
-    cmd.set_arguments(string_command=image_name)
+    cmd.set_arguments(tid=trans.tid, string_command=image_name)
     packed_cmd = pack(cmd)
     client.sendall(packed_cmd)
+    
     print(f"[SENT] Sent command to request image: {image_name}")
     
     
@@ -152,17 +161,19 @@ def single_packet_loop(client):
     if isinstance(unpacked, Command) and unpacked.name == "INIT_TRANS":
         print(f"[INIT_TRANS RECEIVED] Command: {unpacked}")
         
-        # create the transaction on the client side using tid from server
+        # get the transaction created during CREATE_TRANS
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
         hash_MSB = unpacked.get_argument("hash_MSB")
         hash_middlesb = unpacked.get_argument("hash_middlesb")
         hash_LSB = unpacked.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
-        transaction = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
+        transaction = transaction_manager.get_transaction(tid, is_tx=False)
         if transaction is None:
-            print(f"[ERROR] Could not create transaction for INIT_TRANS")
+            print(f"[ERROR] Could not retrieve transaction for INIT_TRANS with tid={tid}")
             return
+        transaction.set_number_packets(number_of_packets)
+        transaction.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
+        transaction.change_state(2)
     else:
         print(f"[ERROR] Expected INIT_TRANS command, but received: {unpacked}")
         return
@@ -184,19 +195,14 @@ def single_packet_loop(client):
             data = client.recv(1024)
             unpacked = unpack(data)
 
-            # i am looking for a trans payload command with whatever seq_number, ideally the one i requested
-            if isinstance(unpacked, Command) and unpacked.name == "TRANS_PAYLOAD":
-                received_tid = unpacked.get_argument("tid")
-                received_seq_number = unpacked.get_argument("seq_number")
-                payload_frag = unpacked.get_argument("payload_frag")
-                
-                if received_tid != tid:
-                    print(f"[ERROR] Received packet with tid {received_tid} but expected {tid}")
+            # check if the packet is a fragment and deal with it
+            if isinstance(unpacked, Fragment):
+                if unpacked.tid != tid:
+                    print(f"[WARNING] Received fragment for different transaction {unpacked.tid}, ignoring")
                     continue
-
-                # if i am here, it means i got the packet i was expecting
-                transaction.add_packet(received_seq_number, payload_frag)
-                print(f"[RECEIVED] Received packet for transaction id {tid} and sequence number {received_seq_number}")
+                transaction.add_fragment(unpacked)
+                
+                print(f"[RECEIVED] Received packet for transaction id {tid} and sequence number {unpacked.seq_number}")
                 received_packet = True
                 
         if not received_packet:
@@ -228,10 +234,17 @@ def single_packet_and_dump_loop(client):
     
     # Send the command to request the image
     image_name = "image_test.jpg"
+    trans = transaction_manager.create_transaction(file_path=image_name, is_tx=False)
+    if trans is None:
+        print("[ERROR] Could not create RX transaction")
+        return
+
+    # create the command
     cmd = Command("CREATE_TRANS")
-    cmd.set_arguments(string_command=image_name)
+    cmd.set_arguments(tid=trans.tid, string_command=image_name)
     packed_cmd = pack(cmd)
     client.sendall(packed_cmd)
+    
     print(f"[SENT] Sent command to request image: {image_name}")
     
     # Wait for the server to send init message
@@ -240,17 +253,23 @@ def single_packet_and_dump_loop(client):
     if isinstance(unpacked, Command) and unpacked.name == "INIT_TRANS":
         print(f"[INIT_TRANS RECEIVED] Command: {unpacked}")
         
-        # Create the transaction on the client side using tid from server
+        # Get the transaction created during CREATE_TRANS
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
         hash_MSB = unpacked.get_argument("hash_MSB")
         hash_middlesb = unpacked.get_argument("hash_middlesb")
         hash_LSB = unpacked.get_argument("hash_LSB")
-        file_hash = hash_MSB.to_bytes(8, byteorder='big') + hash_middlesb.to_bytes(8, byteorder='big') + hash_LSB.to_bytes(4, byteorder='big')
-        transaction = transaction_manager.create_transaction(tid=tid, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=False)
+        
+        # need to get the transaction
+        transaction = transaction_manager.get_transaction(tid, is_tx=False)
         if transaction is None:
-            print(f"[ERROR] Could not create transaction for INIT_TRANS")
+            print(f"[ERROR] Could not retrieve transaction with tid={tid}")
             return
+        
+        transaction.set_number_packets(number_of_packets)
+        transaction.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
+        transaction.change_state(2)
+        
     else:
         print(f"[ERROR] Expected INIT_TRANS command, but received: {unpacked}")
         return
@@ -274,17 +293,13 @@ def single_packet_and_dump_loop(client):
             data = client.recv(1024)
             unpacked = unpack(data)
             
-            if isinstance(unpacked, Command) and unpacked.name == "TRANS_PAYLOAD":
-                received_tid = unpacked.get_argument("tid")
-                received_seq_number = unpacked.get_argument("seq_number")
-                payload_frag = unpacked.get_argument("payload_frag")
-                
-                if received_tid != tid:
-                    print(f"[WARNING] Received packet for different transaction {received_tid}, ignoring")
+            # check if the packet is a fragment and deal with it
+            if isinstance(unpacked, Fragment):
+                if unpacked.tid != tid:
+                    print(f"[WARNING] Received fragment for different transaction {unpacked.tid}, ignoring")
                     continue
-                
-                transaction.add_packet(received_seq_number, payload_frag)
-                print(f"[RECEIVED] Received packet seq {received_seq_number} for transaction {tid}")
+                transaction.add_fragment(unpacked)
+            
                 received_packet = True
                 packets_requested += 1
         
@@ -292,8 +307,7 @@ def single_packet_and_dump_loop(client):
             print(f"[ERROR] Timeout waiting for packet seq {seq_number}")
             break
 
-    breakpoint()
-    
+
     # Now send GENERATE_ALL_PACKETS to get all remaining packets at once
     print(f"[INFO] Requested {packets_requested} packets individually. Now requesting all remaining packets with GENERATE_ALL_PACKETS")
     cmd = Command("GENERATE_ALL_PACKETS")
@@ -309,22 +323,19 @@ def single_packet_and_dump_loop(client):
         data = client.recv(1024)
         unpacked = unpack(data)
         
-        if isinstance(unpacked, Command) and unpacked.name == "TRANS_PAYLOAD":
-            received_tid = unpacked.get_argument("tid")
-            received_seq_number = unpacked.get_argument("seq_number")
-            payload_frag = unpacked.get_argument("payload_frag")
-            
-            if received_tid != tid:
-                print(f"[WARNING] Received packet for different transaction {received_tid}, ignoring")
+        # check if the packet is a fragment and deal with it
+        if isinstance(unpacked, Fragment):
+            if unpacked.tid != tid:
+                print(f"[WARNING] Received fragment for different transaction {unpacked.tid}, ignoring")
                 continue
-            
-            transaction.add_packet(received_seq_number, payload_frag)
-            print(f"[RECEIVED] Received packet seq {received_seq_number} for transaction {tid}")
+            transaction.add_fragment(unpacked)
+
+            print(f"[RECEIVED] Received packet seq {unpacked.seq_number} for transaction {tid}")
     
     # Check if transaction is complete
     if transaction.is_completed():
         print(f"[INFO] Transaction {tid} has received all packets. Writing file to disk.")
-        transaction.write_file("received_image.jpg")
+        transaction.write_file("result")
     else:
         print(f"[ERROR] Transaction {tid} is not complete, missing fragments: {transaction.missing_fragments}")
         

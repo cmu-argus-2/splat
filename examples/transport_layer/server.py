@@ -43,9 +43,10 @@ def process_command(cmd: Command):
 
     if cmd.name == "CREATE_TRANS":
         file_path = cmd.arguments.get("string_command", None)
+        tid = cmd.arguments.get("tid", None)
         # recieved a transaction request
         print(f"Received image request for: {file_path}")
-        
+        print(f"Transaction ID: {tid}")
         
         # 1. check if the file exists
         if not os.path.isfile(file_path):
@@ -53,13 +54,12 @@ def process_command(cmd: Command):
             return False
         
         # 2. create transaction (manager handles tid allocation and registration)
-        transaction = transaction_manager.create_transaction(file_path=file_path, is_tx=True)
+        transaction = transaction_manager.create_transaction(file_path=file_path, tid=tid, is_tx=True)
         if transaction is None:
             print("Could not create transaction (max transactions reached).")
             return False
         
-        tid = transaction.tid
-        print(f"Created transaction with id {tid} for file {file_path} with hash {transaction.file_hash.hex()} and number of packets {transaction.number_of_packets}")
+        print(f"Created transaction with id {tid} for file {file_path} and number of packets {transaction.number_of_packets}")
         
         #5.  convert transaction to INIT stage command
         transaction.change_state(2)
