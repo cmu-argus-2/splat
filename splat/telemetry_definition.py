@@ -453,6 +453,8 @@ command_list = [
 
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
+    ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
+    ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
 
 ]
