@@ -55,9 +55,10 @@ function displayUnpackResult(result, div) {
     div.className = 'result show';
     
     if (result.type === 'report') {
+        let callsignDisplay = result.callsign ? `<span class="callsign-badge">${result.callsign}</span>` : '<span class="callsign-badge empty">(no callsign)</span>';
         let html = `
             <h3>Report: ${result.name}</h3>
-            <p><span class="info-badge">ID: ${result.id}</span> <span class="info-badge">Size: ${result.size} bytes</span></p>
+            <p><span class="info-badge">ID: ${result.id}</span> <span class="info-badge">Size: ${result.size} bytes</span> ${callsignDisplay}</p>
             <div class="hex-output">${result.hex_formatted}</div>
             <h4 style="margin-top: 20px; margin-bottom: 10px;">Decoded Variables:</h4>
             <div class="search-box">
@@ -105,9 +106,10 @@ function displayUnpackResult(result, div) {
         
         div.innerHTML = html;
     } else if (result.type === 'command') {
+        let callsignDisplay = result.callsign ? `<span class="callsign-badge">${result.callsign}</span>` : '<span class="callsign-badge empty">(no callsign)</span>';
         let html = `
             <h3>Command: ${result.name}</h3>
-            <p><span class="info-badge">ID: ${result.id}</span> <span class="info-badge">${result.subsystem}</span> <span class="info-badge">Size: ${result.size} bytes</span></p>
+            <p><span class="info-badge">ID: ${result.id}</span> <span class="info-badge">${result.subsystem}</span> <span class="info-badge">Size: ${result.size} bytes</span> ${callsignDisplay}</p>
             <div class="hex-output">${result.hex_formatted}</div>
         `;
         
@@ -343,10 +345,11 @@ function filterCommandArguments() {
 
 async function packData() {
     const type = document.getElementById('packType').value;
+    const callsign = document.getElementById('packCallsign').value;
     const resultDiv = document.getElementById('packResult');
     
     try {
-        let requestData = { type };
+        let requestData = { type, callsign };
         
         if (type === 'report') {
             const reportName = document.getElementById('reportSelect').value;
@@ -402,9 +405,10 @@ async function packData() {
 
 function displayPackResult(result, div) {
     div.className = 'result show';
+    let callsignDisplay = result.callsign ? `<span class="callsign-badge">${result.callsign}</span>` : '<span class="callsign-badge empty">(no callsign)</span>';
     div.innerHTML = `
         <h3>Packed Successfully</h3>
-        <p><span class="info-badge">${result.type}</span> <span class="info-badge">${result.name}</span> <span class="info-badge">${result.size} bytes</span></p>
+        <p><span class="info-badge">${result.type}</span> <span class="info-badge">${result.name}</span> <span class="info-badge">${result.size} bytes</span> ${callsignDisplay}</p>
         <div class="hex-output">${result.hex_formatted}</div>
         <p style="margin-top: 10px; word-break: break-all;"><strong>Hex string:</strong> ${result.hex}</p>
     `;

@@ -5,7 +5,7 @@ import os
 # Add the parent directory (project root) to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from splat.telemetry_codec import pack, unpack, Report, Command, Response
+from splat.telemetry_codec import pack, unpack, Report, Command
 from splat.telemetry_helper import format_bytes
 
 if __name__ == "__main__":
@@ -25,11 +25,12 @@ if __name__ == "__main__":
     print(f"Original report: {myReport}")
     print(f"Variables: {myReport.variables}")
     
-    packed_report = pack(myReport)
+    packed_report = pack(myReport, callsign="ABC123")
     print(f"Packed size: {len(packed_report)} bytes")
     print(f"Packed data (hex): {format_bytes(packed_report)}")
     
-    unpacked_report = unpack(packed_report)
+    callsign, unpacked_report = unpack(packed_report)
+    print(f"Callsign: {callsign}")
     print(f"Unpacked report: {unpacked_report}")
     print(f"Variables: {unpacked_report.variables}")
     
@@ -42,11 +43,12 @@ if __name__ == "__main__":
     print(f"Original command: {myCommand}")
     print(f"Arguments: {myCommand.arguments}")
     
-    packed_cmd = pack(myCommand)
+    packed_cmd = pack(myCommand, callsign="ABC123")
     print(f"Packed size: {len(packed_cmd)} bytes")
     print(f"Packed data (hex): {format_bytes(packed_cmd)}")
     
-    unpacked_cmd = unpack(packed_cmd, data_type='command')
+    callsign, unpacked_cmd = unpack(packed_cmd, data_type='command')
+    print(f"Callsign: {callsign}")
     print(f"Unpacked command: {unpacked_cmd}")
     print(f"Arguments: {unpacked_cmd.arguments}")
     
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     print(f"Report with set_variables: {myReport2}")
     print(f"Variables: {myReport2.variables}")
     
-    packed_report2 = pack(myReport2)
+    packed_report2 = pack(myReport2, callsign="XYZ789")
     print(f"Packed size: {len(packed_report2)} bytes")
     
     print("\n" + "=" * 80)

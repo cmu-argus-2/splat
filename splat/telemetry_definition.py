@@ -5,6 +5,7 @@ MAX_PACKET_SIZE = 249  # Maximum packet size in bytes this is already disconting
 # but we are not considering encryption here
 # it would be nice to handle encryption here but we are not sending in all of the commands
 
+CALLSIGN_SIZE = 6  # Number of bytes for callsign (6 letter string)
 
 # define the header sizes (ideally they are byte matched)
 # in bits

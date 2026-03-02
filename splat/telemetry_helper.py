@@ -25,7 +25,8 @@ from .telemetry_definition import (
     COMMAND_ID_SIZE,
     REPORT_ID_SIZE,
     VARIABLE_SS_SIZE,
-    VARIABLE_ID_SIZE
+    VARIABLE_ID_SIZE,
+    CALLSIGN_SIZE
 )
 
 def format_bytes(byte_data):
@@ -34,7 +35,7 @@ def format_bytes(byte_data):
 
 def get_variable_size(var_name):
     """
-    Get the size in bytes of a variable.
+    Get the size in bytes of a variable (including callsign prefix).
     
     Args:
         var_name: Name of the variable
@@ -49,13 +50,12 @@ def get_variable_size(var_name):
         raise ValueError(f"Variable '{var_name}' not found in var_dict")
     
     var_type = var_dict[var_name][1]
-    return struct.calcsize(ENDIANNESS + var_type) + header_size
+    return CALLSIGN_SIZE + struct.calcsize(ENDIANNESS + var_type) + header_size
 
 
 def get_report_size(report_name):
     """
-    Get the total size in bytes of a report
-    as of right now it does not include the header size
+    Get the total size in bytes of a report (including callsign prefix).
     
     Args:
         report_name: Name of the report
@@ -67,7 +67,7 @@ def get_report_size(report_name):
         raise ValueError(f"Report '{report_name}' not found in report_dict")
     
     
-    total_size = (MSG_TYPE_SIZE + REPORT_ID_SIZE) // 8  # add the header size (convert bits to bytes)
+    total_size = CALLSIGN_SIZE + (MSG_TYPE_SIZE + REPORT_ID_SIZE) // 8  # add callsign + header size (convert bits to bytes)
     # print(f"Report '{report_name}' header size: {total_size} bytes")
     # Add size of each variable in the report
     for var_name in report_dict[report_name].keys():
@@ -80,8 +80,7 @@ def get_report_size(report_name):
 
 def get_command_size(cmd_name):
     """
-    Get the size in bytes of a command
-    as of right now it does not include the header size
+    Get the size in bytes of a command (including callsign prefix).
     
     Args:
         cmd_name: Name of the command
@@ -92,8 +91,8 @@ def get_command_size(cmd_name):
     if cmd_name not in all_cmd_names:
         raise ValueError(f"Command '{cmd_name}' not found in command_list")
     
-    # 1 byte for command ID
-    cmd_size = (MSG_TYPE_SIZE + COMMAND_ID_SIZE) // 8  # Convert bits to bytes
+    # 1 byte for command ID + callsign
+    cmd_size = CALLSIGN_SIZE + (MSG_TYPE_SIZE + COMMAND_ID_SIZE) // 8  # Convert bits to bytes
     # Add size of each argument
     cmd_name, precondition, arguments, satellite_func = command_list[COMMAND_IDS[cmd_name]]
     for arg in arguments:

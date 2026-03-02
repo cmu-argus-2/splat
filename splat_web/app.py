@@ -88,11 +88,12 @@ def register_routes(app):
             pack_type = data.get('type')  # 'report' or 'command'
             name = data.get('name')
             values = data.get('values', {})
+            callsign = data.get('callsign', '')  # Get callsign from request
             
             if pack_type == 'report':
-                result = pack_report(name, values)
+                result = pack_report(name, values, callsign)
             elif pack_type == 'command':
-                result = pack_command(name, values)
+                result = pack_command(name, values, callsign)
             else:
                 raise ValueError(f"Unknown pack type: {pack_type}")
             
@@ -118,15 +119,15 @@ app = create_app()
 
 def unpack_and_format(byte_data):
     """Unpack bytes and format for display."""
-    unpack_obj = unpack(byte_data)
+    callsign, unpack_obj = unpack(byte_data)
     
     # Try as report
     if type(unpack_obj) == Report:
-        return format_report(unpack_obj, byte_data)
+        return format_report(unpack_obj, callsign, byte_data)
     
     # Try as command
     elif type(unpack_obj) == Command:
-        return format_command(unpack_obj, byte_data)
+        return format_command(unpack_obj, callsign, byte_data)
     
     else:
         return {
@@ -137,7 +138,7 @@ def unpack_and_format(byte_data):
         }
 
 
-def format_report(report, byte_data):
+def format_report(report, callsign, byte_data):
     """Format a report for display."""
     variables = []
     for subsystem in sorted(report.variables.keys()):
@@ -155,6 +156,7 @@ def format_report(report, byte_data):
         'type': 'report',
         'name': report.name,
         'id': report.report_id,
+        'callsign': callsign,
         'variables': variables,
         'hex': byte_data.hex(),
         'hex_formatted': ' '.join(f'0x{b:02X}' for b in byte_data),
@@ -162,7 +164,7 @@ def format_report(report, byte_data):
     }
 
 
-def format_command(command, byte_data):
+def format_command(command, callsign, byte_data):
     """Format a command for display."""
     arguments = []
     for arg_name, value in command.arguments.items():
@@ -175,6 +177,7 @@ def format_command(command, byte_data):
         'type': 'command',
         'name': command.name,
         'id': command.command_id,
+        'callsign': callsign,
         'arguments': arguments,
         'hex': byte_data.hex(),
         'hex_formatted': ' '.join(f'0x{b:02X}' for b in byte_data),
@@ -182,7 +185,7 @@ def format_command(command, byte_data):
     }
 
 
-def pack_report(report_name, values):
+def pack_report(report_name, values, callsign=''):
     """Pack a report from values."""
     report = Report(report_name)
     # Set variables
@@ -206,19 +209,20 @@ def pack_report(report_name, values):
             
             report.add_variable(var_name, subsystem, value)
     
-    # Pack
-    packed = pack(report)
+    # Pack with callsign
+    packed = pack(report, callsign=callsign if callsign else None)
     
     return {
         'hex': packed.hex(),
         'hex_formatted': ' '.join(f'0x{b:02X}' for b in packed),
         'size': len(packed),
         'type': 'report',
-        'name': report_name
+        'name': report_name,
+        'callsign': callsign
     }
 
 
-def pack_command(command_name, arguments):
+def pack_command(command_name, arguments, callsign=''):
     """Pack a command from arguments."""
     command = Command(command_name)
     
@@ -232,15 +236,16 @@ def pack_command(command_name, arguments):
         
         command.add_argument(arg_name, value)
     
-    # Pack
-    packed = pack(command)
+    # Pack with callsign
+    packed = pack(command, callsign=callsign if callsign else None)
     
     return {
         'hex': packed.hex(),
         'hex_formatted': ' '.join(f'0x{b:02X}' for b in packed),
         'size': len(packed),
         'type': 'command',
-        'name': command_name
+        'name': command_name,
+        'callsign': callsign
     }
 
 
