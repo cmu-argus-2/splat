@@ -752,12 +752,12 @@ def pack(data, callsign=None):
     else:
         raise TypeError(f"Cannot pack object of type {type(data)}")
     
-    # Always prepend callsign prefix (empty string by default)
-    if callsign is None:
-        callsign = ""
+    # make sure callsign is what we expect
+    if callsign is None or len(callsign) != CALLSIGN_SIZE or not isinstance(callsign, str):
+        callsign = "ERRORS"
     
     # Encode callsign as ASCII and pad/truncate to CALLSIGN_SIZE bytes
-    callsign_bytes = callsign.encode('ascii').ljust(CALLSIGN_SIZE, b'\x00')[:CALLSIGN_SIZE]
+    callsign_bytes = callsign.encode('ascii')[:CALLSIGN_SIZE]
     return callsign_bytes + packed
 
 
@@ -777,7 +777,7 @@ def unpack(data, **kwargs):
     # Extract callsign from first CALLSIGN_SIZE bytes
     callsign_bytes = data[:CALLSIGN_SIZE]
     try:
-        callsign = callsign_bytes.rstrip(b'\x00').decode('ascii')
+        callsign = callsign_bytes.decode('ascii')
     except UnicodeDecodeError:
         # If callsign can't be decoded as ASCII (e.g., fragments with binary payloads),
         # use a default empty callsign
