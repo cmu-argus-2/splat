@@ -744,7 +744,12 @@ class Transaction:
         """
         Will receive a bitmap to confirm the last batch of fragments
         each bit in the bitmap will represent a number in the last_batch list
-        if its 1 it means that it received, if its 0 it did not receive
+        
+        to facilitate, assuming that usually you will get all the packets we will invert the logic
+            1 means that the packet was not received
+            0 means that the packet was received
+        this way if you received everything, you can just send 0
+        
         the bitmap will come in as a int value
         """
         if not self.last_batch:
@@ -761,7 +766,7 @@ class Transaction:
 
         for i in range(width):
             bit_pos = (width - 1) - i  # MSB-first within window
-            if ((bitmap >> bit_pos) & 1) == 1:
+            if ((bitmap >> bit_pos) & 1) == 0:
                 seq_number = self.last_batch[i]
                 missing_set.discard(seq_number)
 
