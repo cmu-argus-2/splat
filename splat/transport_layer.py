@@ -628,10 +628,15 @@ class Transaction:
         
         return self.packet_list
     
-    def generate_x_packets(self, x):
+    def generate_x_packets(self, x, update_missing_fragments=False):
         """
         Will generate the next x packets in the missing fragments list
         reutrns a list with the packed commands for those fragments ready to be sent to the receiver
+        
+        if update_missing_fragments is true each packet sent will removed fro missing fragments
+        so the next time this function is called will send new packets and do not need to confirm the batch
+        using this method, if you miss any packets you will have to run the functions that will add the missed packet
+        to the missing list
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
@@ -644,7 +649,11 @@ class Transaction:
         for i in range(x):
             if len(self.missing_fragments) == 0:
                 break
+            
             seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
+            if update_missing_fragments:
+                self.missing_fragments.pop(i)
+                
             self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
                 f.seek(seq_number * MAX_PACKET_SIZE)
