@@ -752,8 +752,8 @@ def pack(data, callsign=None):
     else:
         raise TypeError(f"Cannot pack object of type {type(data)}")
     
-    # make sure callsign is what we expect
-    if callsign is None or len(callsign) != CALLSIGN_SIZE or not isinstance(callsign, str):
+    # Always prepend callsign prefix (empty string by default)
+    if callsign is None or len(callsign) != CALLSIGN_SIZE:
         callsign = "ERRORS"
     
     # Encode callsign as ASCII and pad/truncate to CALLSIGN_SIZE bytes
