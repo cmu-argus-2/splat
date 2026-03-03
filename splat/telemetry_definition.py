@@ -21,6 +21,7 @@ COMMAND_ID_SIZE = 13
 
 TID_SIZE = 5
 FRAGMENT_SEQ_SIZE = 16
+MAX_PAYLOAD_SIZE = 256 - CALLSIGN_SIZE - (FRAGMENT_SEQ_SIZE//8) - 1  # the one is the msg type + tid size
 
 # index for the available subsystems
 # [check] - should add a check to make sure that I do not have more ss than what I can have according to the  VARIABLE_SS_SIZE and COMMAND_SS_SIZE

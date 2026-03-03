@@ -4,7 +4,7 @@ import hashlib
 
 
 from .telemetry_codec import Fragment
-from .telemetry_definition import MAX_PACKET_SIZE
+from .telemetry_definition import MAX_PAYLOAD_SIZE
 from .telemetry_helper import format_bytes
 
 
@@ -419,7 +419,7 @@ class Transaction:
         
         if self.file_size <= 0:
             return 0
-        return (self.file_size + MAX_PACKET_SIZE - 1) // MAX_PACKET_SIZE
+        return (self.file_size + MAX_PAYLOAD_SIZE - 1) // MAX_PAYLOAD_SIZE
         
     def get_file_hash(self):
         """
@@ -619,7 +619,7 @@ class Transaction:
             self.last_batch = []  # [check] - not the best place for this as the rest of the code will not support this feature with the max number of packets... But I will most likely use with less packets
             
             for i in self.missing_fragments:
-                payload_frag = file_data[i*MAX_PACKET_SIZE:(i+1)*MAX_PACKET_SIZE]
+                payload_frag = file_data[i*MAX_PAYLOAD_SIZE:(i+1)*MAX_PAYLOAD_SIZE]
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
                 frag.add_payload(payload_frag)
@@ -656,8 +656,8 @@ class Transaction:
                 
             self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
-                f.seek(seq_number * MAX_PACKET_SIZE)
-                payload_frag = f.read(MAX_PACKET_SIZE)
+                f.seek(seq_number * MAX_PAYLOAD_SIZE)
+                payload_frag = f.read(MAX_PAYLOAD_SIZE)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
@@ -793,9 +793,9 @@ class Transaction:
         
         with open(self.file_path, "rb") as f:
             # Seek to the start of the fragment
-            f.seek(seq_number * MAX_PACKET_SIZE)
+            f.seek(seq_number * MAX_PAYLOAD_SIZE)
             # Read only the bytes for this fragment
-            payload_frag = f.read(MAX_PACKET_SIZE)
+            payload_frag = f.read(MAX_PAYLOAD_SIZE)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
