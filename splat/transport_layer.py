@@ -3,7 +3,7 @@ import time
 import hashlib
 
 
-from .telemetry_codec import Command, pack, unpack, Ack, Fragment
+from .telemetry_codec import Fragment
 from .telemetry_definition import MAX_PACKET_SIZE
 from .telemetry_helper import format_bytes
 
@@ -623,7 +623,7 @@ class Transaction:
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
                 frag.add_payload(payload_frag)
-                self.packet_list.append(pack(frag))
+                self.packet_list.append(frag)
                 self.last_batch.append(i)
         
         return self.packet_list
@@ -652,7 +652,7 @@ class Transaction:
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
-            generated_packets.append(pack(frag))
+            generated_packets.append(frag)
         return generated_packets
     
     def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
@@ -785,7 +785,7 @@ class Transaction:
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
-            return pack(frag)
+            return frag
         
     # these are functions that will run in the transmitter to allow the receiver to control the packets that are being sent
         
