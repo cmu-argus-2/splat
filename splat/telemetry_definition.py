@@ -1,10 +1,11 @@
 
 # Configuration
 ENDIANNESS = ">"  # '>' for big-endian, '<' for little-endian
-MAX_PACKET_SIZE = 249  # Maximum packet size in bytes this is already disconting the header
+MAX_PACKET_SIZE = 255  # Maximum packet size in bytes this is already disconting the header
 # but we are not considering encryption here
 # it would be nice to handle encryption here but we are not sending in all of the commands
 
+CALLSIGN_SIZE = 6  # Number of bytes for callsign (6 letter string)
 
 # define the header sizes (ideally they are byte matched)
 # in bits
@@ -20,6 +21,7 @@ COMMAND_ID_SIZE = 13
 
 TID_SIZE = 5
 FRAGMENT_SEQ_SIZE = 16
+MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - CALLSIGN_SIZE - (FRAGMENT_SEQ_SIZE//8) - 1  # the one is the msg type + tid size
 
 # index for the available subsystems
 # [check] - should add a check to make sure that I do not have more ss than what I can have according to the  VARIABLE_SS_SIZE and COMMAND_SS_SIZE

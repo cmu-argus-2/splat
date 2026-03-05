@@ -30,7 +30,8 @@ from .telemetry_definition import (
     COMMAND_ID_SIZE,
     REPORT_ID_SIZE,
     VARIABLE_SS_SIZE,
-    VARIABLE_ID_SIZE
+    VARIABLE_ID_SIZE,
+    CALLSIGN_SIZE
 )
 
 from .telemetry_helper import (
@@ -724,59 +725,82 @@ def unpack_variable(data):
     return variable
 
 
-def pack(data):
+def pack(data, callsign=None):
     """
     Universal pack function that handles Reports, Commands, Variables, and Acks.
+    Prepends the callsign to the beginning of the packet.
     
     Args:
         data: Report, Command, Variable, or Ack object to pack
+        callsign: Optional 6-character callsign string to prepend to the packet.
+                 If not provided, a null-padded placeholder is used.
         
     Returns:
-        Packed bytes
+        Packed bytes with callsign prefix
     """
     
     if isinstance(data, Report):
-        return pack_report(data)
+        packed = pack_report(data)
     elif isinstance(data, Variable):
-        return pack_variable(data)
+        packed = pack_variable(data)
     elif isinstance(data, Command):
-        return pack_command(data)
+        packed = pack_command(data)
     elif isinstance(data, Ack):
-        return pack_ack(data)
+        packed = pack_ack(data)
     elif isinstance(data, Fragment):
-        return pack_fragment(data)
+        packed = pack_fragment(data)
     else:
         raise TypeError(f"Cannot pack object of type {type(data)}")
+    
+    # Always prepend callsign prefix (empty string by default)
+    if callsign is None or len(callsign) != CALLSIGN_SIZE:
+        callsign = "ERRORS"
+    
+    # Encode callsign as ASCII and pad/truncate to CALLSIGN_SIZE bytes
+    callsign_bytes = callsign.encode('ascii')[:CALLSIGN_SIZE]
+    return callsign_bytes + packed
 
 
 def unpack(data, **kwargs):
     """
     Universal unpack function that handles Reports, Commands, Variables, and Acks.
-    Use the msg_type contained in the header (the first byte) to determine the type.
+    Extracts callsign from the first CALLSIGN_SIZE bytes and returns it separately.
+    Use the msg_type contained in the header to determine the type.
     
     Args:
-        data: Packed bytes to unpack
+        data: Packed bytes to unpack (with callsign prefix)
         **kwargs: Additional arguments (e.g., cmd_name for unpacking commands)
         
     Returns:
-        Unpacked Report, Command, Variable, or Ack object
+        Tuple of (callsign, unpacked_object) where unpacked_object is Report, Command, Variable, Fragment, or Ack
     """
+    # Extract callsign from first CALLSIGN_SIZE bytes
+    callsign_bytes = data[:CALLSIGN_SIZE]
+    try:
+        callsign = callsign_bytes.decode('ascii')
+    except UnicodeDecodeError:
+        # If callsign can't be decoded as ASCII (e.g., fragments with binary payloads),
+        # use a default empty callsign
+        callsign = ""
+    
+    # Remove callsign from data for further processing
+    data = data[CALLSIGN_SIZE:]
+    
+    # Determine message type from the first byte of the remaining data
     msg_type = (data[0] >> (8 - MSG_TYPE_SIZE)) & ((1 << MSG_TYPE_SIZE) - 1)
 
-    if msg_type == MSG_TYPE_DICT["reports"]:    
-        return unpack_report(data)
+    if msg_type == MSG_TYPE_DICT["reports"]:
+        obj = unpack_report(data)
+    elif msg_type == MSG_TYPE_DICT["variable"]:
+        obj = unpack_variable(data)
+    elif msg_type == MSG_TYPE_DICT["commands"]:
+        obj = unpack_command(data)
+    elif msg_type == MSG_TYPE_DICT["fragments"]:
+        obj = unpack_fragment(data)
+    elif msg_type == MSG_TYPE_DICT["ack"]:
+        obj = unpack_ack(data)
+    else:
+        raise ValueError("Unable to unpack data - unknown format")
     
-    if msg_type == MSG_TYPE_DICT["variable"]:
-        return unpack_variable(data)
-    
-    if msg_type == MSG_TYPE_DICT["commands"]:
-        return unpack_command(data)
-    
-    if msg_type == MSG_TYPE_DICT["fragments"]:
-        return unpack_fragment(data)
-    
-    if msg_type == MSG_TYPE_DICT["ack"]:
-        # For now, we will just return the raw data for acks, as they are variable length and format
-        return unpack_ack(data)
-    
-    raise ValueError("Unable to unpack data - unknown format")
+    # Return callsign and unpacked object as tuple
+    return callsign, obj

@@ -12,7 +12,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from splat.telemetry_codec import Report, Command, Response, pack, unpack
+from splat.telemetry_codec import Report, Command, pack, unpack
 from splat.telemetry_definition import ENDIANNESS, var_dict, report_dict, command_list, REPORT_IDS, COMMAND_IDS, MAX_PACKET_SIZE
 from splat.telemetry_helper import validate_definitions, get_variable_size, get_report_size, get_command_size
 import time
@@ -48,14 +48,15 @@ def demo_basic_usage():
     
     # Pack the report
     print("\n3. Packing report to binary...")
-    packed_report = pack(report)
+    packed_report = pack(report, callsign="SAT001")
     print(f"   Packed size: {len(packed_report)} bytes")
     print(f"   Hex: {packed_report.hex()}")
     print(f"   Binary: {' '.join(f'{b:08b}' for b in packed_report[:8])}...")
     
     # Unpack the report
     print("\n4. Unpacking binary back to report...")
-    unpacked_report = unpack(packed_report)
+    callsign, unpacked_report = unpack(packed_report)
+    print(f"   Callsign: {callsign}")
     print(f"   Unpacked: {unpacked_report}")
     print(f"   Variables: {unpacked_report.variables}")
     
@@ -78,13 +79,14 @@ def demo_basic_usage():
     
     # Pack the command
     print("\n7. Packing command to binary...")
-    packed_cmd = pack(cmd)
+    packed_cmd = pack(cmd, callsign="SAT001")
     print(f"   Packed size: {len(packed_cmd)} bytes")
     print(f"   Hex: {packed_cmd.hex()}")
     
     # Unpack the command
     print("\n8. Unpacking binary back to command...")
-    unpacked_cmd = unpack(packed_cmd, data_type='command')
+    callsign, unpacked_cmd = unpack(packed_cmd, data_type='command')
+    print(f"   Callsign: {callsign}")
     print(f"   Unpacked: {unpacked_cmd}")
     print(f"   Arguments: {unpacked_cmd.arguments}")
     

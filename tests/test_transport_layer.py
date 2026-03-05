@@ -379,7 +379,7 @@ class TestMissingFragmentsManagement:
             from splat.telemetry_codec import unpack
             seq_numbers = set()
             for packet_bytes in remaining_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 seq_numbers.add(unpacked.seq_number)
             
             assert seq_numbers == {1, 3}
@@ -425,7 +425,7 @@ class TestMissingFragmentsManagement:
             from splat.telemetry_codec import unpack
             seq_numbers = []
             for packet_bytes in packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 seq_numbers.append(unpacked.seq_number)
             
             assert set(seq_numbers) == {0, 3, 5, 9}
@@ -460,7 +460,7 @@ class TestMissingFragmentsManagement:
             from splat.telemetry_codec import unpack
             seq_numbers = set()
             for packet_bytes in remaining_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 seq_numbers.add(unpacked.seq_number)
             
             # Should not contain the ones we marked as received
@@ -545,8 +545,8 @@ class TestMissingFragmentsManagement:
             
             # Packets should be identical
             from splat.telemetry_codec import unpack
-            unpacked_1 = unpack(packet_1)
-            unpacked_2 = unpack(packet_2)
+            callsign, unpacked_1 = unpack(packet_1)
+            callsign2, unpacked_2 = unpack(packet_2)
             
             assert unpacked_1.payload == unpacked_2.payload
         finally:
@@ -583,7 +583,7 @@ class TestIntegrationEndToEnd:
             # 3. Unpack packets and add fragments to receiver
             from splat.telemetry_codec import unpack
             for packet_bytes in packet_list:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 assert isinstance(unpacked, Fragment)
 
                 tid = unpacked.tid
@@ -637,7 +637,7 @@ class TestIntegrationEndToEnd:
                 packet_bytes = sender.generate_specific_packet(seq_num)
                 assert packet_bytes is not None
                 
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 payload_frag = unpacked.payload
                 receiver.add_packet(seq_num, payload_frag)
             
@@ -701,12 +701,12 @@ class TestIntegrationEndToEnd:
             from splat.telemetry_codec import unpack
             first_half_seq = set()
             for p in first_half_packets:
-                unpacked = unpack(p)
+                callsign, unpacked = unpack(p)
                 first_half_seq.add(unpacked.seq_number)
             
             remaining_seq = set()
             for p in remaining_packets:
-                unpacked = unpack(p)
+                callsign, unpacked = unpack(p)
                 remaining_seq.add(unpacked.seq_number)
             
             assert len(first_half_seq & remaining_seq) == 0, "No overlap between first and remaining packets"
@@ -719,13 +719,13 @@ class TestIntegrationEndToEnd:
             
             # Add first half
             for packet_bytes in first_half_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 payload_frag = unpacked.payload
                 receiver.add_packet(unpacked.seq_number, payload_frag)
             
             # Add remaining
             for packet_bytes in remaining_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 payload_frag = unpacked.payload
                 receiver.add_packet(unpacked.seq_number, payload_frag)
             
@@ -792,12 +792,12 @@ class TestIntegrationEndToEnd:
             # 8. Verify no duplicate packet generation
             first_batch_seq = set()
             for p in first_batch_packets:
-                unpacked = unpack(p)
+                callsign, unpacked = unpack(p)
                 first_batch_seq.add(unpacked.seq_number)
             
             remaining_seq = set()
             for p in remaining_packets:
-                unpacked = unpack(p)
+                callsign, unpacked = unpack(p)
                 remaining_seq.add(unpacked.seq_number)
             
             assert len(first_batch_seq & remaining_seq) == 0, "No duplicate packets between batches"
@@ -810,12 +810,12 @@ class TestIntegrationEndToEnd:
             
             # Add first batch
             for packet_bytes in first_batch_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 receiver.add_packet(unpacked.seq_number, unpacked.payload)
             
             # Add remaining
             for packet_bytes in remaining_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 receiver.add_packet(unpacked.seq_number, unpacked.payload)
             
             # 10. Verify all received and file written correctly
@@ -862,7 +862,7 @@ class TestIntegrationEndToEnd:
                 if seq_num < total_packets:
                     packet_bytes = sender.generate_specific_packet(seq_num)
                     received_packets.append(packet_bytes)
-                    unpacked = unpack(packet_bytes)
+                    callsign, unpacked = unpack(packet_bytes)
                     packets_received_seq.add(unpacked.seq_number)
             
             # 4. Determine what's still missing from receiver's perspective
@@ -887,7 +887,7 @@ class TestIntegrationEndToEnd:
             # 8. Verify no redundant packet generation
             remaining_seq = set()
             for p in remaining_packets:
-                unpacked = unpack(p)
+                callsign, unpacked = unpack(p)
                 remaining_seq.add(unpacked.seq_number)
             
             # Should have no overlap
@@ -901,12 +901,12 @@ class TestIntegrationEndToEnd:
             
             # Add received packets
             for packet_bytes in received_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 receiver.add_packet(unpacked.seq_number, unpacked.payload)
             
             # Add remaining
             for packet_bytes in remaining_packets:
-                unpacked = unpack(packet_bytes)
+                callsign, unpacked = unpack(packet_bytes)
                 receiver.add_packet(unpacked.seq_number, unpacked.payload)
             
             # 10. Verify file integrity

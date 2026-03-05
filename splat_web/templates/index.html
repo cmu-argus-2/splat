@@ -28,6 +28,10 @@
             <div class="panel">
                 <h2>Pack Data to Binary</h2>
                 <div class="input-group">
+                    <label for="packCallsign">Callsign (optional, 6 chars max):</label>
+                    <input type="text" id="packCallsign" placeholder="e.g., SAT001" maxlength="6">
+                </div>
+                <div class="input-group">
                     <label for="packType">Type:</label>
                     <select id="packType" onchange="updatePackForm()">
                         <option value="">Select type...</option>

@@ -247,11 +247,20 @@ need to make sure that the precondition function and the satellite function exis
 Key settings in `telemetry_definition.py`:
 - `ENDIANNESS`: `'>'` (big-endian) or `'<'` (little-endian)
 - `MAX_PACKET_SIZE`: Maximum packet size in bytes (default: 256)
+- `CALLSIGN_SIZE`: Size of callsign in bytes (default: 6 characters)
 - `MSG_TYPE_SIZE`: Size of message type header in bits (default: 8)
 - `REPORT_ID_SIZE`: Size of report/command ID header in bits (default: 5)
 - `VARIABLE_SS_SIZE`: Size of variable subsystem header in bits (default: 3)
 - `VARIABLE_ID_SIZE`: Size of variable ID header in bits (default: 10)
 - `COMMAND_ID_SIZE`: Size of command ID header in bits (default: 13)
+
+
+## Callsign Support
+
+### Size Considerations
+- All size calculation functions (`get_report_size()`, `get_command_size()`, etc.) include the callsign size
+- Total message size = `CALLSIGN_SIZE` + header + payload
+- Ensure `MAX_PACKET_SIZE` accounts for the callsign prefix
 
 
 ## 📡 Binary Encoding Explained
@@ -260,9 +269,16 @@ Key settings in `telemetry_definition.py`:
 
 All messages are packed as binary data using Python's `struct` module with **big-endian** byte order.
 
+#### Callsign Prefix
+
+**All packed messages** are prefixed with a callsign:
+- **Callsign**: `CALLSIGN_SIZE` bytes (default: 6 bytes)
+- Encoded as ASCII, padded with null bytes if shorter than 6 characters
+- Example: "SAT001" → `0x53 0x41 0x54 0x30 0x30 0x31`
+
 #### Common Header Layout (bit-level)
 
-All **reports**, **commands**, and **variables** start with a compact header:
+After the callsign, all **reports**, **commands**, and **variables** have a compact header:
 
 - **msg_type**: `MSG_TYPE_SIZE` bits  
 - **report_id**: `REPORT_ID_SIZE` bits  
@@ -279,25 +295,29 @@ Variable Header: [ msg_type | subsystem_id | variable_id ]
 
 #### Report Structure
 ```
-┌───────────────────────────────┬──────────────┬──────────────┬─────┬──────────────┐
-│ Header (msg_type + report_id) │  Variable 1  │  Variable 2  │ ... │  Variable N  │
-│   (bits per config)           │   X bytes    │   Y bytes    │     │   Z bytes    │
-└───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
+┌──────────┬───────────────────────────────┬──────────────┬──────────────┬─────┬──────────────┐
+│ Callsign │ Header (msg_type + report_id) │  Variable 1  │  Variable 2  │ ... │  Variable N  │
+│ 6 bytes  │   (bits per config)           │   X bytes    │   Y bytes    │     │   Z bytes    │
+└──────────┴───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
 ```
 
 #### Command Structure
 ```
-┌───────────────────────────────┬──────────────┬──────────────┬─────┬──────────────┐
-│ Header (msg_type + command_id)│  Argument 1  │  Argument 2  │ ... │  Argument N  │
-│   (bits per config)           │   X bytes    │   Y bytes    │     │   Z bytes    │
-└───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
+┌──────────┬───────────────────────────────┬──────────────┬──────────────┬─────┬──────────────┐
+│ Callsign │ Header (msg_type + command_id)│  Argument 1  │  Argument 2  │ ... │  Argument N  │
+│ 6 bytes  │   (bits per config)           │   X bytes    │   Y bytes    │     │   Z bytes    │
+└──────────┴───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
 ```
 
 > The precondition and satellite function are not part of the message. The satellite will identify what command was received and use telemetry definion to know what precondition and satellite function to call.
 
 #### Variable Structure
 ```
-┌─────────────────────────────────────────────┬───────────────────┐
+┌──────────┬─────────────────────────────────────────────┬───────────────────┐
+│ Callsign │ Header (msg_type + ss_id + var_id)         │  Value            │
+│ 6 bytes  │   (bits per config)                         │   X bytes         │
+└──────────┴─────────────────────────────────────────────┴───────────────────┘
+```
 │ Header (msg_type + subsystem_id + var_id)   │     Value         │
 │   (bits per config)                         │   X bytes         │
 └─────────────────────────────────────────────┴───────────────────┘
@@ -428,8 +448,8 @@ report.set_variables(
     solar_voltage=5.0
 )
 
-# Pack to binary
-packed_data = pack(report)
+# Pack to binary with callsign
+packed_data = pack(report, callsign="SAT001")
 print(f"Packed size: {len(packed_data)} bytes")
 print(f"Hex: {packed_data.hex()}")
 ```
@@ -442,8 +462,8 @@ from telemetry_codec import Command, pack
 cmd = Command("SET_POWER_MODE")
 cmd.add_argument("mode", 2)
 
-# Pack and send via socket
-packed_cmd = pack(cmd)
+# Pack with callsign and send via socket
+packed_cmd = pack(cmd, callsign="GROUND")
 socket.sendall(packed_cmd)
 ```
 
@@ -454,8 +474,10 @@ from telemetry_codec import unpack
 # Receive data from socket
 data = socket.recv(1024)
 
-# Unpack (auto-detects type)
-result = unpack(data)
+# Unpack (auto-detects type and extracts callsign)
+callsign, result = unpack(data)
+
+print(f"Callsign: {callsign}")
 
 if isinstance(result, Report):
     print(f"Received report: {result.name}")

@@ -3,8 +3,8 @@ import time
 import hashlib
 
 
-from .telemetry_codec import Command, pack, unpack, Ack, Fragment
-from .telemetry_definition import MAX_PACKET_SIZE
+from .telemetry_codec import Fragment
+from .telemetry_definition import MAX_PAYLOAD_SIZE
 from .telemetry_helper import format_bytes
 
 
@@ -419,7 +419,7 @@ class Transaction:
         
         if self.file_size <= 0:
             return 0
-        return (self.file_size + MAX_PACKET_SIZE - 1) // MAX_PACKET_SIZE
+        return (self.file_size + MAX_PAYLOAD_SIZE - 1) // MAX_PAYLOAD_SIZE
         
     def get_file_hash(self):
         """
@@ -619,19 +619,24 @@ class Transaction:
             self.last_batch = []  # [check] - not the best place for this as the rest of the code will not support this feature with the max number of packets... But I will most likely use with less packets
             
             for i in self.missing_fragments:
-                payload_frag = file_data[i*MAX_PACKET_SIZE:(i+1)*MAX_PACKET_SIZE]
+                payload_frag = file_data[i*MAX_PAYLOAD_SIZE:(i+1)*MAX_PAYLOAD_SIZE]
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
                 frag.add_payload(payload_frag)
-                self.packet_list.append(pack(frag))
+                self.packet_list.append(frag)
                 self.last_batch.append(i)
         
         return self.packet_list
     
-    def generate_x_packets(self, x):
+    def generate_x_packets(self, x, update_missing_fragments=False):
         """
         Will generate the next x packets in the missing fragments list
         reutrns a list with the packed commands for those fragments ready to be sent to the receiver
+        
+        if update_missing_fragments is true each packet sent will removed fro missing fragments
+        so the next time this function is called will send new packets and do not need to confirm the batch
+        using this method, if you miss any packets you will have to run the functions that will add the missed packet
+        to the missing list
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
@@ -644,15 +649,19 @@ class Transaction:
         for i in range(x):
             if len(self.missing_fragments) == 0:
                 break
+            
             seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
+            if update_missing_fragments:
+                self.missing_fragments.pop(i)
+                
             self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
-                f.seek(seq_number * MAX_PACKET_SIZE)
-                payload_frag = f.read(MAX_PACKET_SIZE)
+                f.seek(seq_number * MAX_PAYLOAD_SIZE)
+                payload_frag = f.read(MAX_PAYLOAD_SIZE)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
-            generated_packets.append(pack(frag))
+            generated_packets.append(frag)
         return generated_packets
     
     def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
@@ -735,7 +744,12 @@ class Transaction:
         """
         Will receive a bitmap to confirm the last batch of fragments
         each bit in the bitmap will represent a number in the last_batch list
-        if its 1 it means that it received, if its 0 it did not receive
+        
+        to facilitate, assuming that usually you will get all the packets we will invert the logic
+            1 means that the packet was not received
+            0 means that the packet was received
+        this way if you received everything, you can just send 0
+        
         the bitmap will come in as a int value
         """
         if not self.last_batch:
@@ -752,7 +766,7 @@ class Transaction:
 
         for i in range(width):
             bit_pos = (width - 1) - i  # MSB-first within window
-            if ((bitmap >> bit_pos) & 1) == 1:
+            if ((bitmap >> bit_pos) & 1) == 0:
                 seq_number = self.last_batch[i]
                 missing_set.discard(seq_number)
 
@@ -779,13 +793,13 @@ class Transaction:
         
         with open(self.file_path, "rb") as f:
             # Seek to the start of the fragment
-            f.seek(seq_number * MAX_PACKET_SIZE)
+            f.seek(seq_number * MAX_PAYLOAD_SIZE)
             # Read only the bytes for this fragment
-            payload_frag = f.read(MAX_PACKET_SIZE)
+            payload_frag = f.read(MAX_PAYLOAD_SIZE)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
-            return pack(frag)
+            return frag
         
     # these are functions that will run in the transmitter to allow the receiver to control the packets that are being sent
         

@@ -205,6 +205,23 @@ button:active {
     font-family: 'Courier New', monospace;
 }
 
+.callsign-badge {
+    display: inline-block;
+    background: #f3e5f5;
+    color: #7b1fa2;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.callsign-badge.empty {
+    background: #e0e0e0;
+    color: #666;
+    font-style: italic;
+}
+
 .search-box {
     margin-top: 15px;
     margin-bottom: 10px;
@@ -246,10 +263,14 @@ button:active {
 
 .pack-form {
     display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
 }
 
 .pack-form.show {
-    display: block;
+    display: block !important;
 }
 
 .variable-input {
