@@ -464,7 +464,8 @@ command_list = [
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
     
-    ("EXPERIMENT", None, ["ts", "camera_bit_flag", "level_processing", "resolution"], "EXPERIMENT")
+    ("EXPERIMENT", None, ["ts", "camera_bit_flag", "level_processing", "resolution"], "EXPERIMENT"),
+    ("PING", None, ["ts"], "PING"),
 
 ]
 
