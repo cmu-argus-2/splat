@@ -409,6 +409,11 @@ argument_dict = {
     "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
+    
+    "ts": "I",  # Timestamp for EXPERIMENT command
+    "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
+    "level_processing": "B",  # Level of processing for EXPERIMENT command
+    "resolution": "B"  # Resolution for EXPERIMENT command
 }
 
 # Return type definitions
@@ -458,6 +463,8 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
+    
+    ("EXPERIMENT", None, ["ts", "camera_bit_flag", "level_processing", "resolution"], "EXPERIMENT")
 
 ]
 
