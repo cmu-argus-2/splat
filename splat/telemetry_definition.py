@@ -153,37 +153,30 @@ var_dict = {
     "GPS_ECEF_VY": ["GPS", "i", 100],
     "GPS_ECEF_VZ": ["GPS", "i", 100],
     # --- PAYLOAD ---
-    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],
-    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],
+    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
+    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
     "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I", None],
     "LAST_EXECUTED_CMD_ID": ["PAYLOAD_TM", "B", None],
-    "PAYLOAD_STATE": ["PAYLOAD_TM", "B", None],
-    "ACTIVE_CAMERAS": ["PAYLOAD_TM", "B", None],
-    "CAPTURE_MODE": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_0": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_1": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_2": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_3": ["PAYLOAD_TM", "B", None],
-    "IMU_STATUS": ["PAYLOAD_TM", "B", None],
-    "TASKS_IN_EXECUTION": ["PAYLOAD_TM", "B", None],
-    "DISK_USAGE": ["PAYLOAD_TM", "B", None],
+    "PD_STATE_JETSON": ["PAYLOAD_TM", "B", None],       # the current state of the payload in terms of jetson (check jetson code)
+    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B", None],    # the current state of the payload in terms of mainboard (check mainboard code)
     "LATEST_ERROR": ["PAYLOAD_TM", "B", None],
-    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],
-    "RAM_USAGE": ["PAYLOAD_TM", "B", None],
-    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],
-    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],
-    "GPU_FREQ": ["PAYLOAD_TM", "B", None],
-    "CPU_TEMP": ["PAYLOAD_TM", "B", None],
-    "GPU_TEMP": ["PAYLOAD_TM", "B", None],
-    "VDD_IN": ["PAYLOAD_TM", "H", None],
-    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],
-    "VDD_SOC": ["PAYLOAD_TM", "H", None],
+    "DISK_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],  # 0=not running, 1=running
+    "RAM_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],  # count
+    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],  # %
+    "GPU_FREQ": ["PAYLOAD_TM", "H", None],  # MHz
+    "CPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
+    "GPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
+    "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
+    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
+    "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
     # --- STORAGE ---
     "SD_TOTAL_USAGE": ["STORAGE", "I", None],
     "CDH_NUM_FILES": ["STORAGE", "I", None],
@@ -353,20 +346,14 @@ report_dict = {
         "SYSTEM_UPTIME": "PAYLOAD_TM",
         "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",
         "LAST_EXECUTED_CMD_ID": "PAYLOAD_TM",
-        "PAYLOAD_STATE": "PAYLOAD_TM",
-        "ACTIVE_CAMERAS": "PAYLOAD_TM",
-        "CAPTURE_MODE": "PAYLOAD_TM",
-        "CAM_STATUS_0": "PAYLOAD_TM",
-        "CAM_STATUS_1": "PAYLOAD_TM",
-        "CAM_STATUS_2": "PAYLOAD_TM",
-        "CAM_STATUS_3": "PAYLOAD_TM",
-        "IMU_STATUS": "PAYLOAD_TM",
-        "TASKS_IN_EXECUTION": "PAYLOAD_TM",
-        "DISK_USAGE": "PAYLOAD_TM",
+        "PD_STATE_MAINBOARD": "PAYLOAD_TM",
+        "PD_STATE_JETSON": "PAYLOAD_TM",
         "LATEST_ERROR": "PAYLOAD_TM",
-        "TEGRASTATS_PROCESS_STATUS": "PAYLOAD_TM",
+        
+        "DISK_USAGE": "PAYLOAD_TM",
         "RAM_USAGE": "PAYLOAD_TM",
         "SWAP_USAGE": "PAYLOAD_TM",
+        
         "ACTIVE_CORES": "PAYLOAD_TM",
         "CPU_LOAD_0": "PAYLOAD_TM",
         "CPU_LOAD_1": "PAYLOAD_TM",
@@ -374,9 +361,12 @@ report_dict = {
         "CPU_LOAD_3": "PAYLOAD_TM",
         "CPU_LOAD_4": "PAYLOAD_TM",
         "CPU_LOAD_5": "PAYLOAD_TM",
+        
+        "TEGRASTATS_PROCESS_STATUS": "PAYLOAD_TM",
         "GPU_FREQ": "PAYLOAD_TM",
         "CPU_TEMP": "PAYLOAD_TM",
         "GPU_TEMP": "PAYLOAD_TM",
+        
         "VDD_IN": "PAYLOAD_TM",
         "VDD_CPU_GPU_CV": "PAYLOAD_TM",
         "VDD_SOC": "PAYLOAD_TM",
