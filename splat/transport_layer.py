@@ -640,28 +640,31 @@ class Transaction:
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
-        
         generated_packets = []
+
+        if x <= 0:
+            return generated_packets
 
         # discard the last batch
         self.last_batch = []
 
-        for i in range(x):
-            if len(self.missing_fragments) == 0:
-                break
-            
-            seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
-            if update_missing_fragments:
-                self.missing_fragments.pop(i)
-                
-            self.last_batch.append(seq_number)
-            with open(self.file_path, "rb") as f:
+        count = min(x, len(self.missing_fragments))
+
+        with open(self.file_path, "rb") as f:
+            for i in range(count):
+                # when removing as we go, always consume from the front
+                if update_missing_fragments:
+                    seq_number = self.missing_fragments.pop(0)
+                else:
+                    seq_number = self.missing_fragments[i]
+
+                self.last_batch.append(seq_number)
                 f.seek(seq_number * MAX_PAYLOAD_SIZE)
                 payload_frag = f.read(MAX_PAYLOAD_SIZE)
-            
-            frag = Fragment(self.tid, seq_number)
-            frag.add_payload(payload_frag)
-            generated_packets.append(frag)
+
+                frag = Fragment(self.tid, seq_number)
+                frag.add_payload(payload_frag)
+                generated_packets.append(frag)
         return generated_packets
     
     def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
