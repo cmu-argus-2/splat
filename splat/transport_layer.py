@@ -525,29 +525,147 @@ class Transaction:
         
         # check if fragment already exists, as of right now it will only warn the user
         if check and seq_number in self.fragment_dict:
-            print(f"[WARNING] Fragment with sequence number {seq_number} already exists in transaction {self.tid}. Overwriting.")
+            print(f"[PAYLOAD] [WARNING] Fragment with sequence number {seq_number} already exists in transaction {self.tid}. Overwriting.")
 
         # change to receiving state if we are not already in it
         if self.state != trans_state.RECEIVING:
-            print(f"[INFO] Transaction {self.tid} changing state to RECEIVING.")
+            print(f"[PAYLOAD] [INFO] Transaction {self.tid} changing state to RECEIVING.")
             self.change_state(trans_state.RECEIVING)
 
         self.fragment_dict[seq_number] = fragment
         
         # remove the fragment number from the missing fragments list
         if check and seq_number not in self.missing_fragments:
-            print(f"[WARNING] Adding fragment {seq_number} to transaction {self.tid}. But not in missing fragments")
+            print(f"[PAYLOAD] [WARNING] Adding fragment {seq_number} to transaction {self.tid}. But not in missing fragments")
         if seq_number in self.missing_fragments:
             self.missing_fragments.remove(seq_number)
         
         # check if the transaction is completed
         if check and len(self.fragment_dict) == self.number_of_packets:
-            print(f"[INFO] Transaction {self.tid} has received all packets. Changing state to COMPLETED.")
+            print(f"[PAYLOAD] [INFO] Transaction {self.tid} has received all packets. Changing state to COMPLETED.")
             self.change_state(trans_state.COMPLETED)
             return True
+
+        # print the len of missing fragments
+        print(f"[PAYLOAD] - len of missing fragments: {len(self.missing_fragments)}")
     
         return False
+    
+    
+    def write_partial_file(self, folder=None):
+        """
+        Write currently available fragments in fragment_dict to disk and free memory.
+
+        Behavior:
+        - Writes all currently available fragments to their correct offsets.
+        - If there are gaps between fragment 0 and the highest available fragment,
+          the file is padded with 0x00 bytes for the missing regions.
+        - After each fragment is written, it is removed from fragment_dict.
+
+        Note:
+        - This method is intended for incremental/partial writes.
+        - It does not perform final hash verification and does not set SUCCESS.
+        """
+
+        if len(self.fragment_dict) == 0:
+            print(f"[WARNING] No fragments available for partial write in transaction {self.tid}.")
+            return False
+
+        if folder is not None:
+            # CircuitPython-compatible path join (no os.path)
+            file_path = folder.rstrip("/") + "/" + self.file_path.lstrip("/")
+        else:
+            file_path = self.file_path
+
+        # check if destination needs folders to be created
+        file_dir = file_path.split("/")[:-1]
+        file_dir = "/".join(file_dir)
+
+        def _ensure_dir_exists(path):
+            """
+            CircuitPython-compatible recursive directory creation.
+            Uses only os.stat/os.mkdir (no os.path, no os.makedirs).
+            """
+            if path in ("", "/"):
+                return True
+
+            is_absolute = path.startswith("/")
+            parts = [p for p in path.split("/") if p]
+            current = "/" if is_absolute else ""
+
+            for part in parts:
+                if current in ("", "/"):
+                    next_path = ("/" + part) if current == "/" else part
+                else:
+                    next_path = current + "/" + part
+
+                try:
+                    os.stat(next_path)
+                except Exception:
+                    try:
+                        os.mkdir(next_path)
+                        print(f"[PAYLOAD] Created directory {next_path}")
+                    except Exception as mkdir_error:
+                        print(f"[ERROR] Failed to create directory {next_path}: {mkdir_error}")
+                        return False
+
+                current = next_path
+
+            return True
+
+        if file_dir != "":
+            if not _ensure_dir_exists(file_dir):
+                print(f"[ERROR] Could not prepare destination directory {file_dir} for transaction {self.tid}.")
+                return False
+            print(f"[PAYLOAD] Directory {file_dir} is ready.")
+            
+        # Ensure we have space for missing fragments (assumed zeros)
+        max_seq = max(self.fragment_dict.keys())
+        target_size = (max_seq + 1) * MAX_PAYLOAD_SIZE
+
+        print(f"[PAYLOAD] Writing partial file for transaction {self.tid} at {file_path}.")
+        print(f"[PAYLOAD] max_seq: {max_seq}, target_size: {target_size}")
+        # if os.path.exists(file_path):    # cant use os.path because cpy does not support
+        try:
+            current_size = os.stat(file_path)[6]
+            mode = "r+b"
+            print(f"[PAYLOAD] File {file_path} exists. Current size: {current_size}")
+        except Exception as e:
+            current_size = 0
+            mode = "wb+"
+            print(f"[PAYLOAD] Creating file {file_path}.")
         
+        total_bytes_written = 0
+        written_fragments = 0
+
+        with open(file_path, mode) as f:
+            # If there are missing fragments, assume them as 0x00 bytes by extending file
+            if current_size < target_size:
+                f.seek(target_size - 1)
+                f.write(b"\x00")
+
+            # Write available fragments and remove them from memory
+            seq_numbers = sorted(self.fragment_dict.keys())
+            for seq_number in seq_numbers:
+                fragment = self.fragment_dict.pop(seq_number)
+                if fragment is None:
+                    continue
+
+                f.seek(seq_number * MAX_PAYLOAD_SIZE)
+                bytes_written = f.write(fragment)
+                total_bytes_written += bytes_written
+                written_fragments += 1
+
+        if self.state != trans_state.RECEIVING:
+            self.change_state(trans_state.RECEIVING)
+
+        print(
+            f"[INFO] Partial file write for transaction {self.tid} at {file_path}. Fragments written: {written_fragments}, bytes written: {total_bytes_written}."
+        )
+
+        return True
+    
+    
     def write_file(self, folder=None):
         """
         This will take all the information in the fragment_dict and will write the file to disk
@@ -640,31 +758,28 @@ class Transaction:
 
         this is mostly to avoid memory issues, but still allow to send many packets
         """
+        
         generated_packets = []
-
-        if x <= 0:
-            return generated_packets
 
         # discard the last batch
         self.last_batch = []
 
-        count = min(x, len(self.missing_fragments))
-
-        with open(self.file_path, "rb") as f:
-            for i in range(count):
-                # when removing as we go, always consume from the front
-                if update_missing_fragments:
-                    seq_number = self.missing_fragments.pop(0)
-                else:
-                    seq_number = self.missing_fragments[i]
-
-                self.last_batch.append(seq_number)
+        for i in range(x):
+            if len(self.missing_fragments) == 0:
+                break
+            
+            seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
+            if update_missing_fragments:
+                self.missing_fragments.pop(i)
+                
+            self.last_batch.append(seq_number)
+            with open(self.file_path, "rb") as f:
                 f.seek(seq_number * MAX_PAYLOAD_SIZE)
                 payload_frag = f.read(MAX_PAYLOAD_SIZE)
-
-                frag = Fragment(self.tid, seq_number)
-                frag.add_payload(payload_frag)
-                generated_packets.append(frag)
+            
+            frag = Fragment(self.tid, seq_number)
+            frag.add_payload(payload_frag)
+            generated_packets.append(frag)
         return generated_packets
     
     def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
@@ -715,7 +830,7 @@ class Transaction:
         # self.bitmap_list = [bitmap_entry, ...]
         
             
-        if self.number_of_packets is None:
+        if self.number_of_packets is None or len(self.missing_fragments) == self.number_of_packets:
             return []
 
         bitmap_list = []
