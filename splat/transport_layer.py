@@ -1,6 +1,5 @@
 import os
 import time
-import hashlib
 
 
 from .telemetry_codec import Fragment
@@ -14,8 +13,8 @@ class trans_state():
     SENDING = 3       # this will be the state after at least one fragment has been requested for sending
     RECEIVING = 4     # this will be the state after at least one fragment has been received
     COMPLETED = 5     # this will be the state after all the fragments have been received
-    SUCCESS = 6       # this will be the state after all the fragments have been received and the file has been written to disk and verified successfully
-    FAILED = 7        # this will be the state if the transaction has failed for any reason, such as hash verification failure, timeout, etc. 
+    SUCCESS = 6       # this will be the state after all the fragments have been received and the file has been written to disk successfully
+    FAILED = 7        # this will be the state if the transaction has failed for any reason, such as timeout, etc.
 
 # Separate dictionaries for RX (receiving) and TX (transmitting) transactions
 rx_dict = {}  # Client-side: transactions for receiving files
@@ -43,14 +42,13 @@ class TransactionManager:
         self.rx_dict = rx_dict  # Client-side receiving transactions
         self.tx_dict = tx_dict  # Server-side transmitting transactions
     
-    def create_transaction(self, tid: int = None, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None, is_tx: bool = None):
+    def create_transaction(self, tid: int = None, file_path: str = None, number_of_packets: int = None, is_tx: bool = None):
         """
         Create a new transaction and allocate it a tid.
         
         Args:
             tid: Transaction ID (required for the TX side, will be set by RX side)
             file_path: Path to file (necessary on both sides)
-            file_hash: Hash of file (currently disabled, does not make sense for sending images and files)
             number_of_packets: Number of packets (On the rx side this will only be set after init transaction)
             is_tx: True for TX dict (server), False for RX dict (client).
         
@@ -80,7 +78,7 @@ class TransactionManager:
             del target_dict[tid]
         
         # Create the transaction
-        trans = Transaction(tid, file_path=file_path, file_hash=file_hash, number_of_packets=number_of_packets, is_tx=is_tx)
+        trans = Transaction(tid, file_path=file_path, number_of_packets=number_of_packets, is_tx=is_tx)
         target_dict[tid] = trans
         
         print(f"[INFO] Created {dict_name} transaction with tid={tid}")
@@ -299,8 +297,6 @@ class TransactionManager:
             'file_path': trans.file_path,
             'file_size': trans.file_size,
             'number_of_packets': trans.number_of_packets,
-            'file_hash': trans.file_hash.hex() if trans.file_hash else None,
-            'file_hash_bytes': format_bytes(trans.file_hash) if trans.file_hash else None,
             'missing_fragments_count': len(trans.missing_fragments),
             'missing_fragments': trans.missing_fragments[:100] if len(trans.missing_fragments) > 100 else trans.missing_fragments,  # Limit to first 100
             'received_fragments_count': len(trans.fragment_dict),
@@ -368,7 +364,7 @@ class Transaction:
     on the other side will have all the packets received
     """
     
-    def __init__(self, tid: str, file_path: str = None, file_hash: bytes = None, number_of_packets: int = None, is_tx=False):
+    def __init__(self, tid: str, file_path: str = None, number_of_packets: int = None, is_tx=False):
 
 
         self.state = trans_state.REQUESTED   # we currently have no state, will switch to receiving once the first packet is received 
@@ -385,8 +381,6 @@ class Transaction:
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
         self.file_size = self.get_file_size() if is_tx else None   # this will be used to calculate the number of packets, and will be None on the client side
         self.number_of_packets = self.get_number_of_packets() if is_tx else number_of_packets   # this will be used to know how many packets to expect, None in client until init_trans command is received
-        # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
-        self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
         # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
         self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
@@ -421,16 +415,6 @@ class Transaction:
             return 0
         return (self.file_size + MAX_PAYLOAD_SIZE - 1) // MAX_PAYLOAD_SIZE
         
-    def get_file_hash(self):
-        """
-        This function will set the file hash for the transaction
-        the receiver will call this funciton with the received hash
-        """
-        if self.file_path is None:
-            return None
-        
-        return self.calculate_file_hash()
-    
     # normal functions
     
     def set_number_packets(self, number_of_packets):
@@ -448,51 +432,6 @@ class Transaction:
         """
         return self.state == trans_state.COMPLETED
 
-    @staticmethod
-    def calculate_hash(file_bytes):
-        """
-        Returns the MD5 digest (16 bytes).
-        [check] - using md5 for now, maybe should change to blake2s
-        """
-        return hashlib.new("sha1", file_bytes).digest()
-    
-    
-    def calculate_file_hash(self):
-        """
-        Calculates and returns the hash of the file at self.file_path.
-        Used when creating a transaction on the sending side.
-        """
-        if self.file_path is None:
-            return None
-        
-        with open(self.file_path, "rb") as f:
-            return self.calculate_hash(f.read())
-    
-    def get_hash_as_integers(self):
-        """
-        Returns the file hash as three integers (MSB, MiddleSB, LSB)
-        for transmission in INIT_TRANS command.
-        SHA1 hash is 20 bytes: split as 8 + 8 + 4 bytes
-        """
-        if self.file_hash is None:
-            return (0, 0, 0)
-        
-        hash_MSB = int.from_bytes(self.file_hash[:8], byteorder='big')
-        hash_middlesb = int.from_bytes(self.file_hash[8:16], byteorder='big')
-        hash_LSB = int.from_bytes(self.file_hash[16:20], byteorder='big')
-        return (hash_MSB, hash_middlesb, hash_LSB)
-    
-    def set_hash_from_integers(self, hash_MSB, hash_middlesb, hash_LSB):
-        """
-        Reconstructs the file hash from three integers (MSB, MiddleSB, LSB)
-        received from INIT_TRANS command.
-        SHA1 hash is 20 bytes: 8 + 8 + 4 bytes
-        """
-        hash_bytes_MSB = hash_MSB.to_bytes(8, byteorder='big')
-        hash_bytes_middlesb = hash_middlesb.to_bytes(8, byteorder='big')
-        hash_bytes_LSB = hash_LSB.to_bytes(4, byteorder='big')
-        self.file_hash = hash_bytes_MSB + hash_bytes_middlesb + hash_bytes_LSB
-    
     def change_state(self, new_state):
         """
         This function will be called to change the state of the transaction
@@ -564,7 +503,7 @@ class Transaction:
 
         Note:
         - This method is intended for incremental/partial writes.
-        - It does not perform final hash verification and does not set SUCCESS.
+        - It does not perform final file completion checks and does not set SUCCESS.
         """
 
         if len(self.fragment_dict) == 0:
@@ -671,7 +610,6 @@ class Transaction:
         This will take all the information in the fragment_dict and will write the file to disk
         this will be a dump version that will write everything, later better version will be written
         that will allow to write part of the files
-        will also check the hash of the file after it is written
         """
         
         if folder is not None:
@@ -695,26 +633,8 @@ class Transaction:
                 # Fragment should already be bytes from unpacking
                 bytes_written = f.write(fragment)
                 total_bytes_written += bytes_written
-        
-        # Verify hash if provided
-        if self.file_hash is not None:
-            with open(file_path, "rb") as f:
-                file_data = f.read()
-                calculated_hash = self.calculate_hash(file_data)
-            
-            # Compare hash bytes
-            if calculated_hash != self.file_hash:
-                print(f"[ERROR] Hash verification FAILED for transaction {self.tid}!")
-                print(f"[ERROR] Expected: {self.file_hash.hex()}")
-                print(f"[ERROR] Got:      {calculated_hash.hex()}")
-                # set the state of the transaction to failed
-                self.change_state(trans_state.FAILED)
-                
-                return False
-                
-            print(f"[INFO] Hash verification PASSED: {calculated_hash.hex()}")
-        
-        # File written and verified successfully
+
+        # File written successfully
         print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
         
         self.change_state(trans_state.SUCCESS)
@@ -947,4 +867,4 @@ class Transaction:
         else:
             missing_str = "N/A"
 
-        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, hash={self.file_hash}, #pack={self.number_of_packets}, missing={missing_str}")
+        return (f"Tid={self.tid}, st={self.state}, path={self.file_path}, #pack={self.number_of_packets}, missing={missing_str}")

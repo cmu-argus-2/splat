@@ -67,8 +67,6 @@ def process_command(cmd: Command):
         #6. generate command to send back (transaction init command)
         cmd = Command("INIT_TRANS")
         cmd.set_arguments(tid=tid, number_of_packets=transaction.number_of_packets)
-        hash_MSB, hash_middlesb, hash_LSB = transaction.get_hash_as_integers()
-        cmd.set_arguments(hash_MSB=hash_MSB, hash_middlesb=hash_middlesb, hash_LSB=hash_LSB)
         
         transmit_list.append(pack(cmd))   # add the transaction to the transmit list, this will be used by the transport layer to know which files to send and how to split them into packets
         print(f"Added INIT_trans command to transmit list for transaction id {tid}")
