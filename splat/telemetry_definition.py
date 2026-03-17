@@ -108,6 +108,7 @@ var_dict = {
     "ZM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     # --- ADCS ---
     "MODE": ["ADCS", "B", None],
+    "CONTROLLER_MODE": ["ADCS", "B", None],
     # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
     "GYRO_X": ["ADCS", "f", 10000000],
     "GYRO_Y": ["ADCS", "f", 10000000],
@@ -262,6 +263,7 @@ report_dict = {
         "ZM_SOLAR_CHARGE_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
+        "CONTROLLER_MODE": "ADCS",
         "GYRO_X": "ADCS",
         "GYRO_Y": "ADCS",
         "GYRO_Z": "ADCS",
@@ -458,6 +460,9 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
+    
+    # ADCS Commands
+    ("ADCS_CTRL_MODE", "valid_adcs_mode", ["mode_id"], "ADCS_CTRL_MODE")
 
 ]
 
