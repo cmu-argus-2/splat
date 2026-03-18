@@ -297,8 +297,10 @@ class TransactionManager:
             'file_path': trans.file_path,
             'file_size': trans.file_size,
             'number_of_packets': trans.number_of_packets,
-            'missing_fragments_count': len(trans.missing_fragments),
-            'missing_fragments': trans.missing_fragments[:100] if len(trans.missing_fragments) > 100 else trans.missing_fragments,  # Limit to first 100
+            'file_hash': trans.file_hash.hex() if trans.file_hash else None,
+            'file_hash_bytes': format_bytes(trans.file_hash) if trans.file_hash else None,
+            'missing_fragments_count': trans._missing_fragments_count,
+            'missing_fragments': list(list(trans._iter_missing_fragments())[:100]),  # Limit to first 100 for display
             'received_fragments_count': len(trans.fragment_dict),
             'received_fragments': ", ".join(str(x) for x in (list(trans.fragment_dict.keys())[:100] if len(trans.fragment_dict) > 100 else list(trans.fragment_dict.keys()))),  # Single-line string
             'packets_generated_count': len(trans.packet_list),
@@ -381,9 +383,21 @@ class Transaction:
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
         self.file_size = self.get_file_size() if is_tx else None   # this will be used to calculate the number of packets, and will be None on the client side
         self.number_of_packets = self.get_number_of_packets() if is_tx else number_of_packets   # this will be used to know how many packets to expect, None in client until init_trans command is received
+        # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
+        self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
-        # this is a list that will keep track of the missing fragments. Once the transaction init receiver will add all the fragment number here
-        self.missing_fragments = [x for x in range(0, self.number_of_packets)] if self.number_of_packets is not None else []  # every time it receives something, it will remove the number from this list
+        # MEMORY NOTE: Using bitset (bytearray) instead of list for missing fragments tracking
+        # For 2157 packets: bitset uses ~270 bytes vs ~17KB for list. Critical for memory-constrained targets.
+        self._missing_fragments_bitset = bytearray((self.number_of_packets + 7) // 8) if self.number_of_packets is not None and self.number_of_packets > 0 else bytearray()
+        # Initialize all bits to 1 (all fragments missing)
+        if self.number_of_packets is not None and self.number_of_packets > 0:
+            for i in range(len(self._missing_fragments_bitset)):
+                self._missing_fragments_bitset[i] = 0xFF
+            # Clear unused bits in the last byte
+            if self.number_of_packets % 8 != 0:
+                last_byte_bits = self.number_of_packets % 8
+                self._missing_fragments_bitset[-1] &= (0xFF << (8 - last_byte_bits))
+        self._missing_fragments_count = self.number_of_packets if self.number_of_packets is not None else 0
 
         self.last_batch = [] # will contain the seq_number of the last batch of fragments that were generated
 
@@ -421,10 +435,20 @@ class Transaction:
         """
         This function will be called on the client side when it receives the init_trans command
         in the command it will contain info about the number of packets
-        will also set the missing_fragments list
+        will also set the missing_fragments bitset
         """
         self.number_of_packets = number_of_packets
-        self.missing_fragments = [x for x in range(0, self.number_of_packets)]
+        # MEMORY NOTE: Initialize bitset for missing fragments (avoids large list allocation)
+        self._missing_fragments_bitset = bytearray((number_of_packets + 7) // 8) if number_of_packets > 0 else bytearray()
+        # Initialize all bits to 1 (all fragments missing)
+        if number_of_packets > 0:
+            for i in range(len(self._missing_fragments_bitset)):
+                self._missing_fragments_bitset[i] = 0xFF
+            # Clear unused bits in the last byte
+            if number_of_packets % 8 != 0:
+                last_byte_bits = number_of_packets % 8
+                self._missing_fragments_bitset[-1] &= (0xFF << (8 - last_byte_bits))
+        self._missing_fragments_count = number_of_packets
     
     def is_completed(self):
         """
@@ -473,11 +497,14 @@ class Transaction:
 
         self.fragment_dict[seq_number] = fragment
         
-        # remove the fragment number from the missing fragments list
-        if check and seq_number not in self.missing_fragments:
+        # Mark fragment as received in bitset (clear the bit)
+        if self._is_missing(seq_number):
+            byte_idx = seq_number // 8
+            bit_idx = seq_number % 8
+            self._missing_fragments_bitset[byte_idx] &= ~(1 << (7 - bit_idx))
+            self._missing_fragments_count -= 1
+        elif check:
             print(f"[PAYLOAD] [WARNING] Adding fragment {seq_number} to transaction {self.tid}. But not in missing fragments")
-        if seq_number in self.missing_fragments:
-            self.missing_fragments.remove(seq_number)
         
         # check if the transaction is completed
         if check and len(self.fragment_dict) == self.number_of_packets:
@@ -485,8 +512,8 @@ class Transaction:
             self.change_state(trans_state.COMPLETED)
             return True
 
-        # print the len of missing fragments
-        print(f"[PAYLOAD] - len of missing fragments: {len(self.missing_fragments)}")
+        # print the count of missing fragments
+        print(f"[PAYLOAD] - len of missing fragments: {self._missing_fragments_count}")
     
         return False
     
@@ -633,14 +660,93 @@ class Transaction:
                 # Fragment should already be bytes from unpacking
                 bytes_written = f.write(fragment)
                 total_bytes_written += bytes_written
-
-        # File written successfully
+        
+        # Verify hash if provided
+        if self.file_hash is not None:
+            with open(file_path, "rb") as f:
+                file_data = f.read()
+                calculated_hash = self.calculate_hash(file_data)
+            
+            # Compare hash bytes
+            if calculated_hash != self.file_hash:
+                print(f"[ERROR] Hash verification FAILED for transaction {self.tid}!")
+                print(f"[ERROR] Expected: {self.file_hash.hex()}")
+                print(f"[ERROR] Got:      {calculated_hash.hex()}")
+                # set the state of the transaction to failed
+                self.change_state(trans_state.FAILED)
+                
+                return False
+                
+            print(f"[INFO] Hash verification PASSED: {calculated_hash.hex()}")
+        
+        # File written and verified successfully
         print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
         
         self.change_state(trans_state.SUCCESS)
         return True
     
     
+    def _is_missing(self, seq_number):
+        """
+        Check if a fragment is missing using bitset.
+        Returns True if the fragment is missing, False if received.
+        """
+        if seq_number >= self.number_of_packets or seq_number < 0:
+            return False
+        byte_idx = seq_number // 8
+        bit_idx = seq_number % 8
+        return bool(self._missing_fragments_bitset[byte_idx] & (1 << (7 - bit_idx)))
+    
+    def _iter_missing_fragments(self):
+        """
+        Generator that yields missing fragment sequence numbers from the bitset.
+        MEMORY NOTE: Avoids materializing full list, enabling iteration on constrained targets.
+        """
+        for seq_number in range(self.number_of_packets):
+            if self._is_missing(seq_number):
+                yield seq_number
+    
+    def _get_missing_fragments_list(self):
+        """
+        Returns a list of missing fragment sequence numbers.
+        Used for backward compatibility and debugging.
+        """
+        return list(self._iter_missing_fragments())
+    
+    @property
+    def missing_fragments(self):
+        """
+        Property for backward compatibility. Returns list of missing fragments.
+        MEMORY NOTE: This materializes the list, so use _iter_missing_fragments() when possible.
+        """
+        return self._get_missing_fragments_list()
+    
+    @missing_fragments.setter
+    def missing_fragments(self, value):
+        """
+        Setter for backward compatibility. Accepts a list and updates the bitset.
+        """
+        if self.number_of_packets is None or self.number_of_packets <= 0:
+            self._missing_fragments_bitset = bytearray()
+            self._missing_fragments_count = 0
+            return
+
+        # Reinitialize bitset with all bits cleared (all received),
+        # then set only the fragments explicitly listed as missing.
+        self._missing_fragments_bitset = bytearray((self.number_of_packets + 7) // 8)
+
+        unique_missing = set()
+        for seq_number in value:
+            if isinstance(seq_number, int) and 0 <= seq_number < self.number_of_packets:
+                unique_missing.add(seq_number)
+
+        for seq_number in unique_missing:
+            byte_idx = seq_number // 8
+            bit_idx = seq_number % 8
+            self._missing_fragments_bitset[byte_idx] |= (1 << (7 - bit_idx))
+
+        self._missing_fragments_count = len(unique_missing)
+
     def generate_all_packets(self):
         """
         Read the file from disk and generate all the packets that will be sent
@@ -656,7 +762,8 @@ class Transaction:
             # discard the last batch
             self.last_batch = []  # [check] - not the best place for this as the rest of the code will not support this feature with the max number of packets... But I will most likely use with less packets
             
-            for i in self.missing_fragments:
+            # MEMORY NOTE: Using bitset iteration instead of list slicing
+            for i in self._iter_missing_fragments():
                 payload_frag = file_data[i*MAX_PAYLOAD_SIZE:(i+1)*MAX_PAYLOAD_SIZE]
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
@@ -684,13 +791,12 @@ class Transaction:
         # discard the last batch
         self.last_batch = []
 
-        for i in range(x):
-            if len(self.missing_fragments) == 0:
+        # MEMORY NOTE: Using bitset count instead of list length
+        x = min(x, self._missing_fragments_count)
+
+        for seq_number in self._iter_missing_fragments():
+            if len(self.last_batch) >= x:
                 break
-            
-            seq_number = self.missing_fragments[i]   # will only remove the fragments once they are confirmed
-            if update_missing_fragments:
-                self.missing_fragments.pop(i)
                 
             self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
@@ -702,12 +808,12 @@ class Transaction:
             generated_packets.append(frag)
         return generated_packets
     
-    def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
+    def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=64):
         """
         Receives a seq_offset and a bitmap, from the seq_offset it will add remove all the indexes to the missing fragment list
         if respective bit in bitmap is 0, it will add
         if respective bit in bitmap is 1, it will remove
-        accepts bitmap as int or (msb, lsb) tuple/list
+        accepts bitmap as int or (bitmap_high, bitmap_low) tuple/list
         """
         if self.number_of_packets is None or seq_offset is None:
             return
@@ -715,9 +821,9 @@ class Transaction:
         if seq_offset < 0:
             return
 
-        # Accept (msb, lsb) tuple/list
+        # Accept (bitmap_high, bitmap_low) tuple/list
         if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
-            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+            bitmap = ((int(bitmap[0]) & 0xFFFFFFFF) << 32) | (int(bitmap[1]) & 0xFFFFFFFF)
 
         bitmap = int(bitmap)
         width = min(max_bits, max(0, self.number_of_packets - seq_offset))
@@ -737,26 +843,23 @@ class Transaction:
 
         self.missing_fragments = sorted(missing_set)
                     
-    def generate_missing_bitmaps(self, max_bits=32):
+    def generate_missing_bitmaps(self, max_bits=64):
         """
         Helper function that will be used during transaction
         meant to be used in the receiver, it will generate a list with all the missing fragments
         missing fragments are represented with a seq_number (representing offset) and a bitmap
         the receiver will be able to take the data generated here to send the commands         
-        bitmap will be represented as two ints (the first 16bits and the second 16bits)
+        bitmap will be represented as two ints (the high 32 bits and the low 32 bits)
         """
         
         # bitmap_entry = [seq_offset, bitmap]
         # self.bitmap_list = [bitmap_entry, ...]
         
             
-        if self.number_of_packets is None or len(self.missing_fragments) == self.number_of_packets:
+        if self.number_of_packets is None or self._missing_fragments_count == self.number_of_packets:
             return []
 
         bitmap_list = []
-
-        # Sort missing fragments for safety
-        missing_set = set(self.missing_fragments)
 
         # Iterate in windows of max_bits
         for seq_offset in range(0, self.number_of_packets, max_bits):
@@ -768,13 +871,13 @@ class Transaction:
                 seq_number = seq_offset + bit_index
 
                 # If fragment is received → set bit to 1
-                if seq_number not in missing_set:
+                if not self._is_missing(seq_number):
                     bit_pos = (width - 1) - bit_index  # MSB-first within window
                     bitmap |= (1 << bit_pos)
 
-            msb_bitmap = (bitmap >> 16) & 0xFFFF
-            lsb_bitmap = bitmap & 0xFFFF
-            bitmap_list.append([seq_offset, msb_bitmap, lsb_bitmap])
+            bitmap_high = (bitmap >> 32) & 0xFFFFFFFF
+            bitmap_low = bitmap & 0xFFFFFFFF
+            bitmap_list.append([seq_offset, bitmap_high, bitmap_low])
         return bitmap_list
         
 
@@ -793,22 +896,27 @@ class Transaction:
         if not self.last_batch:
             return len(self.missing_fragments)
 
-        # Accept (msb, lsb) tuple/list
-        if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
-            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+        # Accept (bitmap_high, bitmap_low) tuple/list
+        tuple_bitmap = isinstance(bitmap, (list, tuple)) and len(bitmap) == 2
+        if tuple_bitmap:
+            bitmap = ((int(bitmap[0]) & 0xFFFFFFFF) << 32) | (int(bitmap[1]) & 0xFFFFFFFF)
 
         bitmap = int(bitmap)
-        width = len(self.last_batch)
+        width = min(len(self.last_batch), 64) if tuple_bitmap else len(self.last_batch)
 
         missing_set = set(self.missing_fragments)
-
+        last_batch_missing_list = []
+        
         for i in range(width):
             bit_pos = (width - 1) - i  # MSB-first within window
             if ((bitmap >> bit_pos) & 1) == 0:
                 seq_number = self.last_batch[i]
                 missing_set.discard(seq_number)
-
+            else:
+                last_batch_missing_list.append(self.last_batch[i])
         self.missing_fragments = sorted(missing_set)
+        
+        print(f"Missed packets: {last_batch_missing_list}")
         
         self.last_batch = []  # Clear last batch after confirmation
         return len(self.missing_fragments)
