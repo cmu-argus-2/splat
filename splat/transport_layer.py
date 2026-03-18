@@ -784,21 +784,26 @@ class Transaction:
         """
         Setter for backward compatibility. Accepts a list and updates the bitset.
         """
-        # Reinitialize bitset
-        self._missing_fragments_bitset = bytearray((self.number_of_packets + 7) // 8) if self.number_of_packets > 0 else bytearray()
-        if self.number_of_packets > 0:
-            for i in range(len(self._missing_fragments_bitset)):
-                self._missing_fragments_bitset[i] = 0xFF
-            if self.number_of_packets % 8 != 0:
-                last_byte_bits = self.number_of_packets % 8
-                self._missing_fragments_bitset[-1] &= (0xFF << (8 - last_byte_bits))
-        # Mark provided fragments as missing
-        self._missing_fragments_count = len(value)
+        if self.number_of_packets is None or self.number_of_packets <= 0:
+            self._missing_fragments_bitset = bytearray()
+            self._missing_fragments_count = 0
+            return
+
+        # Reinitialize bitset with all bits cleared (all received),
+        # then set only the fragments explicitly listed as missing.
+        self._missing_fragments_bitset = bytearray((self.number_of_packets + 7) // 8)
+
+        unique_missing = set()
         for seq_number in value:
-            if seq_number < self.number_of_packets:
-                byte_idx = seq_number // 8
-                bit_idx = seq_number % 8
-                self._missing_fragments_bitset[byte_idx] |= (1 << (7 - bit_idx))
+            if isinstance(seq_number, int) and 0 <= seq_number < self.number_of_packets:
+                unique_missing.add(seq_number)
+
+        for seq_number in unique_missing:
+            byte_idx = seq_number // 8
+            bit_idx = seq_number % 8
+            self._missing_fragments_bitset[byte_idx] |= (1 << (7 - bit_idx))
+
+        self._missing_fragments_count = len(unique_missing)
 
     def generate_all_packets(self):
         """
