@@ -764,6 +764,9 @@ class Transaction:
         # discard the last batch
         self.last_batch = []
 
+        # limit x to make sure we do not go out of bounds
+        x = min(x, len(self.missing_fragments))
+
         for i in range(x):
             if len(self.missing_fragments) == 0:
                 break
