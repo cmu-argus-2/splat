@@ -395,8 +395,8 @@ argument_dict = {
     
     "seq_number": "H",  # Sequence number for transaction packets
     "seq_offset": "H",  # Offset of the sequence number for transaction packets
-    "MSB": "H",  # MSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
-    "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
+    "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
+    "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
     
@@ -446,8 +446,8 @@ command_list = [
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
     ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
-    ("CONFIRM_LAST_BATCH", None, ["tid", "MSB", "LSB"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
-    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "MSB", "LSB"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 32 packets out of the missing_packet list
+    ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
+    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
 
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),

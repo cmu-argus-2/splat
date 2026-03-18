@@ -782,12 +782,12 @@ class Transaction:
             generated_packets.append(frag)
         return generated_packets
     
-    def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=32):
+    def update_missing_fragments_bitmap(self, seq_offset, bitmap, max_bits=64):
         """
         Receives a seq_offset and a bitmap, from the seq_offset it will add remove all the indexes to the missing fragment list
         if respective bit in bitmap is 0, it will add
         if respective bit in bitmap is 1, it will remove
-        accepts bitmap as int or (msb, lsb) tuple/list
+        accepts bitmap as int or (bitmap_high, bitmap_low) tuple/list
         """
         if self.number_of_packets is None or seq_offset is None:
             return
@@ -795,9 +795,9 @@ class Transaction:
         if seq_offset < 0:
             return
 
-        # Accept (msb, lsb) tuple/list
+        # Accept (bitmap_high, bitmap_low) tuple/list
         if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
-            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+            bitmap = ((int(bitmap[0]) & 0xFFFFFFFF) << 32) | (int(bitmap[1]) & 0xFFFFFFFF)
 
         bitmap = int(bitmap)
         width = min(max_bits, max(0, self.number_of_packets - seq_offset))
@@ -817,13 +817,13 @@ class Transaction:
 
         self.missing_fragments = sorted(missing_set)
                     
-    def generate_missing_bitmaps(self, max_bits=32):
+    def generate_missing_bitmaps(self, max_bits=64):
         """
         Helper function that will be used during transaction
         meant to be used in the receiver, it will generate a list with all the missing fragments
         missing fragments are represented with a seq_number (representing offset) and a bitmap
         the receiver will be able to take the data generated here to send the commands         
-        bitmap will be represented as two ints (the first 16bits and the second 16bits)
+        bitmap will be represented as two ints (the high 32 bits and the low 32 bits)
         """
         
         # bitmap_entry = [seq_offset, bitmap]
@@ -852,9 +852,9 @@ class Transaction:
                     bit_pos = (width - 1) - bit_index  # MSB-first within window
                     bitmap |= (1 << bit_pos)
 
-            msb_bitmap = (bitmap >> 16) & 0xFFFF
-            lsb_bitmap = bitmap & 0xFFFF
-            bitmap_list.append([seq_offset, msb_bitmap, lsb_bitmap])
+            bitmap_high = (bitmap >> 32) & 0xFFFFFFFF
+            bitmap_low = bitmap & 0xFFFFFFFF
+            bitmap_list.append([seq_offset, bitmap_high, bitmap_low])
         return bitmap_list
         
 
@@ -873,22 +873,27 @@ class Transaction:
         if not self.last_batch:
             return len(self.missing_fragments)
 
-        # Accept (msb, lsb) tuple/list
-        if isinstance(bitmap, (list, tuple)) and len(bitmap) == 2:
-            bitmap = (int(bitmap[0]) << 16) | int(bitmap[1])
+        # Accept (bitmap_high, bitmap_low) tuple/list
+        tuple_bitmap = isinstance(bitmap, (list, tuple)) and len(bitmap) == 2
+        if tuple_bitmap:
+            bitmap = ((int(bitmap[0]) & 0xFFFFFFFF) << 32) | (int(bitmap[1]) & 0xFFFFFFFF)
 
         bitmap = int(bitmap)
-        width = len(self.last_batch)
+        width = min(len(self.last_batch), 64) if tuple_bitmap else len(self.last_batch)
 
         missing_set = set(self.missing_fragments)
-
+        last_batch_missing_list = []
+        
         for i in range(width):
             bit_pos = (width - 1) - i  # MSB-first within window
             if ((bitmap >> bit_pos) & 1) == 0:
                 seq_number = self.last_batch[i]
                 missing_set.discard(seq_number)
-
+            else:
+                last_batch_missing_list.append(self.last_batch[i])
         self.missing_fragments = sorted(missing_set)
+        
+        print(f"Missed packets: {last_batch_missing_list}")
         
         self.last_batch = []  # Clear last batch after confirmation
         return len(self.missing_fragments)
