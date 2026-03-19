@@ -156,7 +156,7 @@ var_dict = {
     "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
     "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
     "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "LAST_EXECUTED_CMD_ID": ["PAYLOAD_TM", "B", None],
+    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I", None],
     "PD_STATE_JETSON": ["PAYLOAD_TM", "B", None],       # the current state of the payload in terms of jetson (check jetson code)
     "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B", None],    # the current state of the payload in terms of mainboard (check mainboard code)
     "LATEST_ERROR": ["PAYLOAD_TM", "B", None],
