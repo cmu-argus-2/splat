@@ -297,8 +297,6 @@ class TransactionManager:
             'file_path': trans.file_path,
             'file_size': trans.file_size,
             'number_of_packets': trans.number_of_packets,
-            'file_hash': trans.file_hash.hex() if trans.file_hash else None,
-            'file_hash_bytes': format_bytes(trans.file_hash) if trans.file_hash else None,
             'missing_fragments_count': trans._missing_fragments_count,
             'missing_fragments': list(list(trans._iter_missing_fragments())[:100]),  # Limit to first 100 for display
             'received_fragments_count': len(trans.fragment_dict),
@@ -383,8 +381,6 @@ class Transaction:
         # these value will be calculated (when the transmitter is creating) or set (via the receiver with after reiceiving the init packet)
         self.file_size = self.get_file_size() if is_tx else None   # this will be used to calculate the number of packets, and will be None on the client side
         self.number_of_packets = self.get_number_of_packets() if is_tx else number_of_packets   # this will be used to know how many packets to expect, None in client until init_trans command is received
-        # self.file_hash = self.get_file_hash() if file_hash is None else file_hash    # this will be used to verify the file after it is received, and will be None on the client side until the init packet is received
-        self.file_hash = None  # disabled for now, does not make sense to use it while downlinking non critical data
         
         # MEMORY NOTE: Using bitset (bytearray) instead of list for missing fragments tracking
         # For 2157 packets: bitset uses ~270 bytes vs ~17KB for list. Critical for memory-constrained targets.
@@ -660,24 +656,6 @@ class Transaction:
                 # Fragment should already be bytes from unpacking
                 bytes_written = f.write(fragment)
                 total_bytes_written += bytes_written
-        
-        # Verify hash if provided
-        if self.file_hash is not None:
-            with open(file_path, "rb") as f:
-                file_data = f.read()
-                calculated_hash = self.calculate_hash(file_data)
-            
-            # Compare hash bytes
-            if calculated_hash != self.file_hash:
-                print(f"[ERROR] Hash verification FAILED for transaction {self.tid}!")
-                print(f"[ERROR] Expected: {self.file_hash.hex()}")
-                print(f"[ERROR] Got:      {calculated_hash.hex()}")
-                # set the state of the transaction to failed
-                self.change_state(trans_state.FAILED)
-                
-                return False
-                
-            print(f"[INFO] Hash verification PASSED: {calculated_hash.hex()}")
         
         # File written and verified successfully
         print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
