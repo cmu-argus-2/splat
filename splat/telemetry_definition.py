@@ -344,9 +344,9 @@ report_dict = {
     "TM_PAYLOAD":{
         "SYSTEM_TIME": "PAYLOAD_TM",
         "SYSTEM_UPTIME": "PAYLOAD_TM",
-        "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",
-        "LAST_EXECUTED_CMD_ID": "PAYLOAD_TM",
-        "PD_STATE_MAINBOARD": "PAYLOAD_TM",
+        "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",   # this value will be filled by the mainboard
+        "LAST_EXECUTED_CMD_ID": "PAYLOAD_TM",     # this value will be filled by the mainboard TODO change this to be next command time
+        "PD_STATE_MAINBOARD": "PAYLOAD_TM",       # this value will be filled by the mainboard
         "PD_STATE_JETSON": "PAYLOAD_TM",
         "LATEST_ERROR": "PAYLOAD_TM",
         
