@@ -345,10 +345,10 @@ report_dict = {
         "SYSTEM_TIME": "PAYLOAD_TM",
         "SYSTEM_UPTIME": "PAYLOAD_TM",
         "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",   # this value will be filled by the mainboard
-        "LAST_EXECUTED_CMD_ID": "PAYLOAD_TM",     # this value will be filled by the mainboard TODO change this to be next command time
+        "NEXT_CMD_TIME": "PAYLOAD_TM",            # this value will be filled by the mainboard
         "PD_STATE_MAINBOARD": "PAYLOAD_TM",       # this value will be filled by the mainboard
         "PD_STATE_JETSON": "PAYLOAD_TM",
-        "LATEST_ERROR": "PAYLOAD_TM",
+        "LATEST_ERROR": "PAYLOAD_TM",             # this is the latest state at which it failed it is latching until the next experiment starts
         
         "DISK_USAGE": "PAYLOAD_TM",
         "RAM_USAGE": "PAYLOAD_TM",
