@@ -254,6 +254,11 @@ class Fragment:
     Here I am not dealing with the payload size, transport layer will be the one to deal with that
     and fragment the data. Maybe should also add it here?
     at least should remove the hard code from the fragment
+    
+    I can make the payload size here vairable, does not need to be fixed
+    the receiving side does not really need to know the size as well because it is just whatever is left
+    for the lora messages (fixed to a max of 255 bytes) nothing will change
+    but for uart fragments messages, the payload will be bigger
     """
     
     def __init__(self, tid, seq_number):

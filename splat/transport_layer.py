@@ -514,7 +514,7 @@ class Transaction:
         return False
     
     
-    def write_partial_file(self, folder=None):
+    def write_partial_file(self, folder=None, max_payload_size=MAX_PAYLOAD_SIZE):
         """
         Write currently available fragments in fragment_dict to disk and free memory.
 
@@ -583,7 +583,7 @@ class Transaction:
             
         # Ensure we have space for missing fragments (assumed zeros)
         max_seq = max(self.fragment_dict.keys())
-        target_size = (max_seq + 1) * MAX_PAYLOAD_SIZE
+        target_size = (max_seq + 1) * max_payload_size
 
         print(f"[PAYLOAD] Writing partial file for transaction {self.tid} at {file_path}.")
         print(f"[PAYLOAD] max_seq: {max_seq}, target_size: {target_size}")
@@ -613,7 +613,7 @@ class Transaction:
                 if fragment is None:
                     continue
 
-                f.seek(seq_number * MAX_PAYLOAD_SIZE)
+                f.seek(seq_number * max_payload_size)
                 bytes_written = f.write(fragment)
                 total_bytes_written += bytes_written
                 written_fragments += 1
@@ -725,7 +725,7 @@ class Transaction:
 
         self._missing_fragments_count = len(unique_missing)
 
-    def generate_all_packets(self):
+    def generate_all_packets(self, max_payload_size=MAX_PAYLOAD_SIZE):
         """
         Read the file from disk and generate all the packets that will be sent
         they will already be packed
@@ -742,7 +742,7 @@ class Transaction:
             
             # MEMORY NOTE: Using bitset iteration instead of list slicing
             for i in self._iter_missing_fragments():
-                payload_frag = file_data[i*MAX_PAYLOAD_SIZE:(i+1)*MAX_PAYLOAD_SIZE]
+                payload_frag = file_data[i*max_payload_size:(i+1)*max_payload_size]
                 # Keep as raw bytes - codec will handle it
                 frag = Fragment(self.tid, i)
                 frag.add_payload(payload_frag)
@@ -751,7 +751,7 @@ class Transaction:
         
         return self.packet_list
     
-    def generate_x_packets(self, x, update_missing_fragments=False):
+    def generate_x_packets(self, x, update_missing_fragments=False, max_payload_size=MAX_PAYLOAD_SIZE):
         """
         Will generate the next x packets in the missing fragments list
         reutrns a list with the packed commands for those fragments ready to be sent to the receiver
@@ -778,8 +778,8 @@ class Transaction:
                 
             self.last_batch.append(seq_number)
             with open(self.file_path, "rb") as f:
-                f.seek(seq_number * MAX_PAYLOAD_SIZE)
-                payload_frag = f.read(MAX_PAYLOAD_SIZE)
+                f.seek(seq_number * max_payload_size)
+                payload_frag = f.read(max_payload_size)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
@@ -899,7 +899,7 @@ class Transaction:
         self.last_batch = []  # Clear last batch after confirmation
         return len(self.missing_fragments)
     
-    def generate_specific_packet(self, seq_number):
+    def generate_specific_packet(self, seq_number, max_payload_size=MAX_PAYLOAD_SIZE):
         """
         Given a certain seq_number this function will generate the packet for that fragment
         it will return the packed command for that fragment
@@ -917,9 +917,9 @@ class Transaction:
         
         with open(self.file_path, "rb") as f:
             # Seek to the start of the fragment
-            f.seek(seq_number * MAX_PAYLOAD_SIZE)
+            f.seek(seq_number * max_payload_size)
             # Read only the bytes for this fragment
-            payload_frag = f.read(MAX_PAYLOAD_SIZE)
+            payload_frag = f.read(max_payload_size)
             
             frag = Fragment(self.tid, seq_number)
             frag.add_payload(payload_frag)
