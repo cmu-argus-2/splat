@@ -455,6 +455,7 @@ command_list = [
     ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "MSB", "LSB"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 32 packets out of the missing_packet list
     ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
     ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
+    ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
 
     ("RF_STOP", None, [], "RF_STOP"),
     ("RF_RESUME", None, [], "RF_RESUME"),
