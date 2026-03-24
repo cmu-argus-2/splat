@@ -403,21 +403,21 @@ argument_dict = {
     "width": "H",  # Capture width for EXPERIMENT command
     "height": "H",  # Capture height for EXPERIMENT command
     "camera_defaults_selector": "b",  # -1 -> use program camera defaults; any other value -> use explicit camera params below
-    "fps": "h",  # Camera FPS
-    "wbmode": "b",  # White-balance mode enum
-    "aelock": "b",  # 0/1 auto-exposure lock
-    "awblock": "b",  # 0/1 auto-white-balance lock
-    "exposuretimerange_low": "i",  # 0 + high=0 -> None, else lower exposure time in ns
-    "exposuretimerange_high": "i",  # 0 + low=0 -> None, else upper exposure time in ns
+    "fps": "H",  # Camera FPS
+    "wbmode": "B",  # White-balance mode enum
+    "aelock": "B",  # 0/1 auto-exposure lock
+    "awblock": "B",  # 0/1 auto-white-balance lock
+    "exposuretimerange_low": "I",  # 0 + high=0 -> None, else lower exposure time in ns
+    "exposuretimerange_high": "I",  # 0 + low=0 -> None, else upper exposure time in ns
     "gainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower analogue gain
     "gainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper analogue gain
     "ispdigitalgainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower ISP digital gain
     "ispdigitalgainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper ISP digital gain
-    "ee_mode": "b",  # Edge-enhancement mode enum
+    "ee_mode": "B",  # Edge-enhancement mode enum
     "ee_strength": "f",  # Edge-enhancement strength
-    "aeantibanding": "b",  # Anti-banding mode enum
+    "aeantibanding": "B",  # Anti-banding mode enum
     "exposurecompensation": "f",  # Exposure compensation EV
-    "tnr_mode": "b",  # Temporal noise-reduction mode enum
+    "tnr_mode": "B",  # Temporal noise-reduction mode enum
     "tnr_strength": "f",  # Temporal noise-reduction strength
     "saturation": "f",  # Color saturation
 }
@@ -469,6 +469,7 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
+    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height",], "EXPERIMENT"),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
