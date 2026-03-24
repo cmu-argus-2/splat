@@ -402,24 +402,24 @@ argument_dict = {
     "level_processing": "B",  # Level of processing for EXPERIMENT command
     "width": "H",  # Capture width for EXPERIMENT command
     "height": "H",  # Capture height for EXPERIMENT command
-    "camera_defaults_selector": "b",  # -1 -> use program camera defaults; any other value -> use explicit camera params below
-    "fps": "H",  # Camera FPS
-    "wbmode": "B",  # White-balance mode enum
-    "aelock": "B",  # 0/1 auto-exposure lock
-    "awblock": "B",  # 0/1 auto-white-balance lock
-    "exposuretimerange_low": "I",  # 0 + high=0 -> None, else lower exposure time in ns
-    "exposuretimerange_high": "I",  # 0 + low=0 -> None, else upper exposure time in ns
-    "gainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower analogue gain
-    "gainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper analogue gain
-    "ispdigitalgainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower ISP digital gain
-    "ispdigitalgainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper ISP digital gain
-    "ee_mode": "B",  # Edge-enhancement mode enum
-    "ee_strength": "f",  # Edge-enhancement strength
-    "aeantibanding": "B",  # Anti-banding mode enum
-    "exposurecompensation": "f",  # Exposure compensation EV
-    "tnr_mode": "B",  # Temporal noise-reduction mode enum
-    "tnr_strength": "f",  # Temporal noise-reduction strength
-    "saturation": "f",  # Color saturation
+    "camera_defaults_selector": "b",  # -1 -> use program camera defaults; otherwise use explicit camera params below
+    "fps": "H",  # FPS (camera_driver constraint: > 0)
+    "wbmode": "B",  # WBMode enum [0..9]
+    "aelock": "?",  # bool (auto-exposure lock)
+    "awblock": "?",  # bool (auto-white-balance lock)
+    "exposuretimerange_low": "I",  # 0 and high=0 -> None; else [500_000..65_487_000] ns
+    "exposuretimerange_high": "I",  # 0 and low=0 -> None; else [500_000..65_487_000] ns
+    "gainrange_low": "f",  # 0.0 and high=0.0 -> None; else [1.0..16.0]
+    "gainrange_high": "f",  # 0.0 and low=0.0 -> None; else [1.0..16.0]
+    "ispdigitalgainrange_low": "f",  # 0.0 and high=0.0 -> None; else [1.0..256.0]
+    "ispdigitalgainrange_high": "f",  # 0.0 and low=0.0 -> None; else [1.0..256.0]
+    "ee_mode": "B",  # EdgeEnhancementMode enum [0..2]
+    "ee_strength": "f",  # range [-1.0..1.0]
+    "aeantibanding": "B",  # AeAntibandingMode enum [0..3]
+    "exposurecompensation": "f",  # range [-2.0..2.0]
+    "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
+    "tnr_strength": "f",  # range [-1.0..1.0]
+    "saturation": "f",  # range [0.0..2.0]
 }
 
 # Return type definitions
