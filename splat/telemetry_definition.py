@@ -405,8 +405,8 @@ argument_dict = {
     "camera_defaults_selector": "b",  # -1 -> use program camera defaults; otherwise use explicit camera params below
     "fps": "H",  # FPS (camera_driver constraint: > 0)
     "wbmode": "B",  # WBMode enum [0..9]
-    "aelock": "?",  # bool (auto-exposure lock)
-    "awblock": "?",  # bool (auto-white-balance lock)
+    "aelock": "B",  # bool (auto-exposure lock)
+    "awblock": "B",  # bool (auto-white-balance lock)
     "exposuretimerange_low": "I",  # 0 and high=0 -> None; else [500_000..65_487_000] ns
     "exposuretimerange_high": "I",  # 0 and low=0 -> None; else [500_000..65_487_000] ns
     "gainrange_low": "f",  # 0.0 and high=0.0 -> None; else [1.0..16.0]
