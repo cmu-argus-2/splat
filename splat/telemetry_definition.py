@@ -401,7 +401,25 @@ argument_dict = {
     "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
     "level_processing": "B",  # Level of processing for EXPERIMENT command
     "width": "H",  # Capture width for EXPERIMENT command
-    "height": "H"  # Capture height for EXPERIMENT command
+    "height": "H",  # Capture height for EXPERIMENT command
+    "camera_defaults_selector": "b",  # -1 -> use program camera defaults; any other value -> use explicit camera params below
+    "fps": "h",  # Camera FPS
+    "wbmode": "b",  # White-balance mode enum
+    "aelock": "b",  # 0/1 auto-exposure lock
+    "awblock": "b",  # 0/1 auto-white-balance lock
+    "exposuretimerange_low": "i",  # 0 + high=0 -> None, else lower exposure time in ns
+    "exposuretimerange_high": "i",  # 0 + low=0 -> None, else upper exposure time in ns
+    "gainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower analogue gain
+    "gainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper analogue gain
+    "ispdigitalgainrange_low": "f",  # 0.0 + high=0.0 -> None, else lower ISP digital gain
+    "ispdigitalgainrange_high": "f",  # 0.0 + low=0.0 -> None, else upper ISP digital gain
+    "ee_mode": "b",  # Edge-enhancement mode enum
+    "ee_strength": "f",  # Edge-enhancement strength
+    "aeantibanding": "b",  # Anti-banding mode enum
+    "exposurecompensation": "f",  # Exposure compensation EV
+    "tnr_mode": "b",  # Temporal noise-reduction mode enum
+    "tnr_strength": "f",  # Temporal noise-reduction strength
+    "saturation": "f",  # Color saturation
 }
 
 # Return type definitions
@@ -452,7 +470,36 @@ command_list = [
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
     
-    ("EXPERIMENT", None, ["ts", "camera_bit_flag", "level_processing", "width", "height"], "EXPERIMENT"),
+    (
+        "EXPERIMENT",
+        None,
+        [
+            "ts",
+            "camera_bit_flag",
+            "level_processing",
+            "width",
+            "height",
+            "camera_defaults_selector",
+            "fps",
+            "wbmode",
+            "aelock",
+            "awblock",
+            "exposuretimerange_low",
+            "exposuretimerange_high",
+            "gainrange_low",
+            "gainrange_high",
+            "ispdigitalgainrange_low",
+            "ispdigitalgainrange_high",
+            "ee_mode",
+            "ee_strength",
+            "aeantibanding",
+            "exposurecompensation",
+            "tnr_mode",
+            "tnr_strength",
+            "saturation",
+        ],
+        "EXPERIMENT",
+    ),
     ("PING", None, ["ts"], "PING"),
     ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
     ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
