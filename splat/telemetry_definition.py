@@ -429,6 +429,7 @@ command_list = [
     ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"], "SWITCH_TO_STATE"),
     ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"], "UPLINK_TIME_REFERENCE"),
     ("TURN_OFF_PAYLOAD", None, [], "TURN_OFF_PAYLOAD"),
+    ("TURN_ON_PAYLOAD", None, [], "TURN_ON_PAYLOAD"),
     ("SCHEDULE_OD_EXPERIMENT", None, [], "SCHEDULE_OD_EXPERIMENT"),
     ("REQUEST_TM_NOMINAL", None, [], "REQUEST_TM_NOMINAL"),
     ("REQUEST_TM_HAL", None, [], "REQUEST_TM_HAL"),
