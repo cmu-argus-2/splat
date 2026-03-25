@@ -402,6 +402,7 @@ argument_dict = {
     "level_processing": "B",  # Level of processing for EXPERIMENT command
     "width": "H",  # Capture width for EXPERIMENT command
     "height": "H",  # Capture height for EXPERIMENT command
+    "downscale_factor": "f",  # Downscale factor used when DOWNSCALE bit is enabled (default 2.0)
     "camera_defaults_selector": "b",  # -1 -> use program camera defaults; otherwise use explicit camera params below
     "fps": "H",  # FPS (camera_driver constraint: > 0)
     "wbmode": "B",  # WBMode enum [0..9]
@@ -469,7 +470,7 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
-    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height",], "EXPERIMENT"),  # used  to run experiment with default camera params
+    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",], "EXPERIMENT"),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
@@ -480,6 +481,7 @@ command_list = [
             "level_processing",
             "width",
             "height",
+            "downscale_factor",
             "camera_defaults_selector",
             "fps",
             "wbmode",
