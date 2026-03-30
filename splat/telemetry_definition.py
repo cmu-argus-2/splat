@@ -409,7 +409,9 @@ argument_dict = {
     "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
-    "skip_elements": "H"  # Number of elements to skip in the directory listing
+    "skip_elements": "H",  # Number of elements to skip in the directory listing
+    
+    "frequency": "f",  # Radio frequency for CONFIG_RADIO command
 }
 
 # Return type definitions
@@ -463,6 +465,8 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
+    
+    ("CONFIG_RADIO", None, ["frequency"], "CONFIG_RADIO"),
 
 ]
 
