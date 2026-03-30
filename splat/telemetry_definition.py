@@ -419,7 +419,7 @@ argument_dict = {
     "preamble_length": "H",  # Preamble length for CONFIG_RADIO command (symbols)
     "sync_word": "B",  # Sync word for CONFIG_RADIO command
     "current_limit": "B",  # Current limit for CONFIG_RADIO command (mA)
-    "crc_enabled": "?",  # CRC enabled for CONFIG_RADIO command (boolean)
+    "crc_enabled": "B",  # CRC enabled for CONFIG_RADIO command (boolean)
 }
 
 # Return type definitions
