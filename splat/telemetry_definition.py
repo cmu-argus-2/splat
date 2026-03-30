@@ -411,7 +411,15 @@ argument_dict = {
     "mode_id": "B", # Mode ID for COMMS_MODE command
     "skip_elements": "H",  # Number of elements to skip in the directory listing
     
-    "frequency": "f",  # Radio frequency for CONFIG_RADIO command
+    "frequency": "f",  # Radio frequency for CONFIG_RADIO command (MHz)
+    "spreading_factor": "B",  # Spreading factor for CONFIG_RADIO command (5-12)
+    "bandwidth": "H",  # Bandwidth for CONFIG_RADIO command (kHz)
+    "coding_rate": "B",  # Coding rate for CONFIG_RADIO command (5-8)
+    "tx_power": "b",  # TX power for CONFIG_RADIO command (dBm)
+    "preamble_length": "H",  # Preamble length for CONFIG_RADIO command (symbols)
+    "sync_word": "B",  # Sync word for CONFIG_RADIO command
+    "current_limit": "B",  # Current limit for CONFIG_RADIO command (mA)
+    "crc_enabled": "?",  # CRC enabled for CONFIG_RADIO command (boolean)
 }
 
 # Return type definitions
@@ -466,7 +474,7 @@ command_list = [
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
     
-    ("CONFIG_RADIO", None, ["frequency"], "CONFIG_RADIO"),
+    ("CONFIG_RADIO", None, ["frequency", "spreading_factor", "bandwidth", "coding_rate", "tx_power", "preamble_length", "sync_word", "current_limit", "crc_enabled"], "CONFIG_RADIO"),
 
 ]
 
