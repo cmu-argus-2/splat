@@ -102,10 +102,6 @@ var_dict = {
     "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
     "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "ZP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "ZP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "ZM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "ZM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     # --- ADCS ---
     "MODE": ["ADCS", "B", None],
     # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
@@ -256,10 +252,6 @@ report_dict = {
         "YP_SOLAR_CHARGE_CURRENT": "EPS",
         "YM_SOLAR_CHARGE_VOLTAGE": "EPS",
         "YM_SOLAR_CHARGE_CURRENT": "EPS",
-        "ZP_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "ZP_SOLAR_CHARGE_CURRENT": "EPS",
-        "ZM_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "ZM_SOLAR_CHARGE_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
         "GYRO_X": "ADCS",
