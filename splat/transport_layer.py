@@ -440,7 +440,10 @@ class Transaction:
         will also set the missing_fragments list
         """
         self.number_of_packets = number_of_packets
-        self.missing_fragments = [x for x in range(0, self.number_of_packets)]
+        if number_of_packets is not None:
+            self.missing_fragments = list(range(0, self.number_of_packets))
+        else:
+            self.missing_fragments = []
     
     def is_completed(self):
         """
