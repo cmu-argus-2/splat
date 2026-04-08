@@ -254,6 +254,11 @@ class Fragment:
     Here I am not dealing with the payload size, transport layer will be the one to deal with that
     and fragment the data. Maybe should also add it here?
     at least should remove the hard code from the fragment
+    
+    I can make the payload size here vairable, does not need to be fixed
+    the receiving side does not really need to know the size as well because it is just whatever is left
+    for the lora messages (fixed to a max of 255 bytes) nothing will change
+    but for uart fragments messages, the payload will be bigger
     """
     
     def __init__(self, tid, seq_number):
@@ -284,20 +289,21 @@ class Ack:
     it will contain the header, the response_status, and the rest of the message will be optional string with the response args
     """
     
-    def __init__(self, response_status, ack_args=None):
+    def __init__(self, response_status, cmd_id, ack_args=None):
         """
         Initialize an acknowledgment.
         
         Args:
             ack_name: Name of the acknowledgment (must exist in ack_dict)
         """
+        self.cmd_id = cmd_id
         self.response_status = response_status
         if ack_args is not None and not isinstance(ack_args, str):
             ack_args = str(ack_args)  # convert to string if not already a string
         self.ack_args = ack_args    # this has to be a string
     
     def __repr__(self):
-        return f"Ack('rid={self.response_status}', args={self.ack_args})"
+        return f"Ack('rid={self.response_status}', cmd_id={self.cmd_id}, args={self.ack_args})"
         
 def pack_ack(ack):
     """
@@ -325,12 +331,12 @@ def pack_ack(ack):
     header_byte_val = (msg_type << 5) | ack.response_status
     
     # Convert integer to a single byte
-    header_bytes = struct.pack('B', header_byte_val)
+    header_bytes = struct.pack('BB', header_byte_val, ack.cmd_id)
     
     # --- 3. Payload Encoding ---
     payload_bytes = b''
     if ack.ack_args:
-        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 1]  # Ensure total size does not exceed max packet size (accounting for header)
+        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 2]  # Ensure total size does not exceed max packet size (accounting for header)
         
     return header_bytes + payload_bytes
     
@@ -449,10 +455,13 @@ def unpack_ack(data):
     # Extract ID: Mask with 0001 1111 (0x1F) to keep only bottom 5 bits
     response_status = header & 0x1F
     
-    # The rest is the string
-    ack_args = data[1:].decode('utf-8')
+    # Get the command ID from the second byte
+    cmd_id = data[1]
     
-    return Ack(response_status, ack_args)
+    # The rest is the string
+    ack_args = data[2:].decode('utf-8')
+    
+    return Ack(response_status, cmd_id, ack_args)
 
 def pack_command(command):
     """
