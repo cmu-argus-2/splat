@@ -64,7 +64,9 @@ class Report:
         self.variables = {}
         
         self.ss_list = list(report_dict[report_name].values())  # a list with all the subsystems in the report
-        
+        # NOTE: shouldn't this be unique? I guess it was never used...
+        # list(dict.fromkeys(report_dict[report_name].values()))
+
         # Initialize all variables with None
         for var_name, subsystem in report_dict[report_name].items():
             if subsystem not in self.variables:
@@ -127,6 +129,10 @@ class Report:
         Returns:
             List of variable names
         """
+        # NOTE: maybe redundant.
+        if ss not in self.ss_list:
+            raise ValueError(f"Subsystem '{ss}' does not exist in report '{self.name}'")
+
         return [var_name for var_name, subsystem in report_dict[self.name].items() if subsystem == ss]
     
     def __repr__(self):
@@ -294,7 +300,9 @@ class Ack:
         Initialize an acknowledgment.
         
         Args:
-            ack_name: Name of the acknowledgment (must exist in ack_dict)
+            response_status: the status of the Ack reply
+            ack_args: name of the acknowledgement (must exist in ack_dict)
+            NOTE: is ack_dict still in use?
         """
         self.cmd_id = cmd_id
         self.response_status = response_status
@@ -308,7 +316,7 @@ class Ack:
 def pack_ack(ack):
     """
     Pack an Ack object.
-    Byte 0: [MsgType (3 bits)] + [ResponseID (5 bits)]
+    Byte 0: [MsgType (3 bits)] + [ResponseStatus (5 bits)]
     Byte 1+: UTF-8 encoded string arguments
     """
     if not isinstance(ack, Ack):
@@ -321,9 +329,9 @@ def pack_ack(ack):
     if msg_type > 7:
         raise ValueError("Message type > 7 cannot fit in 3 bits")
         
-    # Response ID must fit in 5 bits (0-31)
+    # Response status must fit in 5 bits (0-31)
     if ack.response_status > 31:
-        raise ValueError(f"Response ID {ack.response_status} is too large for 5 bits (Max 31)")
+        raise ValueError(f"Response Status {ack.response_status} is too large for 5 bits (Max 31)")
 
     # --- 2. Bitwise Packing ---
     # Shift msg_type 5 spots to the left to occupy the top 3 bits
@@ -483,7 +491,7 @@ def pack_command(command):
     # build the header msg_type: 3 bits, command id: 13 bits
     header_size = MSG_TYPE_SIZE + COMMAND_ID_SIZE
     header = (MSG_TYPE_DICT["commands"] << (header_size - MSG_TYPE_SIZE)) | command.command_id
-    # print("Header:", header)
+    print("Header:", bin(header))
     
     # Start with command ID
     values = []
@@ -532,9 +540,7 @@ def unpack_command(data):
     header_size = MSG_TYPE_SIZE + COMMAND_ID_SIZE
     header = data[:header_size // 8]
     header_int = int.from_bytes(header, 'big') # [check] - should remove the hardcode endianess
-    
-    command_id = header_int & 0x1FFF   # mask to get the last 13 bits
-    
+    command_id = header_int & ((1 << COMMAND_ID_SIZE) - 1)   # mask to get the last 13 bits
     if command_id > len(command_list):
         raise ValueError(f"Unknown command ID: {command_id}")
     
@@ -707,7 +713,7 @@ def unpack_variable(data):
     header_int = int.from_bytes(header, 'big') # [check] - should remove the hardcode endianess
     
     ss_id = (header_int >> 10) & 0x07 # mask to get the middle 3 bits
-    variable_id = header_int & 0x3FF   # mask to get the last 10 bits
+    variable_id = header_int & ((1 << VARIABLE_ID_SIZE)-1)   # mask to get the last 10 bits
     
     if variable_id not in VAR_ID_TO_NAME[ss_id]:
         raise ValueError(f"Unknown variable ID: {variable_id} with ss_id: {ss_id}")
