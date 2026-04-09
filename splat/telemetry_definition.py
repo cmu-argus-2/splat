@@ -462,7 +462,7 @@ command_list = [
     ("INIT_TRANS", None, ["tid", "number_of_packets"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
-    ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("GENERATE_SINGLE_PACKET", None, ["tid", "seq_number"], "GENERATE_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
     ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
     ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
     ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
