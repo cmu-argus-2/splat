@@ -2,7 +2,6 @@ import pytest
 import os
 import sys
 import tempfile
-import hashlib
 from pathlib import Path
 
 # Add parent directory to path to import splat module
@@ -22,7 +21,6 @@ class TestTransactionInitialization:
         assert trans.tid == 1
         assert trans.state == trans_state.REQUESTED
         assert trans.file_path is None
-        assert trans.file_hash is None
         assert trans.number_of_packets is None
         assert trans.fragment_dict == {}
         assert len(trans.missing_fragments) == 0
@@ -37,108 +35,17 @@ class TestTransactionInitialization:
             trans = Transaction(tid=2, file_path=temp_file, is_tx=True)
             assert trans.tid == 2
             assert trans.file_path == temp_file
-            assert trans.file_hash is None
             assert trans.number_of_packets > 0
             assert len(trans.missing_fragments) == trans.number_of_packets
         finally:
             os.unlink(temp_file)
     
-    def test_transaction_creation_with_explicit_hash(self):
-        """Test creating a transaction with explicit hash and number of packets"""
-        test_hash = hashlib.md5(b"test").digest()
-        trans = Transaction(tid=3, file_hash=test_hash, number_of_packets=5)
+    def test_transaction_creation_with_number_of_packets(self):
+        """Test creating a transaction with an explicit packet count"""
+        trans = Transaction(tid=3, number_of_packets=5)
         assert trans.tid == 3
-        assert trans.file_hash is None
         assert trans.number_of_packets is not None
         assert len(trans.missing_fragments) == 5
-
-
-class TestHashCalculation:
-    """Test hash calculation functionality"""
-    
-    def test_calculate_hash_static_method(self):
-        """Test the static calculate_hash method"""
-        data = b"test data"
-        hash_result = Transaction.calculate_hash(data)
-        expected = hashlib.sha1(data).digest()
-        assert hash_result == expected
-        assert len(hash_result) == 20  # SHA1 produces 20 bytes
-    
-    def test_calculate_file_hash(self):
-        """Test calculating hash of a file"""
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            test_data = b"file content for hashing"
-            f.write(test_data)
-            temp_file = f.name
-        
-        try:
-            trans = Transaction(tid=4, file_path=temp_file)
-            calculated = trans.calculate_file_hash()
-            expected = hashlib.sha1(test_data).digest()
-            assert calculated == expected
-        finally:
-            os.unlink(temp_file)
-    
-    def test_calculate_file_hash_returns_none_without_file(self):
-        """Test that calculate_file_hash returns None when no file is set"""
-        trans = Transaction(tid=5)
-        assert trans.calculate_file_hash() is None
-
-
-class TestHashConversion:
-    """Test hash conversion to/from integers"""
-    
-    def test_get_hash_as_integers(self):
-        """Test converting 20-byte SHA1 hash to MSB, MiddleSB, and LSB integers"""
-        test_hash = bytes(range(20))  # 20 bytes: 0x00, 0x01, ..., 0x13 (SHA1 length)
-        trans = Transaction(tid=6)
-        trans.file_hash = test_hash
-        
-        hash_MSB, hash_middlesb, hash_LSB = trans.get_hash_as_integers()
-        
-        # First 8 bytes as big-endian int
-        expected_MSB = int.from_bytes(test_hash[:8], byteorder='big')
-        # Middle 8 bytes as big-endian int
-        expected_middlesb = int.from_bytes(test_hash[8:16], byteorder='big')
-        # Last 4 bytes as big-endian int
-        expected_LSB = int.from_bytes(test_hash[16:20], byteorder='big')
-        
-        assert hash_MSB == expected_MSB
-        assert hash_middlesb == expected_middlesb
-        assert hash_LSB == expected_LSB
-    
-    def test_get_hash_as_integers_returns_zero_when_no_hash(self):
-        """Test that get_hash_as_integers returns (0, 0, 0) when no hash is set"""
-        trans = Transaction(tid=7)
-        hash_MSB, hash_middlesb, hash_LSB = trans.get_hash_as_integers()
-        assert hash_MSB == 0
-        assert hash_middlesb == 0
-        assert hash_LSB == 0
-    
-    def test_set_hash_from_integers(self):
-        """Test reconstructing 20-byte SHA1 hash from MSB, MiddleSB, and LSB integers"""
-        original_hash = bytes(range(20))  # 20 bytes for SHA1
-        hash_MSB = int.from_bytes(original_hash[:8], byteorder='big')
-        hash_middlesb = int.from_bytes(original_hash[8:16], byteorder='big')
-        hash_LSB = int.from_bytes(original_hash[16:20], byteorder='big')
-        
-        trans = Transaction(tid=8)
-        trans.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
-        
-        assert trans.file_hash == original_hash
-    
-    def test_hash_conversion_round_trip(self):
-        """Test round-trip conversion: hash -> integers -> hash (using SHA1)"""
-        original_hash = hashlib.sha1(b"round trip test").digest()
-        
-        trans = Transaction(tid=9)
-        trans.file_hash = original_hash
-        hash_MSB, hash_middlesb, hash_LSB = trans.get_hash_as_integers()
-        
-        trans2 = Transaction(tid=10)
-        trans2.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
-        
-        assert trans2.file_hash == original_hash
 
 
 class TestFragmentManagement:
@@ -215,7 +122,7 @@ class TestFileWriting:
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_file = f.name
 
-        trans = Transaction(tid=18, number_of_packets=3,file_path=output_file, file_hash=b"somehash")
+        trans = Transaction(tid=18, number_of_packets=3, file_path=output_file)
         trans.set_number_packets(3)
         
         # Only add 2 fragments
@@ -230,9 +137,9 @@ class TestFileWriting:
             if os.path.exists(output_file):
                 os.unlink(output_file)
     
-    def test_write_file_without_hash_verification(self):
-        """Test writing file without hash verification"""
-        test_data = b"test content without hash"
+    def test_write_file(self):
+        """Test writing file"""
+        test_data = b"test content"
         output_file = None
         
         try:
@@ -578,7 +485,6 @@ class TestIntegrationEndToEnd:
             # 2. Create receiver transaction
             receiver = Transaction(tid=25, number_of_packets=sender.number_of_packets, file_path=output_file)
             receiver.set_number_packets(sender.number_of_packets)
-            receiver.file_hash = sender.file_hash
             
             # 3. Unpack packets and add fragments to receiver
             from splat.telemetry_codec import unpack
@@ -629,7 +535,6 @@ class TestIntegrationEndToEnd:
             # 2. Create receiver transaction
             receiver = Transaction(tid=26, number_of_packets=sender.number_of_packets, file_path=output_file)
             receiver.set_number_packets(sender.number_of_packets)
-            receiver.file_hash = sender.file_hash
             
             # 3. Generate and process packets one by one
             from splat.telemetry_codec import unpack
@@ -715,7 +620,6 @@ class TestIntegrationEndToEnd:
             # 7. Complete transfer with receiver
             receiver = Transaction(tid=5, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
-            receiver.file_hash = sender.file_hash
             
             # Add first half
             for packet_bytes in first_half_packets:
@@ -806,7 +710,6 @@ class TestIntegrationEndToEnd:
             # 9. Complete the transfer
             receiver = Transaction(tid=4, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
-            receiver.file_hash = sender.file_hash
             
             # Add first batch
             for packet_bytes in first_batch_packets:
@@ -897,7 +800,6 @@ class TestIntegrationEndToEnd:
             # 9. Complete transfer
             receiver = Transaction(tid=3, number_of_packets=total_packets, file_path=output_file)
             receiver.set_number_packets(total_packets)
-            receiver.file_hash = sender.file_hash
             
             # Add received packets
             for packet_bytes in received_packets:
@@ -952,7 +854,6 @@ class TestTransactionManager:
             assert trans is not None
             assert trans.tid == 0  # First tid should be 0
             assert trans.file_path == temp_file
-            assert trans.file_hash is None
             assert trans.number_of_packets is None
             assert transaction_manager.get_transaction(0) is trans
         finally:
@@ -962,7 +863,6 @@ class TestTransactionManager:
         """Test creating a transaction without file (receiver side)"""
         trans = transaction_manager.create_transaction(
             tid=0,
-            file_hash=hashlib.md5(b"test").digest(),
             number_of_packets=10,
             is_tx=False
         )
@@ -970,7 +870,6 @@ class TestTransactionManager:
         assert trans is not None
         assert trans.tid == 0
         assert trans.file_path is None
-        assert trans.file_hash is None
         assert trans.number_of_packets == 10
     
     def test_create_multiple_transactions(self):

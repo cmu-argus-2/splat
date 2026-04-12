@@ -47,9 +47,6 @@ def process_command(cmd):
         # 1. get the transaction created during CREATE_TRANS
         tid = cmd.get_argument("tid")
         number_of_packets = cmd.get_argument("number_of_packets")
-        hash_MSB = cmd.get_argument("hash_MSB")
-        hash_middlesb = cmd.get_argument("hash_middlesb")
-        hash_LSB = cmd.get_argument("hash_LSB")
         
         trans = transaction_manager.get_transaction(tid, is_tx=False)
         if trans is None:
@@ -57,7 +54,6 @@ def process_command(cmd):
             return
         
         trans.set_number_packets(number_of_packets)
-        trans.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
         
         # change the state of the transaction to Init
         trans.change_state(2)
@@ -164,15 +160,11 @@ def single_packet_loop(client):
         # get the transaction created during CREATE_TRANS
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
-        hash_MSB = unpacked.get_argument("hash_MSB")
-        hash_middlesb = unpacked.get_argument("hash_middlesb")
-        hash_LSB = unpacked.get_argument("hash_LSB")
         transaction = transaction_manager.get_transaction(tid, is_tx=False)
         if transaction is None:
             print(f"[ERROR] Could not retrieve transaction for INIT_TRANS with tid={tid}")
             return
         transaction.set_number_packets(number_of_packets)
-        transaction.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
         transaction.change_state(2)
     else:
         print(f"[ERROR] Expected INIT_TRANS command, but received: {unpacked}")
@@ -256,9 +248,6 @@ def single_packet_and_dump_loop(client):
         # Get the transaction created during CREATE_TRANS
         tid = unpacked.get_argument("tid")
         number_of_packets = unpacked.get_argument("number_of_packets")
-        hash_MSB = unpacked.get_argument("hash_MSB")
-        hash_middlesb = unpacked.get_argument("hash_middlesb")
-        hash_LSB = unpacked.get_argument("hash_LSB")
         
         # need to get the transaction
         transaction = transaction_manager.get_transaction(tid, is_tx=False)
@@ -267,7 +256,6 @@ def single_packet_and_dump_loop(client):
             return
         
         transaction.set_number_packets(number_of_packets)
-        transaction.set_hash_from_integers(hash_MSB, hash_middlesb, hash_LSB)
         transaction.change_state(2)
         
     else:

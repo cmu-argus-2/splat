@@ -154,37 +154,30 @@ var_dict = {
     "GPS_ECEF_VY": ["GPS", "i", 100],
     "GPS_ECEF_VZ": ["GPS", "i", 100],
     # --- PAYLOAD ---
-    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],
-    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],
+    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
+    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
     "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "LAST_EXECUTED_CMD_ID": ["PAYLOAD_TM", "B", None],
-    "PAYLOAD_STATE": ["PAYLOAD_TM", "B", None],
-    "ACTIVE_CAMERAS": ["PAYLOAD_TM", "B", None],
-    "CAPTURE_MODE": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_0": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_1": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_2": ["PAYLOAD_TM", "B", None],
-    "CAM_STATUS_3": ["PAYLOAD_TM", "B", None],
-    "IMU_STATUS": ["PAYLOAD_TM", "B", None],
-    "TASKS_IN_EXECUTION": ["PAYLOAD_TM", "B", None],
-    "DISK_USAGE": ["PAYLOAD_TM", "B", None],
+    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I", None],
+    "PD_STATE_JETSON": ["PAYLOAD_TM", "B", None],       # the current state of the payload in terms of jetson (check jetson code)
+    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B", None],    # the current state of the payload in terms of mainboard (check mainboard code)
     "LATEST_ERROR": ["PAYLOAD_TM", "B", None],
-    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],
-    "RAM_USAGE": ["PAYLOAD_TM", "B", None],
-    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],
-    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],
-    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],
-    "GPU_FREQ": ["PAYLOAD_TM", "B", None],
-    "CPU_TEMP": ["PAYLOAD_TM", "B", None],
-    "GPU_TEMP": ["PAYLOAD_TM", "B", None],
-    "VDD_IN": ["PAYLOAD_TM", "H", None],
-    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],
-    "VDD_SOC": ["PAYLOAD_TM", "H", None],
+    "DISK_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],  # 0=not running, 1=running
+    "RAM_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],  # %
+    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],  # count
+    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],  # %
+    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],  # %
+    "GPU_FREQ": ["PAYLOAD_TM", "H", None],  # MHz
+    "CPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
+    "GPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
+    "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
+    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
+    "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
     # --- STORAGE ---
     "SD_TOTAL_USAGE": ["STORAGE", "I", None],
     "CDH_NUM_FILES": ["STORAGE", "I", None],
@@ -332,7 +325,7 @@ report_dict = {
         "CMD_LOGS_NUM_FILES": "STORAGE",
         "CMD_LOGS_DIR_SIZE": "STORAGE",
     },
-    # Corresponds to MSG_ID_SAT_TM_HAL (0x02)
+    # Corresponds to MSG_ID_SAT_TM_HAL (0x02)cd 
     "TM_HAL": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
@@ -353,22 +346,16 @@ report_dict = {
     "TM_PAYLOAD":{
         "SYSTEM_TIME": "PAYLOAD_TM",
         "SYSTEM_UPTIME": "PAYLOAD_TM",
-        "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",
-        "LAST_EXECUTED_CMD_ID": "PAYLOAD_TM",
-        "PAYLOAD_STATE": "PAYLOAD_TM",
-        "ACTIVE_CAMERAS": "PAYLOAD_TM",
-        "CAPTURE_MODE": "PAYLOAD_TM",
-        "CAM_STATUS_0": "PAYLOAD_TM",
-        "CAM_STATUS_1": "PAYLOAD_TM",
-        "CAM_STATUS_2": "PAYLOAD_TM",
-        "CAM_STATUS_3": "PAYLOAD_TM",
-        "IMU_STATUS": "PAYLOAD_TM",
-        "TASKS_IN_EXECUTION": "PAYLOAD_TM",
+        "LAST_EXECUTED_CMD_TIME": "PAYLOAD_TM",   # this value will be filled by the mainboard
+        "NEXT_CMD_TIME": "PAYLOAD_TM",            # this value will be filled by the mainboard
+        "PD_STATE_MAINBOARD": "PAYLOAD_TM",       # this value will be filled by the mainboard
+        "PD_STATE_JETSON": "PAYLOAD_TM",
+        "LATEST_ERROR": "PAYLOAD_TM",             # this is the latest state at which it failed it is latching until the next experiment starts
+        
         "DISK_USAGE": "PAYLOAD_TM",
-        "LATEST_ERROR": "PAYLOAD_TM",
-        "TEGRASTATS_PROCESS_STATUS": "PAYLOAD_TM",
         "RAM_USAGE": "PAYLOAD_TM",
         "SWAP_USAGE": "PAYLOAD_TM",
+        
         "ACTIVE_CORES": "PAYLOAD_TM",
         "CPU_LOAD_0": "PAYLOAD_TM",
         "CPU_LOAD_1": "PAYLOAD_TM",
@@ -376,9 +363,12 @@ report_dict = {
         "CPU_LOAD_3": "PAYLOAD_TM",
         "CPU_LOAD_4": "PAYLOAD_TM",
         "CPU_LOAD_5": "PAYLOAD_TM",
+        
+        "TEGRASTATS_PROCESS_STATUS": "PAYLOAD_TM",
         "GPU_FREQ": "PAYLOAD_TM",
         "CPU_TEMP": "PAYLOAD_TM",
         "GPU_TEMP": "PAYLOAD_TM",
+        
         "VDD_IN": "PAYLOAD_TM",
         "VDD_CPU_GPU_CV": "PAYLOAD_TM",
         "VDD_SOC": "PAYLOAD_TM",
@@ -401,17 +391,38 @@ argument_dict = {
     
     "tid": "B",  # Transaction ID for image transfer commands
     "number_of_packets": "H",  # File size for image transfer commands
-    "hash_MSB": "Q",  # File hash MSB (8 bytes) for image transfer commands
-    "hash_middlesb": "Q",  # File hash middle (8 bytes) for image transfer commands
-    "hash_LSB": "I",  # File hash LSB (4 bytes) for image transfer commands
-    
+
     "seq_number": "H",  # Sequence number for transaction packets
     "seq_offset": "H",  # Offset of the sequence number for transaction packets
-    "MSB": "H",  # MSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
-    "LSB": "H",  # LSB of the bitmap for CONFIRM_LAST_BATCH command  [check] - rename this
+    "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
+    "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
     "mode_id": "B", # Mode ID for COMMS_MODE command
-    "skip_elements": "H"  # Number of elements to skip in the directory listing
+    "skip_elements": "H",  # Number of elements to skip in the directory listing
+    "ts": "I",  # Timestamp for EXPERIMENT command
+    "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
+    "level_processing": "B",  # Level of processing for EXPERIMENT command
+    "width": "H",  # Capture width for EXPERIMENT command
+    "height": "H",  # Capture height for EXPERIMENT command
+    "downscale_factor": "f",  # Downscale factor used when DOWNSCALE bit is enabled (default 2.0)
+    "camera_defaults_selector": "b",  # -1 -> use program camera defaults; otherwise use explicit camera params below
+    "fps": "H",  # FPS (camera_driver constraint: > 0)
+    "wbmode": "B",  # WBMode enum [0..9]
+    "aelock": "B",  # bool (auto-exposure lock)
+    "awblock": "B",  # bool (auto-white-balance lock)
+    "exposuretimerange_low": "I",  # 0 and high=0 -> None; else [500_000..65_487_000] ns
+    "exposuretimerange_high": "I",  # 0 and low=0 -> None; else [500_000..65_487_000] ns
+    "gainrange_low": "f",  # 0.0 and high=0.0 -> None; else [1.0..16.0]
+    "gainrange_high": "f",  # 0.0 and low=0.0 -> None; else [1.0..16.0]
+    "ispdigitalgainrange_low": "f",  # 0.0 and high=0.0 -> None; else [1.0..256.0]
+    "ispdigitalgainrange_high": "f",  # 0.0 and low=0.0 -> None; else [1.0..256.0]
+    "ee_mode": "B",  # EdgeEnhancementMode enum [0..2]
+    "ee_strength": "f",  # range [-1.0..1.0]
+    "aeantibanding": "B",  # AeAntibandingMode enum [0..3]
+    "exposurecompensation": "f",  # range [-2.0..2.0]
+    "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
+    "tnr_strength": "f",  # range [-1.0..1.0]
+    "saturation": "f",  # range [0.0..2.0]
 }
 
 # Return type definitions
@@ -450,12 +461,12 @@ command_list = [
     
     # Commands to downlink images (should add pre conditions to these commands)
     ("CREATE_TRANS", None, ["tid", "string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("INIT_TRANS", None, ["tid", "number_of_packets", "hash_MSB", "hash_middlesb", "hash_LSB"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", None, ["tid", "number_of_packets"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
     ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
     ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
-    ("GET_SINGLE_PACKET", None, ["tid", "seq_number"], "GET_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
-    ("CONFIRM_LAST_BATCH", None, ["tid", "MSB", "LSB"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
-    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "MSB", "LSB"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 32 packets out of the missing_packet list
+    ("GENERATE_SINGLE_PACKET", None, ["tid", "seq_number"], "GENERATE_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
+    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
     ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
     ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
@@ -465,6 +476,43 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
+    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",], "EXPERIMENT"),  # used  to run experiment with default camera params
+    
+    (
+        "EXPERIMENT",
+        None,
+        [
+            "ts",
+            "camera_bit_flag",
+            "level_processing",
+            "width",
+            "height",
+            "downscale_factor",
+            "camera_defaults_selector",
+            "fps",
+            "wbmode",
+            "aelock",
+            "awblock",
+            "exposuretimerange_low",
+            "exposuretimerange_high",
+            "gainrange_low",
+            "gainrange_high",
+            "ispdigitalgainrange_low",
+            "ispdigitalgainrange_high",
+            "ee_mode",
+            "ee_strength",
+            "aeantibanding",
+            "exposurecompensation",
+            "tnr_mode",
+            "tnr_strength",
+            "saturation",
+        ],
+        "EXPERIMENT",
+    ),
+    ("PING", None, ["ts"], "PING"),
+    ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
+    ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    
     
     # ADCS Commands
     ("ADCS_CTRL_MODE", "valid_adcs_mode", ["mode_id"], "ADCS_CTRL_MODE")

@@ -46,7 +46,7 @@ We are using transactions as an abstraction. The idea is that one side can innit
 ### Implementation
 There is a separate file in splat called `transport_layer.py`. Two classes are implemented:
 
-- `Transaction`: This class is where most of the logic is implemented. It will be the same for the receiver and the sender. It has the necessary functions to set everything up. It allows to read the full file and generate all the packets at once, generate the packets one by one or generate a specific number of packets. There is this idea of missing fragments. When requesting all the packets or a specific number of packets, only the missing fragments will be sent. The receiver can update the missing fragments list by telling the fragments that are missing or telling the fragments it already has. This will also deal with writting the file once all the fragments have been received. When the sender sends the `init_trans` command, it will calculate the hash of the file and send it to the receiver. When writing the file, the receiver will check if the hash matches to guarantee that the file was received correctly.
+- `Transaction`: This class is where most of the logic is implemented. It will be the same for the receiver and the sender. It has the necessary functions to set everything up. It allows to read the full file and generate all the packets at once, generate the packets one by one or generate a specific number of packets. There is this idea of missing fragments. When requesting all the packets or a specific number of packets, only the missing fragments will be sent. The receiver can update the missing fragments list by telling the fragments that are missing or telling the fragments it already has. This will also deal with writting the file once all the fragments have been received.
 
 - `TransactionManager`: We will be able to have multiple active transactions at the same time. This still needs to be tested to see how it will work in terms of memory, but at least on the ground that will not be a problem. If that is a problem in the satellite, we can use the functions that limit the memory usage. This class is responsible for managing the transactions, it will keep track of the active transactions (tx transactions and rx transactions), delete the transactions, list them, dump them to disk (mostly for debugging purposes)
 
@@ -61,8 +61,8 @@ The logic was implemented as commands, so to interact with the transactions you 
 ### Flow
 The current flow for requesting a file is the following:
 1. Ground station sends `CREATE_TRANS` command with the file reference as argument
-2. Satellite receives the command, checks if the file exists, created a tx transaction (if possible, it will also calculate the hash and the number of packets). If there are no errors, it will generate a `INIT_TRANS` message with the `tid`, `hash` and `num_packets` fields.
-3. Ground station receives the `INIT_TRANS` message, creates a rx transaction with the received `tid`, `hash` and `num_packets`.
+2. Satellite receives the command, checks if the file exists, creates a tx transaction, and determines the number of packets. If there are no errors, it will generate a `INIT_TRANS` message with the `tid` and `num_packets` fields.
+3. Ground station receives the `INIT_TRANS` message and creates a rx transaction with the received `tid` and `num_packets`.
 4. Ground station now has multiple ways to request the packets. 
     1. `GENERATE_ALL_PACKETS` command will request all the missing packets in the transaction. The satellite will check the missing fragments list and generate a list with all the packed `TRANS_PAYLOAD` messages for the missing fragments. The satellite can then use that list to transmit the packet
         - this mode will probably not be used in the satellite because we might not have the memory to generate all the packets at once, and we might not want to transmitt all at the same time
