@@ -189,6 +189,16 @@ var_dict = {
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I", None],
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
+    # --- COMMS ---
+    "RX_PACKET_COUNT": ["COMMS", "I", None],
+    "FAILED_UNPACK_COUNT": ["COMMS", "H", None],
+    "CRC_ERROR_COUNT": ["COMMS", "H", None],
+    "UNDEF_ERROR_COUNT": ["COMMS", "H", None],
+    "PACKET_NONE_COUNT": ["COMMS", "H", None],
+    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H", None],
+    "TX_PACKET_COUNT": ["COMMS", "I", None],
+    "TX_FAILED_COUNT": ["COMMS", "H", None],
+    "RX_MESSAGE_RSSI": ["COMMS", "e", None],
 }
 
 # Report definitions
@@ -288,6 +298,16 @@ report_dict = {
         "GPS_ECEF_VX": "GPS",
         "GPS_ECEF_VY": "GPS",
         "GPS_ECEF_VZ": "GPS",
+        # COMMS
+        "RX_PACKET_COUNT": "COMMS",
+        "FAILED_UNPACK_COUNT": "COMMS",
+        "CRC_ERROR_COUNT": "COMMS",
+        "UNDEF_ERROR_COUNT": "COMMS",
+        "PACKET_NONE_COUNT": "COMMS",
+        "PACKET_AUTH_FAIL_COUNT": "COMMS",
+        "TX_PACKET_COUNT": "COMMS",
+        "TX_FAILED_COUNT": "COMMS",
+        "RX_MESSAGE_RSSI": "COMMS",
     },
     # Corresponds to MSG_ID_SAT_TM_STORAGE (0x03)
     "TM_STORAGE": {
