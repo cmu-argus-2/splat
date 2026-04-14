@@ -448,6 +448,10 @@ return_dict = {
 # [check] - should i add the subsystem here
 command_list = [
     ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
+    ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
+    ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
+    ("PET_REBOOT", None, [], "PET_REBOOT"),
+    
     ("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
     ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"], "SWITCH_TO_STATE"),
     ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"], "UPLINK_TIME_REFERENCE"),
