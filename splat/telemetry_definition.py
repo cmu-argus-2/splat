@@ -478,6 +478,7 @@ command_list = [
     ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
     ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
     ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
+    ("GET_FILE_SIZE", None, ["string_command"], "GET_FILE_SIZE"),  # will return the size of the file in bytes
     ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
 
