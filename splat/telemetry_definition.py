@@ -519,7 +519,9 @@ command_list = [
         ],
         "EXPERIMENT",
     ),
+    ("GET_EXPERIMENT_LIST", None, ["skip_elements"], "GET_EXPERIMENT_LIST"),  # this command will return the  timestamps for the next scheduled experiments
     ("CLEAR_EXPERIMENT_LIST", None, [], "CLEAR_EXPERIMENT_LIST"),  # this command will clear the list of scheduled experiments in the payload
+
     ("PING", None, ["ts"], "PING"),
     ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
     ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
