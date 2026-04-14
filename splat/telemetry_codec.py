@@ -336,7 +336,7 @@ def pack_ack(ack):
     # --- 3. Payload Encoding ---
     payload_bytes = b''
     if ack.ack_args:
-        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 2]  # Ensure total size does not exceed max packet size (accounting for header)
+        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 2 - CALLSIGN_SIZE]  # Ensure total size does not exceed max packet size (accounting for header)
         
     return header_bytes + payload_bytes
     
