@@ -53,7 +53,7 @@ MSG_TYPE_DICT = {
 var_dict = {
     # --- CDH / SYSTEM ---
     "TIME": ["CDH", "I", None],  # Unix timestamp
-    "BOOT_TIME": ["CDH", "I", None],  # Unix timestamp of the last boot (SATELLITE.BOOTTIME)
+    "BOOT_TIME": ["CDH", "I", None],  # Time since boot
     "SC_STATE": ["CDH", "B", None],  # Spacecraft state
     "SD_USAGE": ["CDH", "I", None],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
