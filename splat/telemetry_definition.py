@@ -53,6 +53,7 @@ MSG_TYPE_DICT = {
 var_dict = {
     # --- CDH / SYSTEM ---
     "TIME": ["CDH", "I", None],  # Unix timestamp
+    "BOOT_TIME": ["CDH", "I", None],  # Unix timestamp of the last boot (SATELLITE.BOOTTIME)
     "SC_STATE": ["CDH", "B", None],  # Spacecraft state
     "SD_USAGE": ["CDH", "I", None],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
@@ -209,6 +210,7 @@ report_dict = {
     "TM_HEARTBEAT": {
         # CDH
         "TIME": "CDH",
+        "BOOT_TIME": "CDH",
         "SC_STATE": "CDH",
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
