@@ -516,13 +516,13 @@ command_list = [
     
     # ADCS Commands
     ("ADCS_CTRL_MODE", "valid_adcs_mode", ["mode_id"], "ADCS_CTRL_MODE"),
-    ("ADCS_UPDATE_GAINS", "valid_gains", ["string_command"], "ADCS_UPDATE_GAINS"),
-    ("ADCS_UPDATE_OMEGA_TARGET", "valid_omega_mag_target", ["omega_mag_target"], "ADCS_UPDATE_OMEGA_TARGET"),
-    ("ADCS_UPDATE_INERTIA", "valid_inertia", ["string_command"], "ADCS_UPDATE_INERTIA"),
-    ("ADCS_UPDATE_VF_TUMBLING_TOLS", "valid_vfd_tols", ["vf_tumbling_tol_bdot", "vf_tumbling_tol"], "ADCS_UPDATE_VF_TUMBLING_TOLS"),
-    ("ADCS_UPDATE_DETUMBLING_TOLS", "valid_det_tols", ["tumbling_tol","detumbled_tol_lo","detumbled_tol_hi"], "ADCS_UPDATE_DETUMBLING_TOLS"),
-    ("ADCS_UPDATE_STABLE_TOLS", "valid_tols", ["stable_tol_lo","stable_tol_hi"], "ADCS_UPDATE_STABLE_TOLS"),
-    ("ADCS_UPDATE_SUN_POINTED_TOLS", "valid_tols", ["sun_pointed_tol_lo","sun_pointed_tol_hi"], "ADCS_UPDATE_SUN_POINTED_TOLS")
+    ("ADCS_UPDATE_GAINS", "valid_gains", ["k_ss","k_dtb"], "ADCS_UPDATE_GAINS"),
+    ("ADCS_UPDATE_TARGET_SPIN", "valid_w_tgt", ["w_tgt"], "ADCS_UPDATE_TARGET_SPIN"),
+    ("ADCS_UPDATE_INERTIA", "valid_inertia", ["ixx", "ixy", "ixz", "iyy", "iyz", "izz"], "ADCS_UPDATE_INERTIA"),
+    ("ADCS_UPDATE_VF_TUMB_TOLS", "valid_vfd_tols", ["vf_bdot", "vf"], "ADCS_UPDATE_VF_TUMB_TOLS"),
+    ("ADCS_UPDATE_DETUMB_TOLS", "valid_det_tols", ["tb","dtb_lo","dtb_hi"], "ADCS_UPDATE_DETUMB_TOLS"),
+    ("ADCS_UPDATE_STABLE_TOLS", "valid_tols", ["lo","hi"], "ADCS_UPDATE_STABLE_TOLS"),
+    ("ADCS_UPDATE_SUN_POINT_TOLS", "valid_tols", ["lo","hi"], "ADCS_UPDATE_SUN_POINT_TOLS")
 ]
 
 
