@@ -464,6 +464,12 @@ command_list = [
     ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
     ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
 
+    # Commands to downlink FSW system logs from SD card (fsw.log).
+    # PREPARE freezes current logs into a staging file outside the rotation
+    # sequence; CREATE_TRANS/GENERATE_X_PACKETS/CONFIRM_LAST_BATCH then run
+    # against that staging path; CLEANUP removes it after successful transfer.
+    ("PREPARE_LOG_DOWNLINK", None, [], "PREPARE_LOG_DOWNLINK"),
+    ("CLEANUP_LOG_DOWNLINK", None, [], "CLEANUP_LOG_DOWNLINK"),
 ]
 
 
