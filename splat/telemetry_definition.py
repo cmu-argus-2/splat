@@ -174,6 +174,7 @@ var_dict = {
     "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
     "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
     "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
+    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b", None],  # Last inference subprocess return code
     # --- STORAGE ---
     "SD_TOTAL_USAGE": ["STORAGE", "I", None],
     "CDH_NUM_FILES": ["STORAGE", "I", None],
@@ -363,6 +364,8 @@ report_dict = {
         "PD_STATE_MAINBOARD": "PAYLOAD_TM",       # this value will be filled by the mainboard
         "PD_STATE_JETSON": "PAYLOAD_TM",
         "LATEST_ERROR": "PAYLOAD_TM",             # this is the latest state at which it failed it is latching until the next experiment starts
+        
+        "INFERENCE_RETURN_CODE": "PAYLOAD_TM",  # Last inference subprocess return code
         
         "DISK_USAGE": "PAYLOAD_TM",
         "RAM_USAGE": "PAYLOAD_TM",
