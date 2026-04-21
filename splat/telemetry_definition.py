@@ -53,6 +53,7 @@ MSG_TYPE_DICT = {
 var_dict = {
     # --- CDH / SYSTEM ---
     "TIME": ["CDH", "I", None],  # Unix timestamp
+    "BOOT_TIME": ["CDH", "I", None],  # Time since boot
     "SC_STATE": ["CDH", "B", None],  # Spacecraft state
     "SD_USAGE": ["CDH", "I", None],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
@@ -102,10 +103,6 @@ var_dict = {
     "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
     "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "ZP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "ZP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "ZM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "ZM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     # --- ADCS ---
     "MODE": ["ADCS", "B", None],
     # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
@@ -193,6 +190,16 @@ var_dict = {
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I", None],
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
+    # --- COMMS ---
+    "RX_PACKET_COUNT": ["COMMS", "I", None],
+    "FAILED_UNPACK_COUNT": ["COMMS", "H", None],
+    "CRC_ERROR_COUNT": ["COMMS", "H", None],
+    "UNDEF_ERROR_COUNT": ["COMMS", "H", None],
+    "PACKET_NONE_COUNT": ["COMMS", "H", None],
+    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H", None],
+    "TX_PACKET_COUNT": ["COMMS", "I", None],
+    "TX_FAILED_COUNT": ["COMMS", "H", None],
+    "RX_MESSAGE_RSSI": ["COMMS", "e", None],
 }
 
 # Report definitions
@@ -203,6 +210,7 @@ report_dict = {
     "TM_HEARTBEAT": {
         # CDH
         "TIME": "CDH",
+        "BOOT_TIME": "CDH",
         "SC_STATE": "CDH",
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
@@ -249,10 +257,6 @@ report_dict = {
         "YP_SOLAR_CHARGE_CURRENT": "EPS",
         "YM_SOLAR_CHARGE_VOLTAGE": "EPS",
         "YM_SOLAR_CHARGE_CURRENT": "EPS",
-        "ZP_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "ZP_SOLAR_CHARGE_CURRENT": "EPS",
-        "ZM_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "ZM_SOLAR_CHARGE_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
         "GYRO_X": "ADCS",
@@ -296,6 +300,16 @@ report_dict = {
         "GPS_ECEF_VX": "GPS",
         "GPS_ECEF_VY": "GPS",
         "GPS_ECEF_VZ": "GPS",
+        # COMMS
+        "RX_PACKET_COUNT": "COMMS",
+        "FAILED_UNPACK_COUNT": "COMMS",
+        "CRC_ERROR_COUNT": "COMMS",
+        "UNDEF_ERROR_COUNT": "COMMS",
+        "PACKET_NONE_COUNT": "COMMS",
+        "PACKET_AUTH_FAIL_COUNT": "COMMS",
+        "TX_PACKET_COUNT": "COMMS",
+        "TX_FAILED_COUNT": "COMMS",
+        "RX_MESSAGE_RSSI": "COMMS",
     },
     # Corresponds to MSG_ID_SAT_TM_STORAGE (0x03)
     "TM_STORAGE": {
@@ -436,6 +450,10 @@ return_dict = {
 # [check] - should i add the subsystem here
 command_list = [
     ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
+    ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
+    ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
+    ("PET_REBOOT", None, [], "PET_REBOOT"),
+    
     ("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
     ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"], "SWITCH_TO_STATE"),
     ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"], "UPLINK_TIME_REFERENCE"),
@@ -466,6 +484,7 @@ command_list = [
     ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
     ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
     ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
+    ("GET_FILE_SIZE", None, ["string_command"], "GET_FILE_SIZE"),  # will return the size of the file in bytes
     ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
 
@@ -507,7 +526,10 @@ command_list = [
         ],
         "EXPERIMENT",
     ),
-    ("PING", None, ["ts"], "PING"),
+    ("GET_EXPERIMENT_LIST", None, ["skip_elements"], "GET_EXPERIMENT_LIST"),  # this command will return the  timestamps for the next scheduled experiments
+    ("CLEAR_EXPERIMENT_LIST", None, [], "CLEAR_EXPERIMENT_LIST"),  # this command will clear the list of scheduled experiments in the payload
+
+    ("PING_EXP", None, ["ts"], "PING_EXP"),                     # this is the special ping command for experiment
     ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
     ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
