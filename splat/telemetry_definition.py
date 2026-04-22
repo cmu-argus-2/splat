@@ -136,19 +136,14 @@ var_dict = {
     # --- GPS ---
     "GPS_MESSAGE_ID": ["GPS", "B", None],
     "GPS_FIX_MODE": ["GPS", "B", None],
-    "GPS_NUMBER_OF_SV": ["GPS", "B", None],
     "GPS_GNSS_WEEK": ["GPS", "H", None],
     "GPS_GNSS_TOW": ["GPS", "I", None],
-    "GPS_LATITUDE": ["GPS", "i", 10000000],  # 1e-7 deg -> deg
-    "GPS_LONGITUDE": ["GPS", "i", 10000000],  # 1e-7 deg -> deg
-    "GPS_ELLIPSOID_ALT": ["GPS", "i", 100],  # cm -> m
-    "GPS_MEAN_SEA_LVL_ALT": ["GPS", "i", 100],  # cm -> m
-    "GPS_ECEF_X": ["GPS", "i", 100],  # cm -> m
-    "GPS_ECEF_Y": ["GPS", "i", 100],
-    "GPS_ECEF_Z": ["GPS", "i", 100],
-    "GPS_ECEF_VX": ["GPS", "i", 100],  # cm/s -> m/s
-    "GPS_ECEF_VY": ["GPS", "i", 100],
-    "GPS_ECEF_VZ": ["GPS", "i", 100],
+    "GPS_ECEF_X": ["GPS", "i", None],
+    "GPS_ECEF_Y": ["GPS", "i", None],
+    "GPS_ECEF_Z": ["GPS", "i", None],
+    "GPS_ECEF_VX": ["GPS", "i", None],
+    "GPS_ECEF_VY": ["GPS", "i", None],
+    "GPS_ECEF_VZ": ["GPS", "i", None],
     # --- PAYLOAD ---
     "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
     "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
@@ -174,6 +169,7 @@ var_dict = {
     "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
     "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
     "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
+    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b", None],  # Last inference subprocess return code
     # --- STORAGE ---
     "SD_TOTAL_USAGE": ["STORAGE", "I", None],
     "CDH_NUM_FILES": ["STORAGE", "I", None],
@@ -287,13 +283,8 @@ report_dict = {
         # GPS
         "GPS_MESSAGE_ID": "GPS",
         "GPS_FIX_MODE": "GPS",
-        "GPS_NUMBER_OF_SV": "GPS",
         "GPS_GNSS_WEEK": "GPS",
         "GPS_GNSS_TOW": "GPS",
-        "GPS_LATITUDE": "GPS",
-        "GPS_LONGITUDE": "GPS",
-        "GPS_ELLIPSOID_ALT": "GPS",
-        "GPS_MEAN_SEA_LVL_ALT": "GPS",
         "GPS_ECEF_X": "GPS",
         "GPS_ECEF_Y": "GPS",
         "GPS_ECEF_Z": "GPS",
@@ -363,6 +354,8 @@ report_dict = {
         "PD_STATE_MAINBOARD": "PAYLOAD_TM",       # this value will be filled by the mainboard
         "PD_STATE_JETSON": "PAYLOAD_TM",
         "LATEST_ERROR": "PAYLOAD_TM",             # this is the latest state at which it failed it is latching until the next experiment starts
+        
+        "INFERENCE_RETURN_CODE": "PAYLOAD_TM",  # Last inference subprocess return code
         
         "DISK_USAGE": "PAYLOAD_TM",
         "RAM_USAGE": "PAYLOAD_TM",
@@ -529,7 +522,7 @@ command_list = [
     ("GET_EXPERIMENT_LIST", None, ["skip_elements"], "GET_EXPERIMENT_LIST"),  # this command will return the  timestamps for the next scheduled experiments
     ("CLEAR_EXPERIMENT_LIST", None, [], "CLEAR_EXPERIMENT_LIST"),  # this command will clear the list of scheduled experiments in the payload
 
-    ("PING", None, ["ts"], "PING"),
+    ("PING_EXP", None, ["ts"], "PING_EXP"),                     # this is the special ping command for experiment
     ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
     ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     

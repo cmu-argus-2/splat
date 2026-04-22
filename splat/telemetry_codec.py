@@ -716,15 +716,12 @@ def unpack_variable(data):
         
     var_name = VAR_ID_TO_NAME[ss_id][variable_id]
     ss_name = [k for k,v in SS_map.items() if v == ss_id][0]
-    print("Variable name:", var_name)
     
     # Get the format string
     var_format = get_variable_format(var_name)
-    print("Format string:", var_format)
     
     # Unpack the data
     unpacked = struct.unpack(var_format, data[:struct.calcsize(var_format)])
-    print("Unpacked data:", unpacked)
     
     
     # Create the variable object
