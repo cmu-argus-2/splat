@@ -442,6 +442,7 @@ return_dict = {
 # command name, precondition function, argument list, function to be called in satellite
 # [check] - should i add the subsystem here
 command_list = [
+    ("PING", None, ["string_command"], "PING"),
     ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
     ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
     ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
