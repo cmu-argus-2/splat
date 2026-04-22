@@ -187,13 +187,14 @@ var_dict = {
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
     # --- COMMS ---
-    "RX_PACKET_COUNT": ["COMMS", "I", None],
+    "RX_PACKET_COUNT": ["COMMS", "H", None],
     "FAILED_UNPACK_COUNT": ["COMMS", "H", None],
     "CRC_ERROR_COUNT": ["COMMS", "H", None],
     "UNDEF_ERROR_COUNT": ["COMMS", "H", None],
     "PACKET_NONE_COUNT": ["COMMS", "H", None],
     "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H", None],
-    "TX_PACKET_COUNT": ["COMMS", "I", None],
+    "RX_DIGIPEATER_COUNT": ["COMMS", "H", None],
+    "TX_PACKET_COUNT": ["COMMS", "H", None],
     "TX_FAILED_COUNT": ["COMMS", "H", None],
     "RX_MESSAGE_RSSI": ["COMMS", "e", None],
 }
@@ -301,6 +302,7 @@ report_dict = {
         "TX_PACKET_COUNT": "COMMS",
         "TX_FAILED_COUNT": "COMMS",
         "RX_MESSAGE_RSSI": "COMMS",
+        "RX_DIGIPEATER_COUNT": "COMMS",
     },
     # Corresponds to MSG_ID_SAT_TM_STORAGE (0x03)
     "TM_STORAGE": {
