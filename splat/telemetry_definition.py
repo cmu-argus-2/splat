@@ -94,15 +94,6 @@ var_dict = {
     "RF_LDO_OUTPUT_CURRENT": ["EPS", "h", 1000],
     "GPS_VOLTAGE": ["EPS", "h", 1000],
     "GPS_CURRENT": ["EPS", "h", 1000],
-    # Solar Arrays
-    "XP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "XP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "XM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "XM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "YP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
     # --- ADCS ---
     "MODE": ["ADCS", "B", None],
     # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
@@ -245,14 +236,6 @@ report_dict = {
         "RF_LDO_OUTPUT_CURRENT": "EPS",
         "GPS_VOLTAGE": "EPS",
         "GPS_CURRENT": "EPS",
-        "XP_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "XP_SOLAR_CHARGE_CURRENT": "EPS",
-        "XM_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "XM_SOLAR_CHARGE_CURRENT": "EPS",
-        "YP_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "YP_SOLAR_CHARGE_CURRENT": "EPS",
-        "YM_SOLAR_CHARGE_VOLTAGE": "EPS",
-        "YM_SOLAR_CHARGE_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
         "GYRO_X": "ADCS",
