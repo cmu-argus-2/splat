@@ -446,6 +446,7 @@ command_list = [
     ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
     ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
     ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
+    ("REBOOT_ACK", None, [], "REBOOT_ACK"),
     ("PET_REBOOT", None, [], "PET_REBOOT"),
     
     ("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
