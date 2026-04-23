@@ -196,6 +196,7 @@ var_dict = {
     "RX_DIGIPEATER_COUNT": ["COMMS", "H", None],
     "TX_PACKET_COUNT": ["COMMS", "H", None],
     "TX_FAILED_COUNT": ["COMMS", "H", None],
+    "TX_DIGIPEATER_COUNT": ["COMMS", "H", None],
     "RX_MESSAGE_RSSI": ["COMMS", "e", None],
 }
 
@@ -303,6 +304,7 @@ report_dict = {
         "TX_FAILED_COUNT": "COMMS",
         "RX_MESSAGE_RSSI": "COMMS",
         "RX_DIGIPEATER_COUNT": "COMMS",
+        "TX_DIGIPEATER_COUNT": "COMMS",
     },
     # Corresponds to MSG_ID_SAT_TM_STORAGE (0x03)
     "TM_STORAGE": {
