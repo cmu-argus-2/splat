@@ -377,11 +377,6 @@ def pack_report(report):
         if value is None:
             value = 0
         
-        # # Apply scaling if needed
-        # scale = var_dict[var_name][2]
-        # if scale is not None:
-        #     value = value * scale
-        
         values.append(value)
     
     # Pack the data
@@ -432,11 +427,6 @@ def unpack_report(data):
         
         subsystem = report_dict[report_name][var_name]
         value = unpacked[counter]
-        
-        # # Apply inverse scaling if needed
-        # scale = var_dict[var_name][2]
-        # if scale is not None:
-        #     value = value / scale
         
         report.add_variable(var_name, subsystem, value)
         counter += 1

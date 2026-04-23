@@ -198,11 +198,10 @@ def list_all_variables():
         Dictionary of variables with their properties
     """
     result = {}
-    for var_name, (subsystem, var_type, scale) in var_dict.items():
+    for var_name, (subsystem, var_type) in var_dict.items():
         result[var_name] = {
             'subsystem': subsystem,
             'type': var_type,
-            'scale': scale,
             'size': struct.calcsize(ENDIANNESS + var_type)
         }
     return result

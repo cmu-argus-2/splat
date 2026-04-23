@@ -36,9 +36,9 @@ def print_summary():
     print(f"  Variable Header: {variable_header_size} bytes (MSG_TYPE + VARIABLE_SS + VARIABLE_ID)")
     
     print(f"\nVariables: {len(var_dict)}")
-    for var_name, (subsystem, var_type, scale) in var_dict.items():
+    for var_name, (subsystem, var_type) in var_dict.items():
         size = get_variable_size(var_name)
-        print(f"  {var_name:20s} [{subsystem:6s}] {var_type:3s} ({size:2d} bytes) scale={scale}")
+        print(f"  {var_name:20s} [{subsystem:6s}] {var_type:3s} ({size:2d} bytes)")
     
     print(f"\nReports: {len(report_dict)}")
     for report_name, variables in report_dict.items():

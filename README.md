@@ -212,7 +212,7 @@ unpacked_value = var.unpack(packed_var)  # unpack to get original value
 In `telemetry_definition.py`:
 ```python
 var_dict = {
-    "new_var": ["SUBSYSTEM", "type", scale_factor],
+    "new_var": ["SUBSYSTEM", "type"],
 }
 ```
 
@@ -323,21 +323,6 @@ Variable Header: [ msg_type | subsystem_id | variable_id ]
 └─────────────────────────────────────────────┴───────────────────┘
 ```
 
-### Scale Factors
-
-Variables can have scale factors to preserve precision while using integer-like encoding:
-
-```python
-"temp": ["CDH", "f", 100]  # Scale factor = 100
-
-Encoding:  295.15 K × 100 = 29515.0 → packed as float
-Decoding:  29515.0 ÷ 100 = 295.15 K
-
-"voltage": ["EPS", "f", 1000]  # Scale factor = 1000
-
-Encoding:  3.7 V × 1000 = 3700.0 → packed as float
-Decoding:  3700.0 ÷ 1000 = 3.7 V
-```
 
 This approach:
 - Maintains precision for important measurements

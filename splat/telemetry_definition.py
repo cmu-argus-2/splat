@@ -48,156 +48,155 @@ MSG_TYPE_DICT = {
 }
 
 # Variable definitions
-# Format: "var_name": [subsystem, struct_type, scale_factor]
-# scale_factor is used to convert to/from SI units (None = no scaling)
+# Format: "var_name": [subsystem, struct_type]
 var_dict = {
     # --- CDH / SYSTEM ---
-    "TIME": ["CDH", "I", None],  # Unix timestamp
-    "BOOT_TIME": ["CDH", "I", None],  # Time since boot
-    "SC_STATE": ["CDH", "B", None],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I", None],  # KBytes
-    "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
-    "REBOOT_COUNT": ["CDH", "B", None],  # Count
-    "WATCHDOG_TIMER": ["CDH", "B", None],  # Status
-    "HAL_BITFLAGS": ["CDH", "B", None],  # Flags
-    "DETUMBLING_ERROR_FLAG": ["CDH", "B", None],  # Flag
+    "TIME": ["CDH", "I"],  # Unix timestamp
+    "BOOT_TIME": ["CDH", "I"],  # Time since boot
+    "SC_STATE": ["CDH", "B"],  # Spacecraft state
+    "SD_USAGE": ["CDH", "I"],  # KBytes
+    "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
+    "REBOOT_COUNT": ["CDH", "B"],  # Count
+    "WATCHDOG_TIMER": ["CDH", "B"],  # Status
+    "HAL_BITFLAGS": ["CDH", "B"],  # Flags
+    "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
-    "EPS_POWER_FLAG": ["EPS", "B", None],
-    "MAINBOARD_TEMPERATURE": ["EPS", "h", 10],  # 0.1°C -> °C
-    "MAINBOARD_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "MAINBOARD_CURRENT": ["EPS", "h", 1000],  # mA -> A
-    "BATTERY_PACK_TEMPERATURE": ["EPS", "h", 10],  # 0.1°C -> °C
-    "BATTERY_PACK_REPORTED_SOC": ["EPS", "B", 1],  # %
-    "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H", 1],  # mAh
-    "BATTERY_PACK_CURRENT": ["EPS", "h", 1000],  # mA -> A
-    "BATTERY_PACK_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "BATTERY_PACK_MIDPOINT_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "BATTERY_PACK_TTE": ["EPS", "I", 1],  # Seconds
-    "BATTERY_PACK_TTF": ["EPS", "I", 1],  # Seconds
+    "EPS_POWER_FLAG": ["EPS", "B"],
+    "MAINBOARD_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "MAINBOARD_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "MAINBOARD_CURRENT": ["EPS", "h"],  # mA -> A
+    "BATTERY_PACK_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_REPORTED_SOC": ["EPS", "B"],  # %
+    "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H"],  # mAh
+    "BATTERY_PACK_CURRENT": ["EPS", "h"],  # mA -> A
+    "BATTERY_PACK_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "BATTERY_PACK_MIDPOINT_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "BATTERY_PACK_TTE": ["EPS", "I"],  # Seconds
+    "BATTERY_PACK_TTF": ["EPS", "I"],  # Seconds
     # Coils (Magnetorquers)
-    "XP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "XP_COIL_CURRENT": ["EPS", "h", 1000],
-    "XM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "XM_COIL_CURRENT": ["EPS", "h", 1000],
-    "YP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "YP_COIL_CURRENT": ["EPS", "h", 1000],
-    "YM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "YM_COIL_CURRENT": ["EPS", "h", 1000],
-    "ZP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "ZP_COIL_CURRENT": ["EPS", "h", 1000],
-    "ZM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "ZM_COIL_CURRENT": ["EPS", "h", 1000],
+    "XP_COIL_VOLTAGE": ["EPS", "h"],
+    "XP_COIL_CURRENT": ["EPS", "h"],
+    "XM_COIL_VOLTAGE": ["EPS", "h"],
+    "XM_COIL_CURRENT": ["EPS", "h"],
+    "YP_COIL_VOLTAGE": ["EPS", "h"],
+    "YP_COIL_CURRENT": ["EPS", "h"],
+    "YM_COIL_VOLTAGE": ["EPS", "h"],
+    "YM_COIL_CURRENT": ["EPS", "h"],
+    "ZP_COIL_VOLTAGE": ["EPS", "h"],
+    "ZP_COIL_CURRENT": ["EPS", "h"],
+    "ZM_COIL_VOLTAGE": ["EPS", "h"],
+    "ZM_COIL_CURRENT": ["EPS", "h"],
     # Payload & Solar Inputs
-    "JETSON_INPUT_VOLTAGE": ["EPS", "h", 1000],
-    "JETSON_INPUT_CURRENT": ["EPS", "h", 1000],
-    "RF_LDO_OUTPUT_VOLTAGE": ["EPS", "h", 1000],
-    "RF_LDO_OUTPUT_CURRENT": ["EPS", "h", 1000],
-    "GPS_VOLTAGE": ["EPS", "h", 1000],
-    "GPS_CURRENT": ["EPS", "h", 1000],
+    "JETSON_INPUT_VOLTAGE": ["EPS", "h"],
+    "JETSON_INPUT_CURRENT": ["EPS", "h"],
+    "RF_LDO_OUTPUT_VOLTAGE": ["EPS", "h"],
+    "RF_LDO_OUTPUT_CURRENT": ["EPS", "h"],
+    "GPS_VOLTAGE": ["EPS", "h"],
+    "GPS_CURRENT": ["EPS", "h"],
     # Solar Arrays
-    "XP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "XP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "XM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "XM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "YP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
-    "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h", 1000],
-    "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h", 1000],
+    "XP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "XP_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "XM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "XM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "YP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
     # --- ADCS ---
-    "MODE": ["ADCS", "B", None],
-    # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
-    "GYRO_X": ["ADCS", "f", 10000000],
-    "GYRO_Y": ["ADCS", "f", 10000000],
-    "GYRO_Z": ["ADCS", "f", 10000000],
-    "MAG_X": ["ADCS", "f", 10000000],
-    "MAG_Y": ["ADCS", "f", 10000000],
-    "MAG_Z": ["ADCS", "f", 10000000],
-    "SUN_STATUS": ["ADCS", "B", None],
-    "SUN_VEC_X": ["ADCS", "f", 10000000],
-    "SUN_VEC_Y": ["ADCS", "f", 10000000],
-    "SUN_VEC_Z": ["ADCS", "f", 10000000],
+    "MODE": ["ADCS", "B"],
+    # Custom 'X' (High Precision) mapped to 'i'
+    "GYRO_X": ["ADCS", "f"],
+    "GYRO_Y": ["ADCS", "f"],
+    "GYRO_Z": ["ADCS", "f"],
+    "MAG_X": ["ADCS", "f"],
+    "MAG_Y": ["ADCS", "f"],
+    "MAG_Z": ["ADCS", "f"],
+    "SUN_STATUS": ["ADCS", "B"],
+    "SUN_VEC_X": ["ADCS", "f"],
+    "SUN_VEC_Y": ["ADCS", "f"],
+    "SUN_VEC_Z": ["ADCS", "f"],
     # Light Sensors
-    "LIGHT_SENSOR_XP": ["ADCS", "H", None],
-    "LIGHT_SENSOR_XM": ["ADCS", "H", None],
-    "LIGHT_SENSOR_YP": ["ADCS", "H", None],
-    "LIGHT_SENSOR_YM": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_1": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_2": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_3": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_4": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZM": ["ADCS", "H", None],
+    "LIGHT_SENSOR_XP": ["ADCS", "H"],
+    "LIGHT_SENSOR_XM": ["ADCS", "H"],
+    "LIGHT_SENSOR_YP": ["ADCS", "H"],
+    "LIGHT_SENSOR_YM": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_1": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_2": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_3": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_4": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZM": ["ADCS", "H"],
     # Coil Status flags
-    "XP_COIL_STATUS": ["ADCS", "B", None],
-    "XM_COIL_STATUS": ["ADCS", "B", None],
-    "YP_COIL_STATUS": ["ADCS", "B", None],
-    "YM_COIL_STATUS": ["ADCS", "B", None],
-    "ZP_COIL_STATUS": ["ADCS", "B", None],
-    "ZM_COIL_STATUS": ["ADCS", "B", None],
+    "XP_COIL_STATUS": ["ADCS", "B"],
+    "XM_COIL_STATUS": ["ADCS", "B"],
+    "YP_COIL_STATUS": ["ADCS", "B"],
+    "YM_COIL_STATUS": ["ADCS", "B"],
+    "ZP_COIL_STATUS": ["ADCS", "B"],
+    "ZM_COIL_STATUS": ["ADCS", "B"],
     # --- GPS ---
-    "GPS_MESSAGE_ID": ["GPS", "B", None],
-    "GPS_FIX_MODE": ["GPS", "B", None],
-    "GPS_GNSS_WEEK": ["GPS", "H", None],
-    "GPS_GNSS_TOW": ["GPS", "I", None],
-    "GPS_ECEF_X": ["GPS", "i", None],
-    "GPS_ECEF_Y": ["GPS", "i", None],
-    "GPS_ECEF_Z": ["GPS", "i", None],
-    "GPS_ECEF_VX": ["GPS", "i", None],
-    "GPS_ECEF_VY": ["GPS", "i", None],
-    "GPS_ECEF_VZ": ["GPS", "i", None],
+    "GPS_MESSAGE_ID": ["GPS", "B"],
+    "GPS_FIX_MODE": ["GPS", "B"],
+    "GPS_GNSS_WEEK": ["GPS", "H"],
+    "GPS_GNSS_TOW": ["GPS", "I"],
+    "GPS_ECEF_X": ["GPS", "i"],
+    "GPS_ECEF_Y": ["GPS", "i"],
+    "GPS_ECEF_Z": ["GPS", "i"],
+    "GPS_ECEF_VX": ["GPS", "i"],
+    "GPS_ECEF_VY": ["GPS", "i"],
+    "GPS_ECEF_VZ": ["GPS", "i"],
     # --- PAYLOAD ---
-    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
-    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
-    "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "PD_STATE_JETSON": ["PAYLOAD_TM", "B", None],       # the current state of the payload in terms of jetson (check jetson code)
-    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B", None],    # the current state of the payload in terms of mainboard (check mainboard code)
-    "LATEST_ERROR": ["PAYLOAD_TM", "B", None],
-    "DISK_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],  # 0=not running, 1=running
-    "RAM_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],  # count
-    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],  # %
-    "GPU_FREQ": ["PAYLOAD_TM", "H", None],  # MHz
-    "CPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
-    "GPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
-    "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
-    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
-    "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
-    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b", None],  # Last inference subprocess return code
+    "SYSTEM_TIME": ["PAYLOAD_TM", "Q"],  # Unix timestamp (seconds)
+    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I"],  # System uptime (seconds)
+    "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I"],
+    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I"],
+    "PD_STATE_JETSON": ["PAYLOAD_TM", "B"],       # the current state of the payload in terms of jetson (check jetson code)
+    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B"],    # the current state of the payload in terms of mainboard (check mainboard code)
+    "LATEST_ERROR": ["PAYLOAD_TM", "B"],
+    "DISK_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B"],  # 0=not running, 1=running
+    "RAM_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "SWAP_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "ACTIVE_CORES": ["PAYLOAD_TM", "B"],  # count
+    "CPU_LOAD_0": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_1": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_2": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_3": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_4": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_5": ["PAYLOAD_TM", "B"],  # %
+    "GPU_FREQ": ["PAYLOAD_TM", "H"],  # MHz
+    "CPU_TEMP": ["PAYLOAD_TM", "B"],  # °C
+    "GPU_TEMP": ["PAYLOAD_TM", "B"],  # °C
+    "VDD_IN": ["PAYLOAD_TM", "H"],  # mW
+    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H"],  # mW
+    "VDD_SOC": ["PAYLOAD_TM", "H"],  # mW
+    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b"],  # Last inference subprocess return code
     # --- STORAGE ---
-    "SD_TOTAL_USAGE": ["STORAGE", "I", None],
-    "CDH_NUM_FILES": ["STORAGE", "I", None],
-    "CDH_DIR_SIZE": ["STORAGE", "I", None],
-    "EPS_NUM_FILES": ["STORAGE", "I", None],
-    "EPS_DIR_SIZE": ["STORAGE", "I", None],
-    "ADCS_NUM_FILES": ["STORAGE", "I", None],
-    "ADCS_DIR_SIZE": ["STORAGE", "I", None],
-    "COMMS_NUM_FILES": ["STORAGE", "I", None],
-    "COMMS_DIR_SIZE": ["STORAGE", "I", None],
-    "GPS_NUM_FILES": ["STORAGE", "I", None],
-    "GPS_DIR_SIZE": ["STORAGE", "I", None],
-    "PAYLOAD_NUM_FILES": ["STORAGE", "I", None],
-    "PAYLOAD_DIR_SIZE": ["STORAGE", "I", None],
-    "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
-    "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
+    "SD_TOTAL_USAGE": ["STORAGE", "I"],
+    "CDH_NUM_FILES": ["STORAGE", "I"],
+    "CDH_DIR_SIZE": ["STORAGE", "I"],
+    "EPS_NUM_FILES": ["STORAGE", "I"],
+    "EPS_DIR_SIZE": ["STORAGE", "I"],
+    "ADCS_NUM_FILES": ["STORAGE", "I"],
+    "ADCS_DIR_SIZE": ["STORAGE", "I"],
+    "COMMS_NUM_FILES": ["STORAGE", "I"],
+    "COMMS_DIR_SIZE": ["STORAGE", "I"],
+    "GPS_NUM_FILES": ["STORAGE", "I"],
+    "GPS_DIR_SIZE": ["STORAGE", "I"],
+    "PAYLOAD_NUM_FILES": ["STORAGE", "I"],
+    "PAYLOAD_DIR_SIZE": ["STORAGE", "I"],
+    "CMD_LOGS_NUM_FILES": ["STORAGE", "I"],
+    "CMD_LOGS_DIR_SIZE": ["STORAGE", "I"],
     # --- COMMS ---
-    "RX_PACKET_COUNT": ["COMMS", "H", None],
-    "FAILED_UNPACK_COUNT": ["COMMS", "H", None],
-    "CRC_ERROR_COUNT": ["COMMS", "H", None],
-    "UNDEF_ERROR_COUNT": ["COMMS", "H", None],
-    "PACKET_NONE_COUNT": ["COMMS", "H", None],
-    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H", None],
-    "RX_DIGIPEATER_COUNT": ["COMMS", "H", None],
-    "TX_PACKET_COUNT": ["COMMS", "H", None],
-    "TX_FAILED_COUNT": ["COMMS", "H", None],
-    "TX_DIGIPEATER_COUNT": ["COMMS", "H", None],
-    "RX_MESSAGE_RSSI": ["COMMS", "e", None],
+    "RX_PACKET_COUNT": ["COMMS", "H"],
+    "FAILED_UNPACK_COUNT": ["COMMS", "H"],
+    "CRC_ERROR_COUNT": ["COMMS", "H"],
+    "UNDEF_ERROR_COUNT": ["COMMS", "H"],
+    "PACKET_NONE_COUNT": ["COMMS", "H"],
+    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H"],
+    "RX_DIGIPEATER_COUNT": ["COMMS", "H"],
+    "TX_PACKET_COUNT": ["COMMS", "H"],
+    "TX_FAILED_COUNT": ["COMMS", "H"],
+    "TX_DIGIPEATER_COUNT": ["COMMS", "H"],
+    "RX_MESSAGE_RSSI": ["COMMS", "e"],
 }
 
 # Report definitions
