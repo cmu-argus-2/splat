@@ -463,15 +463,7 @@ command_list = [
     ("REQUEST_TM_HAL", None, [], "REQUEST_TM_HAL"),
     ("REQUEST_TM_STORAGE", None, [], "REQUEST_TM_STORAGE"),
     ("REQUEST_TM_PAYLOAD", None, [], "REQUEST_TM_PAYLOAD"),
-    (
-        "REQUEST_FILE_METADATA",
-        "file_id_exists",
-        ["file_id", "file_time"],
-        "REQUEST_FILE_METADATA",
-    ),
-    ("REQUEST_FILE_PKT", "file_id_exists", ["file_id", "file_time"], "REQUEST_FILE_PKT"),
-    ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
-    ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
+    
     ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
     
     # Commands to downlink images (should add pre conditions to these commands)
