@@ -553,8 +553,6 @@ VAR_ID_TO_NAME = {
 # This will be used to create the report order list. Does not have the same format as the previous
 # has all the varialbes as keys and value is a tuple of (subsystem, var_id)
 VAR_NAME_TO_ID = {name: (ss_id, var_id) for ss_id, vars in VAR_ID_TO_NAME.items() for var_id, name in vars.items()}
-# these are the dictionaries that will be used to force an order on packing and unpacking
-ORDERED_SS_LIST = sorted(SS_map, key=SS_map.get)
 
 
 
