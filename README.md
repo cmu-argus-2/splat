@@ -102,7 +102,7 @@ Defines all protocol elements:
 
 Note that the susbsystem needs to have the same name as the DH subsystems, and the variables need to have the same name as the varaibles defined in DH.
 
-The command name does not matter, but the precondition needs to match the respective function in the satellite code.
+The command name does not matter; only the argument list needs to match the protocol definition.
 
 ```python
 # Example variable definition
@@ -116,7 +116,7 @@ The command name does not matter, but the precondition needs to match the respec
 }
 
 # Example command definition
-("SUM", "valid_inputs", ["op1", "op2"]),
+("SUM", ["op1", "op2"]),
 ```
 
 ### 2. telemetry_helper.py
@@ -235,11 +235,11 @@ need to make sure that all the variables that are part of the report have been c
 In `telemetry_definition.py`:
 ```python
 command_list = [
-    ("NEW_COMMAND", "precondition_func", ["arg1", "arg2"]),
+    ("NEW_COMMAND", ["arg1", "arg2"]),
 ]
 ```
 
-need to make sure that the precondition function exists in the satellite code. Also need to make sure that the arguments are in the argument dict
+need to make sure that the arguments are in the argument dict
 
 
 ## ⚙️ Configuration
@@ -309,7 +309,7 @@ Variable Header: [ msg_type | subsystem_id | variable_id ]
 └──────────┴───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
 ```
 
-> The precondition is not part of the message. The satellite will identify what command was received and use telemetry definition to know what precondition to apply.
+> The command metadata is not part of the message. The satellite will identify what command was received and use telemetry definition to resolve its arguments.
 
 #### Variable Structure
 ```

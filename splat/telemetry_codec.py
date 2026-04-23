@@ -150,8 +150,7 @@ class Command:
         
         self.name = cmd_name
         self.command_id = COMMAND_IDS[cmd_name]
-        self.precondition = command_list[self.command_id][1]
-        self.arg_names = command_list[self.command_id][2]
+        self.arg_names = command_list[self.command_id][1]
         self.arguments = {}   # [check] - could change this to a list
     
     def add_argument(self, arg_name, value):
@@ -552,7 +551,7 @@ def unpack_command(data):
     # for now there can only be one string/binary argument and it should be the last one
     # i want to calculate the size of the other arguments and seperate the bytes
     variable_arg_value = None # default value if there is no string/binary argument
-    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][1]):
         # Handle string/binary arguments separately (will be the remaining bytes after unpacking the other arguments)
         cmd_format = cmd_format.replace('s', '').replace('p', '')
         non_variable_size = struct.calcsize(cmd_format)
@@ -561,7 +560,7 @@ def unpack_command(data):
         data = data[:non_variable_size]  # only keep the non-variable part for unpacking
         
         # Check if it's a string or binary argument
-        for arg_name in command_list[command_id][2]:
+        for arg_name in command_list[command_id][1]:
             if 's' in argument_dict.get(arg_name, ''):
                 variable_arg_value = variable_data.decode('utf-8')
                 break
