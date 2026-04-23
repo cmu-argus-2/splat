@@ -94,7 +94,7 @@ def get_command_size(cmd_name):
     # 1 byte for command ID + callsign
     cmd_size = CALLSIGN_SIZE + (MSG_TYPE_SIZE + COMMAND_ID_SIZE) // 8  # Convert bits to bytes
     # Add size of each argument
-    cmd_name, precondition, arguments, satellite_func = command_list[COMMAND_IDS[cmd_name]]
+    cmd_name, precondition, arguments = command_list[COMMAND_IDS[cmd_name]]
     for arg in arguments:
         if arg not in argument_dict:
             raise ValueError(f"Argument '{arg}' not found in argument_dict")
@@ -182,7 +182,7 @@ def get_command_format(cmd_name):
     cmd_format = ENDIANNESS
 
     # Add format for each argument
-    cmd_name, precondition, args, satellite_func = command_list[COMMAND_IDS[cmd_name]]    
+    cmd_name, precondition, args = command_list[COMMAND_IDS[cmd_name]]
     for arg in args:
         if arg not in argument_dict:
             raise ValueError(f"Argument '{arg}' not found in argument_dict")
@@ -237,13 +237,12 @@ def list_all_commands():
     """
     result = {}
   
-    for cmd_name, precondition, args, satellite_func in command_list:
+    for cmd_name, precondition, args in command_list:
         cmd_size = get_command_size(cmd_name)
         result[cmd_name] = {
             'id': COMMAND_IDS[cmd_name],
             'arguments': args,
             'precond': precondition,
-            'sat_func': satellite_func,
             'size': cmd_size,
         }
     return result
@@ -273,13 +272,13 @@ def validate_definitions():
             errors.append(f"Report '{report_name}' size ({size} bytes) exceeds MAX_PACKET_SIZE ({MAX_PACKET_SIZE} bytes)")
     
     # Check that all command arguments are defined
-    for cmd_name, precondition, args, satellite_func in command_list:    
+    for cmd_name, precondition, args in command_list:
         for arg in args:
             if arg not in argument_dict:
                 errors.append(f"Argument '{arg}' in command '{cmd_name}' not found in argument_dict")
             
     # Check that all commands fit within max packet size
-    for cmd_name, precondition, args, satellite_func in command_list:        
+    for cmd_name, precondition, args in command_list:
         try:
             cmd_size = get_command_size(cmd_name)
             if cmd_size > MAX_PACKET_SIZE:

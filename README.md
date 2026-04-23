@@ -102,7 +102,7 @@ Defines all protocol elements:
 
 Note that the susbsystem needs to have the same name as the DH subsystems, and the variables need to have the same name as the varaibles defined in DH.
 
-The command name does not matter, but the precondition and the function to be called on the satellite need to have the same name as the respective functions in the satellite code.
+The command name does not matter, but the precondition needs to match the respective function in the satellite code.
 
 ```python
 # Example variable definition
@@ -116,7 +116,7 @@ The command name does not matter, but the precondition and the function to be ca
 }
 
 # Example command definition
-("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
+("SUM", "valid_inputs", ["op1", "op2"]),
 ```
 
 ### 2. telemetry_helper.py
@@ -235,11 +235,11 @@ need to make sure that all the variables that are part of the report have been c
 In `telemetry_definition.py`:
 ```python
 command_list = [
-    ("NEW_COMMAND", "precondition_func", ["arg1", "arg2"], "satellite_func"),
+    ("NEW_COMMAND", "precondition_func", ["arg1", "arg2"]),
 ]
 ```
 
-need to make sure that the precondition function and the satellite function exist in the satellite code. Also need to make sure that the arguments are in the argument dict
+need to make sure that the precondition function exists in the satellite code. Also need to make sure that the arguments are in the argument dict
 
 
 ## ⚙️ Configuration
@@ -309,12 +309,12 @@ Variable Header: [ msg_type | subsystem_id | variable_id ]
 └──────────┴───────────────────────────────┴──────────────┴──────────────┴─────┴──────────────┘
 ```
 
-> The precondition and satellite function are not part of the message. The satellite will identify what command was received and use telemetry definion to know what precondition and satellite function to call.
+> The precondition is not part of the message. The satellite will identify what command was received and use telemetry definition to know what precondition to apply.
 
 #### Variable Structure
 ```
 ┌──────────┬─────────────────────────────────────────────┬───────────────────┐
-│ Callsign │ Header (msg_type + ss_id + var_id)         │  Value            │
+│ Callsign │ Header (msg_type + ss_id + var_id)         │  Value             │
 │ 6 bytes  │   (bits per config)                         │   X bytes         │
 └──────────┴─────────────────────────────────────────────┴───────────────────┘
 ```

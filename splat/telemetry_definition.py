@@ -443,48 +443,48 @@ return_dict = {
 
 
 
-# command name, precondition function, argument list, function to be called in satellite
+# command name, precondition function, argument list
 # [check] - should i add the subsystem here
 command_list = [
-    ("PING", None, ["string_command"], "PING"),
-    ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
-    ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
-    ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
-    ("REBOOT_ACK", None, [], "REBOOT_ACK"),
-    ("PET_REBOOT", None, [], "PET_REBOOT"),
+    ("PING", None, ["string_command"]),
+    ("FORCE_REBOOT", None, []),
+    ("GRACEFUL_REBOOT", None, []),
+    ("MAIN_POWER_REBOOT", None, []),
+    ("REBOOT_ACK", None, []),
+    ("PET_REBOOT", None, []),
     
-    ("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
-    ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"], "SWITCH_TO_STATE"),
-    ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"], "UPLINK_TIME_REFERENCE"),
-    ("TURN_OFF_PAYLOAD", None, [], "TURN_OFF_PAYLOAD"),
-    ("TURN_ON_PAYLOAD", None, [], "TURN_ON_PAYLOAD"),
-    ("SCHEDULE_OD_EXPERIMENT", None, [], "SCHEDULE_OD_EXPERIMENT"),
-    ("REQUEST_TM_NOMINAL", None, [], "REQUEST_TM_NOMINAL"),
-    ("REQUEST_TM_HAL", None, [], "REQUEST_TM_HAL"),
-    ("REQUEST_TM_STORAGE", None, [], "REQUEST_TM_STORAGE"),
-    ("REQUEST_TM_PAYLOAD", None, [], "REQUEST_TM_PAYLOAD"),
+    ("SUM", "valid_inputs", ["op1", "op2"]),
+    ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"]),
+    ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"]),
+    ("TURN_OFF_PAYLOAD", None, []),
+    ("TURN_ON_PAYLOAD", None, []),
+    ("SCHEDULE_OD_EXPERIMENT", None, []),
+    ("REQUEST_TM_NOMINAL", None, []),
+    ("REQUEST_TM_HAL", None, []),
+    ("REQUEST_TM_STORAGE", None, []),
+    ("REQUEST_TM_PAYLOAD", None, []),
     
-    ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
+    ("EVAL_STRING_COMMAND", None, ["string_command"]),
     
     # Commands to downlink images (should add pre conditions to these commands)
-    ("CREATE_TRANS", None, ["tid", "string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("INIT_TRANS", None, ["tid", "number_of_packets"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
-    ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
-    ("GENERATE_SINGLE_PACKET", None, ["tid", "seq_number"], "GENERATE_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
-    ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
-    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
-    ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
-    ("GET_FILE_SIZE", None, ["string_command"], "GET_FILE_SIZE"),  # will return the size of the file in bytes
-    ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
-    ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
+    ("CREATE_TRANS", None, ["tid", "string_command"]),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", None, ["tid", "number_of_packets"]),   # for now this is a string command, but eventually should change for a reference number
+    ("GENERATE_ALL_PACKETS", None, ["tid"]), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
+    ("GENERATE_X_PACKETS", None, ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GENERATE_SINGLE_PACKET", None, ["tid", "seq_number"]), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"]), # send from gs to satellite to update missing_fragments after the last batch tx.
+    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"]), # will allow to add or remove 64 packets out of the missing_packet list
+    ("LIST_DIR", None, ["skip_elements", "string_command"]),    # will list all the files in the given directory, skip the first skip_elements files
+    ("GET_FILE_SIZE", None, ["string_command"]),  # will return the size of the file in bytes
+    ("DELETE_ALL_FILES", None, []),  #  will call the DH function to delete all dh files (and images)
+    ("UPDATE_SD_USAGE", None, []),  #  will call the DH function to calculate the sd card usage
 
-    ("RF_STOP", None, [], "RF_STOP"),
-    ("RF_RESUME", None, [], "RF_RESUME"),
-    ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
-    ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
-    ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
-    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",], "EXPERIMENT"),  # used  to run experiment with default camera params
+    ("RF_STOP", None, []),
+    ("RF_RESUME", None, []),
+    ("DIGIPEATER_ACTIVATE", None, []),
+    ("DIGIPEATER_DEACTIVATE", None, []),
+    ("COMMS_MODE", "valid_comms_mode", ["mode_id"]),
+    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
@@ -515,14 +515,13 @@ command_list = [
             "tnr_strength",
             "saturation",
         ],
-        "EXPERIMENT",
     ),
-    ("GET_EXPERIMENT_LIST", None, ["skip_elements"], "GET_EXPERIMENT_LIST"),  # this command will return the  timestamps for the next scheduled experiments
-    ("CLEAR_EXPERIMENT_LIST", None, [], "CLEAR_EXPERIMENT_LIST"),  # this command will clear the list of scheduled experiments in the payload
+    ("GET_EXPERIMENT_LIST", None, ["skip_elements"]),  # this command will return the  timestamps for the next scheduled experiments
+    ("CLEAR_EXPERIMENT_LIST", None, []),  # this command will clear the list of scheduled experiments in the payload
 
-    ("PING_EXP", None, ["ts"], "PING_EXP"),                     # this is the special ping command for experiment
-    ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    ("PING_EXP", None, ["ts"]),                     # this is the special ping command for experiment
+    ("EXPERIMENT_FINISHED", None, []),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
+    ("DOWNLOAD_FINISH", None, [])   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
 
 ]

@@ -48,7 +48,7 @@ def print_summary():
         print(f"  {report_name:20s} (ID={report_id:2d}, {size:3d} bytes) {num_vars} variables")
     
     print(f"\nCommands: {len(command_list)}")
-    for cmd_name, precondition, args, satellite_func in command_list:
+    for cmd_name, precondition, args in command_list:
         cmd_size = get_command_size(cmd_name)
         cmd_id = COMMAND_IDS[cmd_name]
         print(f"  {cmd_name:25s} (ID={cmd_id:2d}) [{subsystem:6s}] {cmd_size:3d} bytes")

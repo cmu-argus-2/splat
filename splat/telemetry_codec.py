@@ -151,7 +151,6 @@ class Command:
         self.name = cmd_name
         self.command_id = COMMAND_IDS[cmd_name]
         self.precondition = command_list[self.command_id][1]
-        self.satellite_func = command_list[self.command_id][3]
         self.arg_names = command_list[self.command_id][2]
         self.arguments = {}   # [check] - could change this to a list
     
