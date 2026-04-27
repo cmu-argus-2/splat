@@ -519,7 +519,7 @@ command_list = [
 
     ("PING_EXP", ["ts"]),                     # this is the special ping command for experiment
     ("EXPERIMENT_FINISHED", []),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", [])   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
 
