@@ -431,6 +431,12 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    
+    "imu_hz": "B",
+    "camera_hz": "B",
+    "duration": "H",   # this is in seconds
+    "model_version": "B",  # this is the version of the model that we want to use for dataset processing
+    "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
 }
 
 # Return type definitions
