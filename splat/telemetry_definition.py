@@ -532,7 +532,7 @@ command_list = [
     # for now I have this in the end to minimize changes while developing
     ("DATASET_COLLECTION", ["ts", "imu_hz", "camera_hz", "duration"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
     ("DATASET_PROCESSING", ["ts", "level_processing", "model_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
-    ("DATASET_OD", ["ts", "duration", "max_iteration"])   
+    ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
 
 # Command IDs (sorted alphabetically to ensure consistency)
