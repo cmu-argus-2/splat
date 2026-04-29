@@ -433,7 +433,7 @@ argument_dict = {
     "saturation": "f",  # range [0.0..2.0]
     
     "imu_hz": "B",
-    "camera_hz": "B",
+    "capture_rate": "B",
     "duration": "H",   # this is in seconds
     "model_version": "B",  # this is the version of the model that we want to use for dataset processing
     "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
@@ -530,7 +530,7 @@ command_list = [
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
 
     # for now I have this in the end to minimize changes while developing
-    ("DATASET_COLLECTION", ["ts", "imu_hz", "camera_hz", "duration"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
+    ("DATASET_COLLECTION", ["ts", "imu_hz", "capture_rate", "duration"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
     ("DATASET_PROCESSING", ["ts", "level_processing", "model_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
