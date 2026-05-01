@@ -490,12 +490,13 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", []),
     ("DIGIPEATER_DEACTIVATE", []),
     ("COMMS_MODE", ["mode_id"]),
-    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
+    ("SIMPLE_EXPERIMENT", ["ts","duration","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
         [
             "ts",
+            "duration",
             "camera_bit_flag",
             "level_processing",
             "width",
@@ -530,9 +531,11 @@ command_list = [
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
 
+    # all experiment commands will have a duration. Some of the experiment will use that value
+    # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
-    ("DATASET_COLLECTION", ["ts", "camera_bit_flag", "capture_rate", "imu_hz", "duration"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
-    ("DATASET_PROCESSING", ["ts", "level_processing", "rc_version", "ld_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_COLLECTION", ["ts", "duration", "camera_bit_flag", "capture_rate", "imu_hz"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
 
