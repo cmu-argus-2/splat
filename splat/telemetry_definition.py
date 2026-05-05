@@ -411,6 +411,7 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "level_id": "B",  # Logging level index into LEVELS (0=NOTSET .. 6=NOTHING) for SET_LOG_LEVEL
 }
 
 # Return type definitions
@@ -507,9 +508,16 @@ command_list = [
 
     ("PING_EXP", None, ["ts"], "PING_EXP"),                     # this is the special ping command for experiment
     ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
-    
+    ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH"),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
 
+    # Commands to downlink FSW system logs from SD card (fsw.log).
+    # PREPARE freezes current logs into a staging file outside the rotation
+    # sequence; CREATE_TRANS/GENERATE_X_PACKETS/CONFIRM_LAST_BATCH then run
+    # against that staging path; CLEANUP removes it after successful transfer.
+    ("PREPARE_LOG_DOWNLINK", None, [], "PREPARE_LOG_DOWNLINK"),
+    ("CLEANUP_LOG_DOWNLINK", None, [], "CLEANUP_LOG_DOWNLINK"),
+    # Change the active log level (stream + SD file) and persist via NVM.
+    ("SET_LOG_LEVEL", None, ["level_id"], "SET_LOG_LEVEL"),
 ]
 
 
