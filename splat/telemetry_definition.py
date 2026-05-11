@@ -176,6 +176,8 @@ var_dict = {
     "CDH_DIR_SIZE": ["STORAGE", "I"],
     "EPS_NUM_FILES": ["STORAGE", "I"],
     "EPS_DIR_SIZE": ["STORAGE", "I"],
+    "EPS_WARNING_NUM_FILES": ["STORAGE", "I"],
+    "EPS_WARNING_DIR_SIZE": ["STORAGE", "I"],
     "ADCS_NUM_FILES": ["STORAGE", "I"],
     "ADCS_DIR_SIZE": ["STORAGE", "I"],
     "COMMS_NUM_FILES": ["STORAGE", "I"],
@@ -186,6 +188,8 @@ var_dict = {
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I"],
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I"],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I"],
+    "HAL_NUM_FILES": ["STORAGE", "I"],
+    "HAL_DIR_SIZE": ["STORAGE", "I"],
     # --- COMMS ---
     "RX_PACKET_COUNT": ["COMMS", "H"],
     "FAILED_UNPACK_COUNT": ["COMMS", "H"],
@@ -315,6 +319,8 @@ report_dict = {
         "CDH_DIR_SIZE": "STORAGE",
         "EPS_NUM_FILES": "STORAGE",
         "EPS_DIR_SIZE": "STORAGE",
+        "EPS_WARNING_NUM_FILES": "STORAGE",
+        "EPS_WARNING_DIR_SIZE": "STORAGE",
         "ADCS_NUM_FILES": "STORAGE",
         "ADCS_DIR_SIZE": "STORAGE",
         "COMMS_NUM_FILES": "STORAGE",
@@ -325,6 +331,8 @@ report_dict = {
         "PAYLOAD_DIR_SIZE": "STORAGE",
         "CMD_LOGS_NUM_FILES": "STORAGE",
         "CMD_LOGS_DIR_SIZE": "STORAGE",
+        "HAL_NUM_FILES": "STORAGE",
+        "HAL_DIR_SIZE": "STORAGE",
     },
     # Corresponds to MSG_ID_SAT_TM_HAL (0x02)cd 
     "TM_HAL": {
