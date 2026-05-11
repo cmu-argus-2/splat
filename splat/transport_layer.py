@@ -73,7 +73,7 @@ class TransactionManager:
         
         # In tx side if the tid already exists overwrite it
         if tid in target_dict:
-            print(f"[INFO] Overwriting existing TX transaction with tid={tid}")
+            # print(f"[INFO] Overwriting existing TX transaction with tid={tid}")
             # [check] - it would be good to return that it has been overwritten in the ack from the command
             del target_dict[tid]
         
@@ -81,7 +81,7 @@ class TransactionManager:
         trans = Transaction(tid, file_path=file_path, number_of_packets=number_of_packets, is_tx=is_tx)
         target_dict[tid] = trans
         
-        print(f"[INFO] Created {dict_name} transaction with tid={tid}")
+        # print(f"[INFO] Created {dict_name} transaction with tid={tid}")
         return trans
     
     def get_transaction(self, tid: int, is_tx: bool = None):
@@ -117,13 +117,13 @@ class TransactionManager:
         if is_tx is True or is_tx is None:
             if tid in self.tx_dict:
                 del self.tx_dict[tid]
-                print(f"[INFO] Deleted TX transaction with tid={tid}")
+                # print(f"[INFO] Deleted TX transaction with tid={tid}")
                 return True
         
         if is_tx is False or is_tx is None:
             if tid in self.rx_dict:
                 del self.rx_dict[tid]
-                print(f"[INFO] Deleted RX transaction with tid={tid}")
+                # print(f"[INFO] Deleted RX transaction with tid={tid}")
                 return True
         
         return False
@@ -324,7 +324,7 @@ class TransactionManager:
         try:
             with open(filepath, 'w') as f:
                 json.dump(trans_data, f, indent=2)
-            print(f"[INFO] Transaction dump saved to: {filepath}")
+            # print(f"[INFO] Transaction dump saved to: {filepath}")
             return filepath
         except Exception as e:
             print(f"[ERROR] Failed to dump transaction to disk: {e}")
@@ -485,11 +485,10 @@ class Transaction:
         
         # check if fragment already exists, as of right now it will only warn the user
         if check and seq_number in self.fragment_dict:
-            print(f"[PAYLOAD] [WARNING] Fragment with sequence number {seq_number} already exists in transaction {self.tid}. Overwriting.")
+            print(f"[WARNING] Fragment with sequence number {seq_number} already exists in transaction {self.tid}. Overwriting.")
 
         # change to receiving state if we are not already in it
         if self.state != trans_state.RECEIVING:
-            print(f"[PAYLOAD] [INFO] Transaction {self.tid} changing state to RECEIVING.")
             self.change_state(trans_state.RECEIVING)
 
         self.fragment_dict[seq_number] = fragment
@@ -501,17 +500,13 @@ class Transaction:
             self._missing_fragments_bitset[byte_idx] &= ~(1 << (7 - bit_idx))
             self._missing_fragments_count -= 1
         elif check:
-            print(f"[PAYLOAD] [WARNING] Adding fragment {seq_number} to transaction {self.tid}. But not in missing fragments")
+            print(f"[WARNING] Adding fragment {seq_number} to transaction {self.tid}. But not in missing fragments")
         
         # check if the transaction is completed
         if check and len(self.fragment_dict) == self.number_of_packets:
-            print(f"[PAYLOAD] [INFO] Transaction {self.tid} has received all packets. Changing state to COMPLETED.")
             self.change_state(trans_state.COMPLETED)
             return True
 
-        # print the count of missing fragments
-        print(f"[PAYLOAD] - len of missing fragments: {self._missing_fragments_count}")
-    
         return False
     
     
@@ -567,7 +562,6 @@ class Transaction:
                 except Exception:
                     try:
                         os.mkdir(next_path)
-                        print(f"[PAYLOAD] Created directory {next_path}")
                     except Exception as mkdir_error:
                         print(f"[ERROR] Failed to create directory {next_path}: {mkdir_error}")
                         return False
@@ -580,23 +574,22 @@ class Transaction:
             if not _ensure_dir_exists(file_dir):
                 print(f"[ERROR] Could not prepare destination directory {file_dir} for transaction {self.tid}.")
                 return False
-            print(f"[PAYLOAD] Directory {file_dir} is ready.")
             
         # Ensure we have space for missing fragments (assumed zeros)
         max_seq = max(self.fragment_dict.keys())
         target_size = (max_seq + 1) * self.max_payload_size
 
-        print(f"[PAYLOAD] Writing partial file for transaction {self.tid} at {file_path}.")
-        print(f"[PAYLOAD] max_seq: {max_seq}, target_size: {target_size}")
+        # print(f"[PAYLOAD] Writing partial file for transaction {self.tid} at {file_path}.")
+        # print(f"[PAYLOAD] max_seq: {max_seq}, target_size: {target_size}")
         # if os.path.exists(file_path):    # cant use os.path because cpy does not support
         try:
             current_size = os.stat(file_path)[6]
             mode = "r+b"
-            print(f"[PAYLOAD] File {file_path} exists. Current size: {current_size}")
+            # print(f"[PAYLOAD] File {file_path} exists. Current size: {current_size}")
         except Exception as e:
             current_size = 0
             mode = "wb+"
-            print(f"[PAYLOAD] Creating file {file_path}.")
+            # print(f"[PAYLOAD] Creating file {file_path}.")
         
         total_bytes_written = 0
         written_fragments = 0
@@ -622,9 +615,6 @@ class Transaction:
         if self.state != trans_state.RECEIVING:
             self.change_state(trans_state.RECEIVING)
 
-        print(
-            f"[INFO] Partial file write for transaction {self.tid} at {file_path}. Fragments written: {written_fragments}, bytes written: {total_bytes_written}."
-        )
 
         return True
     
@@ -659,7 +649,7 @@ class Transaction:
                 total_bytes_written += bytes_written
         
         # File written and verified successfully
-        print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
+        # print(f"[INFO] File for transaction {self.tid} has been written to disk at {file_path}. Total bytes written: {total_bytes_written}")
         
         self.change_state(trans_state.SUCCESS)
         return True

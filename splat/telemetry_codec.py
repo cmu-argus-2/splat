@@ -150,9 +150,7 @@ class Command:
         
         self.name = cmd_name
         self.command_id = COMMAND_IDS[cmd_name]
-        self.precondition = command_list[self.command_id][1]
-        self.satellite_func = command_list[self.command_id][3]
-        self.arg_names = command_list[self.command_id][2]
+        self.arg_names = command_list[self.command_id][1]
         self.arguments = {}   # [check] - could change this to a list
     
     def add_argument(self, arg_name, value):
@@ -336,7 +334,7 @@ def pack_ack(ack):
     # --- 3. Payload Encoding ---
     payload_bytes = b''
     if ack.ack_args:
-        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 2]  # Ensure total size does not exceed max packet size (accounting for header)
+        payload_bytes = ack.ack_args.encode('utf-8')[:MAX_PACKET_SIZE - 2 - CALLSIGN_SIZE]  # Ensure total size does not exceed max packet size (accounting for header)
         
     return header_bytes + payload_bytes
     
@@ -378,11 +376,6 @@ def pack_report(report):
         # If value is None, use 0
         if value is None:
             value = 0
-        
-        # # Apply scaling if needed
-        # scale = var_dict[var_name][2]
-        # if scale is not None:
-        #     value = value * scale
         
         values.append(value)
     
@@ -434,11 +427,6 @@ def unpack_report(data):
         
         subsystem = report_dict[report_name][var_name]
         value = unpacked[counter]
-        
-        # # Apply inverse scaling if needed
-        # scale = var_dict[var_name][2]
-        # if scale is not None:
-        #     value = value / scale
         
         report.add_variable(var_name, subsystem, value)
         counter += 1
@@ -553,7 +541,7 @@ def unpack_command(data):
     # for now there can only be one string/binary argument and it should be the last one
     # i want to calculate the size of the other arguments and seperate the bytes
     variable_arg_value = None # default value if there is no string/binary argument
-    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][2]):
+    if any('s' in argument_dict[arg_name] for arg_name in command_list[command_id][1]):
         # Handle string/binary arguments separately (will be the remaining bytes after unpacking the other arguments)
         cmd_format = cmd_format.replace('s', '').replace('p', '')
         non_variable_size = struct.calcsize(cmd_format)
@@ -562,7 +550,7 @@ def unpack_command(data):
         data = data[:non_variable_size]  # only keep the non-variable part for unpacking
         
         # Check if it's a string or binary argument
-        for arg_name in command_list[command_id][2]:
+        for arg_name in command_list[command_id][1]:
             if 's' in argument_dict.get(arg_name, ''):
                 variable_arg_value = variable_data.decode('utf-8')
                 break
@@ -716,15 +704,12 @@ def unpack_variable(data):
         
     var_name = VAR_ID_TO_NAME[ss_id][variable_id]
     ss_name = [k for k,v in SS_map.items() if v == ss_id][0]
-    print("Variable name:", var_name)
     
     # Get the format string
     var_format = get_variable_format(var_name)
-    print("Format string:", var_format)
     
     # Unpack the data
     unpacked = struct.unpack(var_format, data[:struct.calcsize(var_format)])
-    print("Unpacked data:", unpacked)
     
     
     # Create the variable object
