@@ -60,7 +60,7 @@ var_dict = {
     "WATCHDOG_TIMER": ["CDH", "B"],  # Status
     "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
-    "DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
+    #"DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
     "EPS_POWER_FLAG": ["EPS", "B"],
     "MAINBOARD_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
@@ -217,7 +217,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -310,7 +310,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -341,7 +341,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
