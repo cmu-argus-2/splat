@@ -48,148 +48,158 @@ MSG_TYPE_DICT = {
 }
 
 # Variable definitions
-# Format: "var_name": [subsystem, struct_type, scale_factor]
-# scale_factor is used to convert to/from SI units (None = no scaling)
+# Format: "var_name": [subsystem, struct_type]
 var_dict = {
     # --- CDH / SYSTEM ---
-    "TIME": ["CDH", "I", None],  # Unix timestamp
-    "BOOT_TIME": ["CDH", "I", None],  # Time since boot
-    "SC_STATE": ["CDH", "B", None],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I", None],  # KBytes
-    "CURRENT_RAM_USAGE": ["CDH", "B", None],  # %
-    "REBOOT_COUNT": ["CDH", "B", None],  # Count
-    "WATCHDOG_TIMER": ["CDH", "B", None],  # Status
-    "HAL_BITFLAGS": ["CDH", "B", None],  # Flags
-    "DETUMBLING_ERROR_FLAG": ["CDH", "B", None],  # Flag
+    "TIME": ["CDH", "I"],  # Unix timestamp
+    "BOOT_TIME": ["CDH", "I"],  # Time since boot
+    "SC_STATE": ["CDH", "B"],  # Spacecraft state
+    "SD_USAGE": ["CDH", "I"],  # KBytes
+    "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
+    "BOOT_COUNT": ["CDH", "B"],  # Count
+    "WATCHDOG_TIMER": ["CDH", "B"],  # Status
+    "HAL_BITFLAGS": ["CDH", "B"],  # Flags
+    "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
-    "EPS_POWER_FLAG": ["EPS", "B", None],
-    "MAINBOARD_TEMPERATURE": ["EPS", "h", 10],  # 0.1°C -> °C
-    "MAINBOARD_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "MAINBOARD_CURRENT": ["EPS", "h", 1000],  # mA -> A
-    "BATTERY_PACK_TEMPERATURE": ["EPS", "h", 10],  # 0.1°C -> °C
-    "BATTERY_PACK_TEMPERATURE_AIN1": ["EPS", "h", 10],  # 0.1°C -> °C
-    "BATTERY_PACK_TEMPERATURE_AIN2": ["EPS", "h", 10],  # 0.1°C -> °C
-    "BATTERY_PACK_TEMPERATURE_DIE": ["EPS", "h", 10],  # 0.1°C -> °C
-    "BATTERY_PACK_REPORTED_SOC": ["EPS", "B", 1],  # %
-    "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H", 1],  # mAh
-    "BATTERY_PACK_CURRENT": ["EPS", "h", 1000],  # mA -> A
-    "BATTERY_PACK_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "BATTERY_PACK_MIDPOINT_VOLTAGE": ["EPS", "h", 1000],  # mV -> V
-    "BATTERY_PACK_TTE": ["EPS", "I", 1],  # Seconds
-    "BATTERY_PACK_TTF": ["EPS", "I", 1],  # Seconds
+    "EPS_POWER_FLAG": ["EPS", "B"],
+    "MAINBOARD_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "MAINBOARD_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "MAINBOARD_CURRENT": ["EPS", "h"],  # mA -> A
+    "BATTERY_PACK_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN1": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN2": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_DIE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_REPORTED_SOC": ["EPS", "B"],  # %
+    "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H"],  # mAh
+    "BATTERY_PACK_CURRENT": ["EPS", "h"],  # mA -> A
+    "BATTERY_PACK_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "BATTERY_PACK_MIDPOINT_VOLTAGE": ["EPS", "h"],  # mV -> V
+    "BATTERY_PACK_TTE": ["EPS", "I"],  # Seconds
+    "BATTERY_PACK_TTF": ["EPS", "I"],  # Seconds
     # Coils (Magnetorquers)
-    "XP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "XP_COIL_CURRENT": ["EPS", "h", 1000],
-    "XM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "XM_COIL_CURRENT": ["EPS", "h", 1000],
-    "YP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "YP_COIL_CURRENT": ["EPS", "h", 1000],
-    "YM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "YM_COIL_CURRENT": ["EPS", "h", 1000],
-    "ZP_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "ZP_COIL_CURRENT": ["EPS", "h", 1000],
-    "ZM_COIL_VOLTAGE": ["EPS", "h", 1000],
-    "ZM_COIL_CURRENT": ["EPS", "h", 1000],
+    "XP_COIL_VOLTAGE": ["EPS", "h"],
+    "XP_COIL_CURRENT": ["EPS", "h"],
+    "XM_COIL_VOLTAGE": ["EPS", "h"],
+    "XM_COIL_CURRENT": ["EPS", "h"],
+    "YP_COIL_VOLTAGE": ["EPS", "h"],
+    "YP_COIL_CURRENT": ["EPS", "h"],
+    "YM_COIL_VOLTAGE": ["EPS", "h"],
+    "YM_COIL_CURRENT": ["EPS", "h"],
+    "ZP_COIL_VOLTAGE": ["EPS", "h"],
+    "ZP_COIL_CURRENT": ["EPS", "h"],
+    "ZM_COIL_VOLTAGE": ["EPS", "h"],
+    "ZM_COIL_CURRENT": ["EPS", "h"],
     # Payload & Solar Inputs
-    "JETSON_INPUT_VOLTAGE": ["EPS", "h", 1000],
-    "JETSON_INPUT_CURRENT": ["EPS", "h", 1000],
-    "RF_LDO_OUTPUT_VOLTAGE": ["EPS", "h", 1000],
-    "RF_LDO_OUTPUT_CURRENT": ["EPS", "h", 1000],
-    "GPS_VOLTAGE": ["EPS", "h", 1000],
-    "GPS_CURRENT": ["EPS", "h", 1000],
+    "JETSON_INPUT_VOLTAGE": ["EPS", "h"],
+    "JETSON_INPUT_CURRENT": ["EPS", "h"],
+    "RF_LDO_OUTPUT_VOLTAGE": ["EPS", "h"],
+    "RF_LDO_OUTPUT_CURRENT": ["EPS", "h"],
+    "GPS_VOLTAGE": ["EPS", "h"],
+    "GPS_CURRENT": ["EPS", "h"],
+    # Solar Arrays
+    "XP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "XP_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "XM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "XM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "YP_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "YP_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
+    "YM_SOLAR_CHARGE_VOLTAGE": ["EPS", "h"],
+    "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
     # --- ADCS ---
-    "MODE": ["ADCS", "B", None],
-    # Custom 'X' (High Precision) mapped to 'i' with 1e7 scaling
-    "GYRO_X": ["ADCS", "f", 10000000],
-    "GYRO_Y": ["ADCS", "f", 10000000],
-    "GYRO_Z": ["ADCS", "f", 10000000],
-    "MAG_X": ["ADCS", "f", 10000000],
-    "MAG_Y": ["ADCS", "f", 10000000],
-    "MAG_Z": ["ADCS", "f", 10000000],
-    "SUN_STATUS": ["ADCS", "B", None],
-    "SUN_VEC_X": ["ADCS", "f", 10000000],
-    "SUN_VEC_Y": ["ADCS", "f", 10000000],
-    "SUN_VEC_Z": ["ADCS", "f", 10000000],
+    "MODE": ["ADCS", "B"],
+    # Custom 'X' (High Precision) mapped to 'i'
+    "GYRO_X": ["ADCS", "f"],
+    "GYRO_Y": ["ADCS", "f"],
+    "GYRO_Z": ["ADCS", "f"],
+    "MAG_X": ["ADCS", "f"],
+    "MAG_Y": ["ADCS", "f"],
+    "MAG_Z": ["ADCS", "f"],
+    "SUN_STATUS": ["ADCS", "B"],
+    "SUN_VEC_X": ["ADCS", "f"],
+    "SUN_VEC_Y": ["ADCS", "f"],
+    "SUN_VEC_Z": ["ADCS", "f"],
     # Light Sensors
-    "LIGHT_SENSOR_XP": ["ADCS", "H", None],
-    "LIGHT_SENSOR_XM": ["ADCS", "H", None],
-    "LIGHT_SENSOR_YP": ["ADCS", "H", None],
-    "LIGHT_SENSOR_YM": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_1": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_2": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_3": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZP_4": ["ADCS", "H", None],
-    "LIGHT_SENSOR_ZM": ["ADCS", "H", None],
+    "LIGHT_SENSOR_XP": ["ADCS", "H"],
+    "LIGHT_SENSOR_XM": ["ADCS", "H"],
+    "LIGHT_SENSOR_YP": ["ADCS", "H"],
+    "LIGHT_SENSOR_YM": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_XP": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_YM": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_XM": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZP_YP": ["ADCS", "H"],
+    "LIGHT_SENSOR_ZM": ["ADCS", "H"],
     # Coil Status flags
-    "XP_COIL_STATUS": ["ADCS", "B", None],
-    "XM_COIL_STATUS": ["ADCS", "B", None],
-    "YP_COIL_STATUS": ["ADCS", "B", None],
-    "YM_COIL_STATUS": ["ADCS", "B", None],
-    "ZP_COIL_STATUS": ["ADCS", "B", None],
-    "ZM_COIL_STATUS": ["ADCS", "B", None],
+    "XP_COIL_STATUS": ["ADCS", "B"],
+    "XM_COIL_STATUS": ["ADCS", "B"],
+    "YP_COIL_STATUS": ["ADCS", "B"],
+    "YM_COIL_STATUS": ["ADCS", "B"],
+    "ZP_COIL_STATUS": ["ADCS", "B"],
+    "ZM_COIL_STATUS": ["ADCS", "B"],
     # --- GPS ---
-    "GPS_MESSAGE_ID": ["GPS", "B", None],
-    "GPS_FIX_MODE": ["GPS", "B", None],
-    "GPS_GNSS_WEEK": ["GPS", "H", None],
-    "GPS_GNSS_TOW": ["GPS", "I", None],
-    "GPS_ECEF_X": ["GPS", "i", None],
-    "GPS_ECEF_Y": ["GPS", "i", None],
-    "GPS_ECEF_Z": ["GPS", "i", None],
-    "GPS_ECEF_VX": ["GPS", "i", None],
-    "GPS_ECEF_VY": ["GPS", "i", None],
-    "GPS_ECEF_VZ": ["GPS", "i", None],
+    "GPS_MESSAGE_ID": ["GPS", "B"],
+    "GPS_FIX_MODE": ["GPS", "B"],
+    "GPS_GNSS_WEEK": ["GPS", "H"],
+    "GPS_GNSS_TOW": ["GPS", "I"],
+    "GPS_ECEF_X": ["GPS", "i"],
+    "GPS_ECEF_Y": ["GPS", "i"],
+    "GPS_ECEF_Z": ["GPS", "i"],
+    "GPS_ECEF_VX": ["GPS", "i"],
+    "GPS_ECEF_VY": ["GPS", "i"],
+    "GPS_ECEF_VZ": ["GPS", "i"],
     # --- PAYLOAD ---
-    "SYSTEM_TIME": ["PAYLOAD_TM", "Q", None],  # Unix timestamp (seconds)
-    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I", None],  # System uptime (seconds)
-    "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I", None],
-    "PD_STATE_JETSON": ["PAYLOAD_TM", "B", None],       # the current state of the payload in terms of jetson (check jetson code)
-    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B", None],    # the current state of the payload in terms of mainboard (check mainboard code)
-    "LATEST_ERROR": ["PAYLOAD_TM", "B", None],
-    "DISK_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B", None],  # 0=not running, 1=running
-    "RAM_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "SWAP_USAGE": ["PAYLOAD_TM", "B", None],  # %
-    "ACTIVE_CORES": ["PAYLOAD_TM", "B", None],  # count
-    "CPU_LOAD_0": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_1": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_2": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_3": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_4": ["PAYLOAD_TM", "B", None],  # %
-    "CPU_LOAD_5": ["PAYLOAD_TM", "B", None],  # %
-    "GPU_FREQ": ["PAYLOAD_TM", "H", None],  # MHz
-    "CPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
-    "GPU_TEMP": ["PAYLOAD_TM", "B", None],  # °C
-    "VDD_IN": ["PAYLOAD_TM", "H", None],  # mW
-    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H", None],  # mW
-    "VDD_SOC": ["PAYLOAD_TM", "H", None],  # mW
-    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b", None],  # Last inference subprocess return code
+    "SYSTEM_TIME": ["PAYLOAD_TM", "Q"],  # Unix timestamp (seconds)
+    "SYSTEM_UPTIME": ["PAYLOAD_TM", "I"],  # System uptime (seconds)
+    "LAST_EXECUTED_CMD_TIME": ["PAYLOAD_TM", "I"],
+    "NEXT_CMD_TIME": ["PAYLOAD_TM", "I"],
+    "PD_STATE_JETSON": ["PAYLOAD_TM", "B"],       # the current state of the payload in terms of jetson (check jetson code)
+    "PD_STATE_MAINBOARD": ["PAYLOAD_TM", "B"],    # the current state of the payload in terms of mainboard (check mainboard code)
+    "LATEST_ERROR": ["PAYLOAD_TM", "B"],
+    "DISK_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "TEGRASTATS_PROCESS_STATUS": ["PAYLOAD_TM", "B"],  # 0=not running, 1=running
+    "RAM_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "SWAP_USAGE": ["PAYLOAD_TM", "B"],  # %
+    "ACTIVE_CORES": ["PAYLOAD_TM", "B"],  # count
+    "CPU_LOAD_0": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_1": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_2": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_3": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_4": ["PAYLOAD_TM", "B"],  # %
+    "CPU_LOAD_5": ["PAYLOAD_TM", "B"],  # %
+    "GPU_FREQ": ["PAYLOAD_TM", "H"],  # MHz
+    "CPU_TEMP": ["PAYLOAD_TM", "B"],  # °C
+    "GPU_TEMP": ["PAYLOAD_TM", "B"],  # °C
+    "VDD_IN": ["PAYLOAD_TM", "H"],  # mW
+    "VDD_CPU_GPU_CV": ["PAYLOAD_TM", "H"],  # mW
+    "VDD_SOC": ["PAYLOAD_TM", "H"],  # mW
+    "INFERENCE_RETURN_CODE": ["PAYLOAD_TM", "b"],  # Last inference subprocess return code
     # --- STORAGE ---
-    "SD_TOTAL_USAGE": ["STORAGE", "I", None],
-    "CDH_NUM_FILES": ["STORAGE", "I", None],
-    "CDH_DIR_SIZE": ["STORAGE", "I", None],
-    "EPS_NUM_FILES": ["STORAGE", "I", None],
-    "EPS_DIR_SIZE": ["STORAGE", "I", None],
-    "ADCS_NUM_FILES": ["STORAGE", "I", None],
-    "ADCS_DIR_SIZE": ["STORAGE", "I", None],
-    "COMMS_NUM_FILES": ["STORAGE", "I", None],
-    "COMMS_DIR_SIZE": ["STORAGE", "I", None],
-    "GPS_NUM_FILES": ["STORAGE", "I", None],
-    "GPS_DIR_SIZE": ["STORAGE", "I", None],
-    "PAYLOAD_NUM_FILES": ["STORAGE", "I", None],
-    "PAYLOAD_DIR_SIZE": ["STORAGE", "I", None],
-    "CMD_LOGS_NUM_FILES": ["STORAGE", "I", None],
-    "CMD_LOGS_DIR_SIZE": ["STORAGE", "I", None],
+    "SD_TOTAL_USAGE": ["STORAGE", "I"],
+    "CDH_NUM_FILES": ["STORAGE", "I"],
+    "CDH_DIR_SIZE": ["STORAGE", "I"],
+    "EPS_NUM_FILES": ["STORAGE", "I"],
+    "EPS_DIR_SIZE": ["STORAGE", "I"],
+    "ADCS_NUM_FILES": ["STORAGE", "I"],
+    "ADCS_DIR_SIZE": ["STORAGE", "I"],
+    "COMMS_NUM_FILES": ["STORAGE", "I"],
+    "COMMS_DIR_SIZE": ["STORAGE", "I"],
+    "GPS_NUM_FILES": ["STORAGE", "I"],
+    "GPS_DIR_SIZE": ["STORAGE", "I"],
+    "PAYLOAD_NUM_FILES": ["STORAGE", "I"],
+    "PAYLOAD_DIR_SIZE": ["STORAGE", "I"],
+    "CMD_LOGS_NUM_FILES": ["STORAGE", "I"],
+    "CMD_LOGS_DIR_SIZE": ["STORAGE", "I"],
     # --- COMMS ---
-    "RX_PACKET_COUNT": ["COMMS", "I", None],
-    "FAILED_UNPACK_COUNT": ["COMMS", "H", None],
-    "CRC_ERROR_COUNT": ["COMMS", "H", None],
-    "UNDEF_ERROR_COUNT": ["COMMS", "H", None],
-    "PACKET_NONE_COUNT": ["COMMS", "H", None],
-    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H", None],
-    "TX_PACKET_COUNT": ["COMMS", "I", None],
-    "TX_FAILED_COUNT": ["COMMS", "H", None],
-    "RX_MESSAGE_RSSI": ["COMMS", "e", None],
+    "RX_PACKET_COUNT": ["COMMS", "H"],
+    "FAILED_UNPACK_COUNT": ["COMMS", "H"],
+    "CRC_ERROR_COUNT": ["COMMS", "H"],
+    "UNDEF_ERROR_COUNT": ["COMMS", "H"],
+    "PACKET_NONE_COUNT": ["COMMS", "H"],
+    "PACKET_AUTH_FAIL_COUNT": ["COMMS", "H"],
+    "RX_DIGIPEATER_COUNT": ["COMMS", "H"],
+    "TX_PACKET_COUNT": ["COMMS", "H"],
+    "TX_FAILED_COUNT": ["COMMS", "H"],
+    "TX_DIGIPEATER_COUNT": ["COMMS", "H"],
+    "RX_MESSAGE_RSSI": ["COMMS", "e"],
 }
 
 # Report definitions
@@ -204,7 +214,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
-        "REBOOT_COUNT": "CDH",
+        "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -258,10 +268,10 @@ report_dict = {
         "LIGHT_SENSOR_XM": "ADCS",
         "LIGHT_SENSOR_YP": "ADCS",
         "LIGHT_SENSOR_YM": "ADCS",
-        "LIGHT_SENSOR_ZP_1": "ADCS",
-        "LIGHT_SENSOR_ZP_2": "ADCS",
-        "LIGHT_SENSOR_ZP_3": "ADCS",
-        "LIGHT_SENSOR_ZP_4": "ADCS",
+        "LIGHT_SENSOR_ZP_XP": "ADCS",
+        "LIGHT_SENSOR_ZP_YM": "ADCS",
+        "LIGHT_SENSOR_ZP_XM": "ADCS",
+        "LIGHT_SENSOR_ZP_YP": "ADCS",
         "LIGHT_SENSOR_ZM": "ADCS",
         "XP_COIL_STATUS": "ADCS",
         "XM_COIL_STATUS": "ADCS",
@@ -290,6 +300,8 @@ report_dict = {
         "TX_PACKET_COUNT": "COMMS",
         "TX_FAILED_COUNT": "COMMS",
         "RX_MESSAGE_RSSI": "COMMS",
+        "RX_DIGIPEATER_COUNT": "COMMS",
+        "TX_DIGIPEATER_COUNT": "COMMS",
     },
     # Corresponds to MSG_ID_SAT_TM_STORAGE (0x03)
     "TM_STORAGE": {
@@ -297,7 +309,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
-        "REBOOT_COUNT": "CDH",
+        "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -323,7 +335,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
-        "REBOOT_COUNT": "CDH",
+        "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -428,58 +440,51 @@ return_dict = {
 
 
 
-# command name, precondition function, argument list, function to be called in satellite
+# command name, argument list
 # [check] - should i add the subsystem here
 command_list = [
-    ("FORCE_REBOOT", None, [], "FORCE_REBOOT"),
-    ("GRACEFUL_REBOOT", None, [], "GRACEFUL_REBOOT"),
-    ("MAIN_POWER_REBOOT", None, [], "MAIN_POWER_REBOOT"),
-    ("PET_REBOOT", None, [], "PET_REBOOT"),
+    ("PING", ["string_command"]),
+    ("FORCE_REBOOT", []),
+    ("GRACEFUL_REBOOT", []),
+    ("MAIN_POWER_REBOOT", []),
+    ("REBOOT_ACK", []),
+    ("PET_REBOOT", []),
     
-    ("SUM", "valid_inputs", ["op1", "op2"], "SUM"),
-    ("SWITCH_TO_STATE", "valid_state", ["target_state_id", "time_in_state"], "SWITCH_TO_STATE"),
-    ("UPLINK_TIME_REFERENCE", "valid_time_format", ["time_reference"], "UPLINK_TIME_REFERENCE"),
-    ("TURN_OFF_PAYLOAD", None, [], "TURN_OFF_PAYLOAD"),
-    ("TURN_ON_PAYLOAD", None, [], "TURN_ON_PAYLOAD"),
-    ("SCHEDULE_OD_EXPERIMENT", None, [], "SCHEDULE_OD_EXPERIMENT"),
-    ("REQUEST_TM_NOMINAL", None, [], "REQUEST_TM_NOMINAL"),
-    ("REQUEST_TM_HAL", None, [], "REQUEST_TM_HAL"),
-    ("REQUEST_TM_STORAGE", None, [], "REQUEST_TM_STORAGE"),
-    ("REQUEST_TM_PAYLOAD", None, [], "REQUEST_TM_PAYLOAD"),
-    (
-        "REQUEST_FILE_METADATA",
-        "file_id_exists",
-        ["file_id", "file_time"],
-        "REQUEST_FILE_METADATA",
-    ),
-    ("REQUEST_FILE_PKT", "file_id_exists", ["file_id", "file_time"], "REQUEST_FILE_PKT"),
-    ("REQUEST_IMAGE", None, [], "REQUEST_IMAGE"),
-    ("DOWNLINK_ALL", "file_id_exists", ["file_id", "file_time"], "DOWNLINK_ALL"),
-    ("EVAL_STRING_COMMAND", None, ["string_command"], "EVAL_STRING_COMMAND"),
+    ("SUM", ["op1", "op2"]),
+    ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
+    ("UPLINK_TIME_REFERENCE", ["time_reference"]),
+    ("TURN_OFF_PAYLOAD", []),
+    ("TURN_ON_PAYLOAD", []),
+    ("SCHEDULE_OD_EXPERIMENT", []),
+    ("REQUEST_TM_NOMINAL", []),
+    ("REQUEST_TM_HAL", []),
+    ("REQUEST_TM_STORAGE", []),
+    ("REQUEST_TM_PAYLOAD", []),
     
-    # Commands to downlink images (should add pre conditions to these commands)
-    ("CREATE_TRANS", None, ["tid", "string_command"], "CREATE_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("INIT_TRANS", None, ["tid", "number_of_packets"], "INIT_TRANS"),   # for now this is a string command, but eventually should change for a reference number
-    ("GENERATE_ALL_PACKETS", None, ["tid"], "GENERATE_ALL_PACKETS"), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
-    ("GENERATE_X_PACKETS", None, ["tid", "x"], "GENERATE_X_PACKETS"), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
-    ("GENERATE_SINGLE_PACKET", None, ["tid", "seq_number"], "GENERATE_SINGLE_PACKET"), # sent from gs to satelltie to request sending all the packets in a transaction
-    ("CONFIRM_LAST_BATCH", None, ["tid", "bitmap_high", "bitmap_low"], "CONFIRM_LAST_BATCH"), # send from gs to satellite to update missing_fragments after the last batch tx. 
-    ("UPDATE_MISSING_FRAGMENTS", None, ["tid", "seq_offset", "bitmap_high", "bitmap_low"], "UPDATE_MISSING_FRAGMENTS"), # will allow to add or remove 64 packets out of the missing_packet list
-    ("LIST_DIR", None, ["skip_elements", "string_command"], "LIST_DIR"),    # will list all the files in the given directory, skip the first skip_elements files
-    ("GET_FILE_SIZE", None, ["string_command"], "GET_FILE_SIZE"),  # will return the size of the file in bytes
-    ("DELETE_ALL_FILES", None, [], "DELETE_ALL_FILES"),  #  will call the DH function to delete all dh files (and images)
-    ("UPDATE_SD_USAGE", None, [], "UPDATE_SD_USAGE"),  #  will call the DH function to calculate the sd card usage
+    ("EVAL_STRING_COMMAND", ["string_command"]),
+    
+    # Commands to downlink images
+    ("CREATE_TRANS", ["tid", "string_command"]),   # for now this is a string command, but eventually should change for a reference number
+    ("INIT_TRANS", ["tid", "number_of_packets"]),   # for now this is a string command, but eventually should change for a reference number
+    ("GENERATE_ALL_PACKETS", ["tid"]), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
+    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GENERATE_SINGLE_PACKET", ["tid", "seq_number"]), # sent from gs to satelltie to request sending all the packets in a transaction
+    ("CONFIRM_LAST_BATCH", ["tid", "bitmap_high", "bitmap_low"]), # send from gs to satellite to update missing_fragments after the last batch tx.
+    ("UPDATE_MISSING_FRAGMENTS", ["tid", "seq_offset", "bitmap_high", "bitmap_low"]), # will allow to add or remove 64 packets out of the missing_packet list
+    ("LIST_DIR", ["skip_elements", "string_command"]),    # will list all the files in the given directory, skip the first skip_elements files
+    ("GET_FILE_SIZE", ["string_command"]),  # will return the size of the file in bytes
+    ("DELETE_ALL_FILES", []),  #  will call the DH function to delete all dh files (and images)
+    ("UPDATE_SD_USAGE", []),  #  will call the DH function to calculate the sd card usage
 
-    ("RF_STOP", None, [], "RF_STOP"),
-    ("RF_RESUME", None, [], "RF_RESUME"),
-    ("DIGIPEATER_ACTIVATE", None, [], "DIGIPEATER_ACTIVATE"),
-    ("DIGIPEATER_DEACTIVATE", None, [], "DIGIPEATER_DEACTIVATE"),
-    ("COMMS_MODE", "valid_comms_mode", ["mode_id"], "COMMS_MODE"),
-    ("SIMPLE_EXPERIMENT", None, ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",], "EXPERIMENT"),  # used  to run experiment with default camera params
+    ("RF_STOP", []),
+    ("RF_RESUME", []),
+    ("DIGIPEATER_ACTIVATE", []),
+    ("DIGIPEATER_DEACTIVATE", []),
+    ("COMMS_MODE", ["mode_id"]),
+    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
-        None,
         [
             "ts",
             "camera_bit_flag",
@@ -506,15 +511,16 @@ command_list = [
             "tnr_strength",
             "saturation",
         ],
-        "EXPERIMENT",
     ),
-    ("GET_EXPERIMENT_LIST", None, ["skip_elements"], "GET_EXPERIMENT_LIST"),  # this command will return the  timestamps for the next scheduled experiments
-    ("CLEAR_EXPERIMENT_LIST", None, [], "CLEAR_EXPERIMENT_LIST"),  # this command will clear the list of scheduled experiments in the payload
+    ("GET_EXPERIMENT_LIST", ["skip_elements"]),  # this command will return the  timestamps for the next scheduled experiments
+    ("CLEAR_EXPERIMENT_LIST", []),  # this command will clear the list of scheduled experiments in the payload
 
-    ("PING_EXP", None, ["ts"], "PING_EXP"),                     # this is the special ping command for experiment
-    ("EXPERIMENT_FINISHED", None, [], "EXPERIMENT_FINISHED"),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", None, [], "DOWNLOAD_FINISH")   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    ("PING_EXP", ["ts"]),                     # this is the special ping command for experiment
+    ("EXPERIMENT_FINISHED", []),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
+    ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
+    ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
+
 
 ]
 
@@ -545,8 +551,6 @@ VAR_ID_TO_NAME = {
 # This will be used to create the report order list. Does not have the same format as the previous
 # has all the varialbes as keys and value is a tuple of (subsystem, var_id)
 VAR_NAME_TO_ID = {name: (ss_id, var_id) for ss_id, vars in VAR_ID_TO_NAME.items() for var_id, name in vars.items()}
-# these are the dictionaries that will be used to force an order on packing and unpacking
-ORDERED_SS_LIST = sorted(SS_map, key=SS_map.get)
 
 
 
