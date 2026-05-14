@@ -426,20 +426,21 @@ argument_dict = {
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
     # ADCS
-    "k_ss": "f",  # Sun sensor gain for detumbling
-    "k_dtb": "f",  # Detumbling gain
-    "w_tgt": "f",  # Target spin rate for spin stabilization (deg/s)
-    "ixx": "f",  # Ixx Inertia matrix component
-    "ixy": "f",  # Ixy Inertia matrix component
-    "ixz": "f",  # Ixz Inertia matrix component
-    "iyy": "f",  # Iyy Inertia matrix component
-    "iyz": "f",  # Iyz Inertia matrix component
-    "izz": "f",  # Izz Inertia matrix component
-    "vf_bdot": "f",  # B-dot max safe ang rate
-    "vf": "f",  # B-cross and sun pointing max safe ang rate
-    "tb": "f",  # Detumbling ang rate limit for switching to/from detumbling mode
-    "dtb_lo": "f",  # Ang rate threshold to turn coils off/ reach detumbled state
-    "dtb_hi": "f",  # And rate threshold to turn coils on/ exit detumbled state
+    # Removed: args for ADCS_UPDATE_GAINS/TARGET_SPIN/INERTIA/VF_TUMB_TOLS/DETUMB_TOLS (RAM footprint)
+    # "k_ss": "f",  # Sun sensor gain for detumbling
+    # "k_dtb": "f",  # Detumbling gain
+    # "w_tgt": "f",  # Target spin rate for spin stabilization (deg/s)
+    # "ixx": "f",  # Ixx Inertia matrix component
+    # "ixy": "f",  # Ixy Inertia matrix component
+    # "ixz": "f",  # Ixz Inertia matrix component
+    # "iyy": "f",  # Iyy Inertia matrix component
+    # "iyz": "f",  # Iyz Inertia matrix component
+    # "izz": "f",  # Izz Inertia matrix component
+    # "vf_bdot": "f",  # B-dot max safe ang rate
+    # "vf": "f",  # B-cross and sun pointing max safe ang rate
+    # "tb": "f",  # Detumbling ang rate limit for switching to/from detumbling mode
+    # "dtb_lo": "f",  # Ang rate threshold to turn coils off/ reach detumbled state
+    # "dtb_hi": "f",  # And rate threshold to turn coils on/ exit detumbled state
     "b_x": "f",  # Gyro/mag bias X
     "b_y": "f",  # Gyro/mag bias Y
     "b_z": "f",  # Gyro/mag bias Z
@@ -540,11 +541,13 @@ command_list = [
     
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
-    ("ADCS_UPDATE_GAINS", ["k_ss","k_dtb"]),
-    ("ADCS_UPDATE_TARGET_SPIN", ["w_tgt"]),
-    ("ADCS_UPDATE_INERTIA", ["ixx", "ixy", "ixz", "iyy", "iyz", "izz"]),
-    ("ADCS_UPDATE_VF_TUMB_TOLS", ["vf_bdot", "vf"]),
-    ("ADCS_UPDATE_DETUMB_TOLS", ["tb","dtb_lo","dtb_hi"]),
+    # Removed: SD persistence for gains/tolerances (RAM footprint)
+    # ADCS_UPDATE_GYRO_BIAS from ID 47→42 and ADCS_UPDATE_MAG_CAL from 48→43
+    # ("ADCS_UPDATE_GAINS", ["k_ss","k_dtb"]),
+    # ("ADCS_UPDATE_TARGET_SPIN", ["w_tgt"]),
+    # ("ADCS_UPDATE_INERTIA", ["ixx", "ixy", "ixz", "iyy", "iyz", "izz"]),
+    # ("ADCS_UPDATE_VF_TUMB_TOLS", ["vf_bdot", "vf"]),
+    # ("ADCS_UPDATE_DETUMB_TOLS", ["tb","dtb_lo","dtb_hi"]),
     ("ADCS_UPDATE_GYRO_BIAS", ["b_x", "b_y", "b_z"]),
     ("ADCS_UPDATE_MAG_CAL", ["b_x", "b_y", "b_z", "s_x", "s_y", "s_z"])
 ]
