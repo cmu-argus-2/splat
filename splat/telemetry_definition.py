@@ -54,7 +54,6 @@ var_dict = {
     "TIME": ["CDH", "I"],  # Unix timestamp
     "BOOT_TIME": ["CDH", "I"],  # Time since boot
     "SC_STATE": ["CDH", "B"],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I"],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
     "BOOT_COUNT": ["CDH", "B"],  # Count
     "WATCHDOG_TIMER": ["CDH", "B"],  # Status
@@ -214,7 +213,6 @@ report_dict = {
         "TIME": "CDH",
         "BOOT_TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
@@ -307,7 +305,6 @@ report_dict = {
     "TM_STORAGE": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
@@ -338,7 +335,6 @@ report_dict = {
     "TM_HAL": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
