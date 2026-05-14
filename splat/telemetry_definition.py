@@ -522,7 +522,7 @@ command_list = [
     ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
-
+    ("SEND_ONES", [])
 
 ]
 
