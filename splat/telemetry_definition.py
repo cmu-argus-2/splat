@@ -425,6 +425,7 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
     # ADCS
     # Removed: args for ADCS_UPDATE_GAINS/TARGET_SPIN/INERTIA/VF_TUMB_TOLS/DETUMB_TOLS (RAM footprint)
     # "k_ss": "f",  # Sun sensor gain for detumbling
@@ -539,6 +540,9 @@ command_list = [
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
     
+    ("PREPARE_LOG_DOWNLINK", []),
+    ("CLEANUP_LOG_DOWNLINK", []),
+    ("SET_LOG_LEVEL", ["level_id"]),
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
     # Removed: SD persistence for gains/tolerances (RAM footprint)
