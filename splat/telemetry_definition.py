@@ -56,7 +56,6 @@ var_dict = {
     "SC_STATE": ["CDH", "B"],  # Spacecraft state
     "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
     "BOOT_COUNT": ["CDH", "B"],  # Count
-    "WATCHDOG_TIMER": ["CDH", "B"],  # Status
     "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
     #"DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
@@ -216,7 +215,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
@@ -308,7 +306,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
@@ -338,7 +335,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
     },
