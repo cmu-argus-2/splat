@@ -425,7 +425,7 @@ argument_dict = {
     "saturation": "f",  # range [0.0..2.0]
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
     
-    "frequency": "e", # Frequency for modulation settings (e.g., LoRa frequency in MHz) (for now only for fsk)
+    "frequency": "f", # Frequency for modulation settings (e.g., LoRa frequency in MHz) (for now only for fsk)
     "power": "B", # Power for modulation settings (e.g., LoRa power in dBm) (for now only for fsk)
     "bit_rate": "H", # Bit rate for modulation settings (for now only for fsk)
     "pulse_shape": "B", # Pulse shape for modulation settings (for now only for fsk, 0x00 - 0, 0x08 - 0.3, 0x09 - 0.5, 0x0A 0.7, 0x0B - 1.0)
