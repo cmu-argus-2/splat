@@ -107,6 +107,7 @@ var_dict = {
     "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
     # --- ADCS ---
     "MODE": ["ADCS", "B"],
+    "CONTROLLER_MODE": ["ADCS", "B"],
     # Custom 'X' (High Precision) mapped to 'i'
     "GYRO_X": ["ADCS", "f"],
     "GYRO_Y": ["ADCS", "f"],
@@ -257,6 +258,7 @@ report_dict = {
         "GPS_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
+        "CONTROLLER_MODE": "ADCS",
         "GYRO_X": "ADCS",
         "GYRO_Y": "ADCS",
         "GYRO_Z": "ADCS",
@@ -537,6 +539,8 @@ command_list = [
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
+    # ADCS Commands
+    ("ADCS_CTRL_MODE", ["mode_id"])
     # all experiment commands will have a duration. Some of the experiment will use that value
     # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
