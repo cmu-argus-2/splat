@@ -388,9 +388,6 @@ argument_dict = {
     "file_id": "I",  # ID of the file to request/downlink
     "file_time": "I",  # Timestamp of the file to request/downlink
 
-    "op1": "I",  # Operand 1 for math operations
-    "op2": "I",  # Operand 2 for math operations
-    
     "string_command": "s",  # String command for evaluation
     
     "tid": "B",  # Transaction ID for image transfer commands
@@ -427,16 +424,8 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
-    "reboot_mode": "B",  # Numeric reboot selector for REBOOT command   
+    "selector": "B",  # Value shared between multiple commands, general purpose
 }
-
-# Return type definitions
-return_dict = {
-    "status": "B",  # Command status (success/fail)
-    "check": "B",  # Checksum or validation byte
-    "ack": "?",  # Boolean acknowledgment
-}
-
 
 
 # command name, argument list
@@ -444,7 +433,6 @@ return_dict = {
 command_list = [
     ("PING", ["string_command"]),
     ("REBOOT", None, ["reboot_mode"], "REBOOT"),    
-    ("SUM", ["op1", "op2"]),
     ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
     ("UPLINK_TIME_REFERENCE", ["time_reference"]),
     ("TURN_OFF_PAYLOAD", []),
@@ -469,10 +457,8 @@ command_list = [
     ("DELETE_ALL_FILES", []),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", []),  #  will call the DH function to calculate the sd card usage
 
-    ("RF_STOP", []),
-    ("RF_RESUME", []),
-    ("DIGIPEATER_ACTIVATE", []),
-    ("DIGIPEATER_DEACTIVATE", []),
+    ("RF_SWITCH", ["selector"]),
+    ("DIGIPEATER_SWITCH", ["selector"]),
     ("COMMS_MODE", ["mode_id"]),
     ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
