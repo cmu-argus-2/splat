@@ -427,6 +427,7 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "reboot_mode": "B",  # Numeric reboot selector for REBOOT command   
 }
 
 # Return type definitions
@@ -442,12 +443,7 @@ return_dict = {
 # [check] - should i add the subsystem here
 command_list = [
     ("PING", ["string_command"]),
-    ("FORCE_REBOOT", []),
-    ("GRACEFUL_REBOOT", []),
-    ("MAIN_POWER_REBOOT", []),
-    ("REBOOT_ACK", []),
-    ("PET_REBOOT", []),
-    
+    ("REBOOT", None, ["reboot_mode"], "REBOOT"),    
     ("SUM", ["op1", "op2"]),
     ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
     ("UPLINK_TIME_REFERENCE", ["time_reference"]),
