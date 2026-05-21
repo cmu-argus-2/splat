@@ -439,6 +439,7 @@ argument_dict = {
     "imu_hz": "B",
     "capture_rate": "B",
     "duration": "H",   # this is in seconds
+    "bypass_preflt_rej": "B",  # whether to bypass prefiltering rejection in dataset processing command
     "rc_version": "B",  # this is the version of the models to be used
     "ld_version": "B",  # this is the version of the models to be used
     "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
@@ -572,7 +573,7 @@ command_list = [
             "saturation",
         ],
     ),  # dataset collection with optional ISP overrides; set camera_defaults_selector=-1 to use config.toml defaults
-    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command", "bypass_preflt_rej"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
 
