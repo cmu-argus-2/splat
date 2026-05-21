@@ -460,8 +460,7 @@ command_list = [
     # Commands to downlink images
     ("CREATE_TRANS", ["tid", "string_command"]),   # for now this is a string command, but eventually should change for a reference number
     ("INIT_TRANS", ["tid", "number_of_packets"]),   # for now this is a string command, but eventually should change for a reference number
-    ("GENERATE_ALL_PACKETS", ["tid"]), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
-    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list (0 will send all packets)
     ("GENERATE_SINGLE_PACKET", ["tid", "seq_number"]), # sent from gs to satelltie to request sending all the packets in a transaction
     ("CONFIRM_LAST_BATCH", ["tid", "bitmap_high", "bitmap_low"]), # send from gs to satellite to update missing_fragments after the last batch tx.
     ("UPDATE_MISSING_FRAGMENTS", ["tid", "seq_offset", "bitmap_high", "bitmap_low"]), # will allow to add or remove 64 packets out of the missing_packet list
