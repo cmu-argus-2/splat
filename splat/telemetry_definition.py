@@ -540,7 +540,7 @@ command_list = [
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
     # ADCS Commands
-    ("ADCS_CTRL_MODE", ["mode_id"])
+    ("ADCS_CTRL_MODE", ["mode_id"]),
     # all experiment commands will have a duration. Some of the experiment will use that value
     # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
