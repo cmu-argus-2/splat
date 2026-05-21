@@ -66,6 +66,9 @@ var_dict = {
     "MAINBOARD_VOLTAGE": ["EPS", "h"],  # mV -> V
     "MAINBOARD_CURRENT": ["EPS", "h"],  # mA -> A
     "BATTERY_PACK_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN1": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN2": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_DIE": ["EPS", "h"],  # 0.1°C -> °C
     "BATTERY_PACK_REPORTED_SOC": ["EPS", "B"],  # %
     "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H"],  # mAh
     "BATTERY_PACK_CURRENT": ["EPS", "h"],  # mA -> A
@@ -222,6 +225,9 @@ report_dict = {
         "MAINBOARD_VOLTAGE": "EPS",
         "MAINBOARD_CURRENT": "EPS",
         "BATTERY_PACK_TEMPERATURE": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN1": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN2": "EPS",
+        "BATTERY_PACK_TEMPERATURE_DIE": "EPS",
         "BATTERY_PACK_REPORTED_SOC": "EPS",
         "BATTERY_PACK_REPORTED_CAPACITY": "EPS",
         "BATTERY_PACK_CURRENT": "EPS",
