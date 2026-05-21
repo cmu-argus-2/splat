@@ -213,7 +213,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -306,7 +306,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -333,7 +333,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -425,6 +425,7 @@ argument_dict = {
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
     "selector": "B",  # Value shared between multiple commands, general purpose
+    "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
 }
 
 
@@ -499,6 +500,9 @@ command_list = [
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
 
+    ("PREPARE_LOG_DOWNLINK", []),
+    ("CLEANUP_LOG_DOWNLINK", []),
+    ("SET_LOG_LEVEL", ["level_id"]),
 
 ]
 
