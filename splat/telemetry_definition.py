@@ -434,6 +434,12 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "imu_hz": "B",
+    "capture_rate": "B",
+    "duration": "H",   # this is in seconds
+    "rc_version": "B",  # this is the version of the models to be used
+    "ld_version": "B",  # this is the version of the models to be used
+    "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
 }
 
@@ -487,12 +493,13 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", []),
     ("DIGIPEATER_DEACTIVATE", []),
     ("COMMS_MODE", ["mode_id"]),
-    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
+    ("SIMPLE_EXPERIMENT", ["ts","duration","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
     (
         "EXPERIMENT",
         [
             "ts",
+            "duration",
             "camera_bit_flag",
             "level_processing",
             "width",
@@ -530,9 +537,13 @@ command_list = [
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
-
+    # all experiment commands will have a duration. Some of the experiment will use that value
+    # but the satellite will always assume that the timeout for that command is duration + x seconds
+    # for now I have this in the end to minimize changes while developing
+    ("DATASET_COLLECTION", ["ts", "duration", "camera_bit_flag", "capture_rate", "imu_hz"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
-
 
 # Command IDs (sorted alphabetically to ensure consistency)
 all_cmd_names = [x[0] for x in command_list]   # [check] - maybe this could go to the codec page
