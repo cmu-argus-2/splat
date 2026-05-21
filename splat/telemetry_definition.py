@@ -544,7 +544,34 @@ command_list = [
     # all experiment commands will have a duration. Some of the experiment will use that value
     # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
-    ("DATASET_COLLECTION", ["ts", "duration", "camera_bit_flag", "capture_rate", "imu_hz"]),  # this command will be used to run a dataset collection experiment with specific parameters (timestamp, imu frequency, camera frequency, duration)
+    (
+        "DATASET_COLLECTION",
+        [
+            "ts",
+            "duration",
+            "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
+            "camera_defaults_selector",
+            "fps",
+            "wbmode",
+            "aelock",
+            "awblock",
+            "exposuretimerange_low",
+            "exposuretimerange_high",
+            "gainrange_low",
+            "gainrange_high",
+            "ispdigitalgainrange_low",
+            "ispdigitalgainrange_high",
+            "ee_mode",
+            "ee_strength",
+            "aeantibanding",
+            "exposurecompensation",
+            "tnr_mode",
+            "tnr_strength",
+            "saturation",
+        ],
+    ),  # dataset collection with optional ISP overrides; set camera_defaults_selector=-1 to use config.toml defaults
     ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
 ]
