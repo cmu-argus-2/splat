@@ -203,7 +203,7 @@ class Command:
         return [self.arguments.get(arg_name, None) for arg_name in self.arg_names]
     
     def __repr__(self):
-        return f"Command('{self.name}', id={self.command_id}, args: {self.arg_names})"
+        return f"Command('{self.name}', id={self.command_id}"
 
     
 class Variable:
