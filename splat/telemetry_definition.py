@@ -444,6 +444,7 @@ argument_dict = {
     "ld_version": "B",  # this is the version of the models to be used
     "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    "rtc_time": "I",  # Real-time clock time in Unix timestamp format (seconds since Jan 1, 1970)
 }
 
 # Return type definitions
@@ -562,6 +563,7 @@ command_list = [
     # for now I have this in the end to minimize changes while developing
     ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command", "bypass_preflt_rej"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
+    ("SYNCHRONIZE_TIME",["rtc_time"]),
 ]
 
 # Command IDs (sorted alphabetically to ensure consistency)
