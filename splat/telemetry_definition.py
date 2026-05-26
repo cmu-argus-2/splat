@@ -561,7 +561,7 @@ command_list = [
     # all experiment commands will have a duration. Some of the experiment will use that value
     # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
-    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "string_command", "bypass_preflt_rej"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "bypass_preflt_rej", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
     ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
     ("SYNCHRONIZE_TIME",["rtc_time"]),
 ]
