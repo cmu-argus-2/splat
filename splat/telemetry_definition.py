@@ -543,7 +543,7 @@ command_list = [
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
     
-    ("SET_FSK", ["frequency", "power", "bit_rate", "pulse_shape", "bandwidth", "f_dev", "pre_length", "pre_detect", "sync_length", "addr_comp", "packet_type", "payload_length", "crc_type", "whitening"]),
+    ("SET_FSK", ["frequency", "power", "bit_rate", "pulse_shape", "bandwidth", "f_dev", "pre_length", "pre_detect", "crc_type", "whitening"]),
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"])
 
