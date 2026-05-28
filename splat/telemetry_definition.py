@@ -67,6 +67,9 @@ var_dict = {
     "MAINBOARD_VOLTAGE": ["EPS", "h"],  # mV -> V
     "MAINBOARD_CURRENT": ["EPS", "h"],  # mA -> A
     "BATTERY_PACK_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN1": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN2": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_DIE": ["EPS", "h"],  # 0.1°C -> °C
     "BATTERY_PACK_REPORTED_SOC": ["EPS", "B"],  # %
     "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H"],  # mAh
     "BATTERY_PACK_CURRENT": ["EPS", "h"],  # mA -> A
@@ -105,6 +108,7 @@ var_dict = {
     "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
     # --- ADCS ---
     "MODE": ["ADCS", "B"],
+    "CONTROLLER_MODE": ["ADCS", "B"],
     # Custom 'X' (High Precision) mapped to 'i'
     "GYRO_X": ["ADCS", "f"],
     "GYRO_Y": ["ADCS", "f"],
@@ -223,6 +227,9 @@ report_dict = {
         "MAINBOARD_VOLTAGE": "EPS",
         "MAINBOARD_CURRENT": "EPS",
         "BATTERY_PACK_TEMPERATURE": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN1": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN2": "EPS",
+        "BATTERY_PACK_TEMPERATURE_DIE": "EPS",
         "BATTERY_PACK_REPORTED_SOC": "EPS",
         "BATTERY_PACK_REPORTED_CAPACITY": "EPS",
         "BATTERY_PACK_CURRENT": "EPS",
@@ -250,6 +257,7 @@ report_dict = {
         "GPS_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
+        "CONTROLLER_MODE": "ADCS",
         "GYRO_X": "ADCS",
         "GYRO_Y": "ADCS",
         "GYRO_Z": "ADCS",
@@ -499,10 +507,12 @@ command_list = [
     ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
-
+    
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
+    # ADCS Commands
+    ("ADCS_CTRL_MODE", ["mode_id"])
 
 ]
 
