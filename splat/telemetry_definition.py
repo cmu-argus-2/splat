@@ -441,7 +441,7 @@ argument_dict = {
 # [check] - should i add the subsystem here
 command_list = [
     ("PING", ["string_command"]),
-    ("REBOOT", None, ["reboot_mode"], "REBOOT"),    
+    ("REBOOT", ["reboot_mode"]),    
     ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
     ("UPLINK_TIME_REFERENCE", ["time_reference"]),
     ("PAYLOAD_SWITCH", ["selector"]),
