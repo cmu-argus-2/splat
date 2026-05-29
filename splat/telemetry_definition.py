@@ -432,6 +432,10 @@ argument_dict = {
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    # ADCS
+    "b_x": "f",  # Mag bias X (uT)
+    "b_y": "f",  # Mag bias Y (uT)
+    "b_z": "f",  # Mag bias Z (uT)
     
     "frequency": "f", # Frequency for modulation settings (e.g., LoRa frequency in MHz) (for now only for fsk)
     "power": "B", # Power for modulation settings (e.g., LoRa power in dBm) (for now only for fsk)
@@ -545,8 +549,8 @@ command_list = [
     
     ("SET_FSK", ["frequency", "power", "bit_rate", "pulse_shape", "bandwidth", "f_dev", "pre_length", "pre_detect", "crc_type", "whitening"]),
     # ADCS Commands
-    ("ADCS_CTRL_MODE", ["mode_id"])
-
+    ("ADCS_CTRL_MODE", ["mode_id"]),
+    ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
 ]
 
 
