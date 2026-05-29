@@ -445,6 +445,10 @@ argument_dict = {
     "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
     "rtc_time": "I",  # Real-time clock time in Unix timestamp format (seconds since Jan 1, 1970)
+    # ADCS
+    "b_x": "f",  # Mag bias X (uT)
+    "b_y": "f",  # Mag bias Y (uT)
+    "b_z": "f",  # Mag bias Z (uT)
 }
 
 # Return type definitions
@@ -558,6 +562,7 @@ command_list = [
     ("SET_LOG_LEVEL", ["level_id"]),
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
+    ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
     # all experiment commands will have a duration. Some of the experiment will use that value
     # but the satellite will always assume that the timeout for that command is duration + x seconds
     # for now I have this in the end to minimize changes while developing
