@@ -434,6 +434,10 @@ argument_dict = {
     "saturation": "f",  # range [0.0..2.0]
     "selector": "B",  # Value shared between multiple commands, general purpose
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    # ADCS
+    "b_x": "f",  # Mag bias X (uT)
+    "b_y": "f",  # Mag bias Y (uT)
+    "b_z": "f",  # Mag bias Z (uT)
     
     "reboot_mode": "B",  # Reboot mode for REBOOT command
 }
@@ -514,8 +518,8 @@ command_list = [
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
     # ADCS Commands
-    ("ADCS_CTRL_MODE", ["mode_id"])
-
+    ("ADCS_CTRL_MODE", ["mode_id"]),
+    ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
 ]
 
 
