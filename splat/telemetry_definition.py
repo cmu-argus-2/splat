@@ -67,6 +67,9 @@ var_dict = {
     "MAINBOARD_VOLTAGE": ["EPS", "h"],  # mV -> V
     "MAINBOARD_CURRENT": ["EPS", "h"],  # mA -> A
     "BATTERY_PACK_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN1": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_AIN2": ["EPS", "h"],  # 0.1°C -> °C
+    "BATTERY_PACK_TEMPERATURE_DIE": ["EPS", "h"],  # 0.1°C -> °C
     "BATTERY_PACK_REPORTED_SOC": ["EPS", "B"],  # %
     "BATTERY_PACK_REPORTED_CAPACITY": ["EPS", "H"],  # mAh
     "BATTERY_PACK_CURRENT": ["EPS", "h"],  # mA -> A
@@ -105,6 +108,7 @@ var_dict = {
     "YM_SOLAR_CHARGE_CURRENT": ["EPS", "h"],
     # --- ADCS ---
     "MODE": ["ADCS", "B"],
+    "CONTROLLER_MODE": ["ADCS", "B"],
     # Custom 'X' (High Precision) mapped to 'i'
     "GYRO_X": ["ADCS", "f"],
     "GYRO_Y": ["ADCS", "f"],
@@ -213,7 +217,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -223,6 +227,9 @@ report_dict = {
         "MAINBOARD_VOLTAGE": "EPS",
         "MAINBOARD_CURRENT": "EPS",
         "BATTERY_PACK_TEMPERATURE": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN1": "EPS",
+        "BATTERY_PACK_TEMPERATURE_AIN2": "EPS",
+        "BATTERY_PACK_TEMPERATURE_DIE": "EPS",
         "BATTERY_PACK_REPORTED_SOC": "EPS",
         "BATTERY_PACK_REPORTED_CAPACITY": "EPS",
         "BATTERY_PACK_CURRENT": "EPS",
@@ -250,6 +257,7 @@ report_dict = {
         "GPS_CURRENT": "EPS",
         # ADCS
         "MODE": "ADCS",
+        "CONTROLLER_MODE": "ADCS",
         "GYRO_X": "ADCS",
         "GYRO_Y": "ADCS",
         "GYRO_Z": "ADCS",
@@ -306,7 +314,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -333,7 +341,7 @@ report_dict = {
         "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
+        #"DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -388,9 +396,6 @@ argument_dict = {
     "file_id": "I",  # ID of the file to request/downlink
     "file_time": "I",  # Timestamp of the file to request/downlink
 
-    "op1": "I",  # Operand 1 for math operations
-    "op2": "I",  # Operand 2 for math operations
-    
     "string_command": "s",  # String command for evaluation
     
     "tid": "B",  # Transaction ID for image transfer commands
@@ -427,32 +432,25 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "selector": "B",  # Value shared between multiple commands, general purpose
+    "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    # ADCS
+    "b_x": "f",  # Mag bias X (uT)
+    "b_y": "f",  # Mag bias Y (uT)
+    "b_z": "f",  # Mag bias Z (uT)
+    
+    "reboot_mode": "B",  # Reboot mode for REBOOT command
 }
-
-# Return type definitions
-return_dict = {
-    "status": "B",  # Command status (success/fail)
-    "check": "B",  # Checksum or validation byte
-    "ack": "?",  # Boolean acknowledgment
-}
-
 
 
 # command name, argument list
 # [check] - should i add the subsystem here
 command_list = [
     ("PING", ["string_command"]),
-    ("FORCE_REBOOT", []),
-    ("GRACEFUL_REBOOT", []),
-    ("MAIN_POWER_REBOOT", []),
-    ("REBOOT_ACK", []),
-    ("PET_REBOOT", []),
-    
-    ("SUM", ["op1", "op2"]),
+    ("REBOOT", ["reboot_mode"]),    
     ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
     ("UPLINK_TIME_REFERENCE", ["time_reference"]),
-    ("TURN_OFF_PAYLOAD", []),
-    ("TURN_ON_PAYLOAD", []),
+    ("PAYLOAD_SWITCH", ["selector"]),
     ("SCHEDULE_OD_EXPERIMENT", []),
     ("REQUEST_TM_NOMINAL", []),
     ("REQUEST_TM_HAL", []),
@@ -464,8 +462,7 @@ command_list = [
     # Commands to downlink images
     ("CREATE_TRANS", ["tid", "string_command"]),   # for now this is a string command, but eventually should change for a reference number
     ("INIT_TRANS", ["tid", "number_of_packets"]),   # for now this is a string command, but eventually should change for a reference number
-    ("GENERATE_ALL_PACKETS", ["tid"]), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
-    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list (0 will send all packets)
     ("GENERATE_SINGLE_PACKET", ["tid", "seq_number"]), # sent from gs to satelltie to request sending all the packets in a transaction
     ("CONFIRM_LAST_BATCH", ["tid", "bitmap_high", "bitmap_low"]), # send from gs to satellite to update missing_fragments after the last batch tx.
     ("UPDATE_MISSING_FRAGMENTS", ["tid", "seq_offset", "bitmap_high", "bitmap_low"]), # will allow to add or remove 64 packets out of the missing_packet list
@@ -474,10 +471,8 @@ command_list = [
     ("DELETE_ALL_FILES", []),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", []),  #  will call the DH function to calculate the sd card usage
 
-    ("RF_STOP", []),
-    ("RF_RESUME", []),
-    ("DIGIPEATER_ACTIVATE", []),
-    ("DIGIPEATER_DEACTIVATE", []),
+    ("RF_SWITCH", ["selector"]),
+    ("DIGIPEATER_SWITCH", ["selector"]),
     ("COMMS_MODE", ["mode_id"]),
     ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
     
@@ -518,8 +513,13 @@ command_list = [
     ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
-
-
+    
+    ("PREPARE_LOG_DOWNLINK", []),
+    ("CLEANUP_LOG_DOWNLINK", []),
+    ("SET_LOG_LEVEL", ["level_id"]),
+    # ADCS Commands
+    ("ADCS_CTRL_MODE", ["mode_id"]),
+    ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
 ]
 
 
