@@ -434,6 +434,8 @@ argument_dict = {
     "saturation": "f",  # range [0.0..2.0]
     "selector": "B",  # Value shared between multiple commands, general purpose
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    
+    "reboot_mode": "B",  # Reboot mode for REBOOT command
 }
 
 
