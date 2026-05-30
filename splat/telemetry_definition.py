@@ -218,7 +218,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
+        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
@@ -313,7 +313,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
+        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
@@ -342,7 +342,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
+        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
     },
@@ -435,7 +435,15 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "imu_hz": "B",
+    "capture_rate": "B",
+    "duration": "H",   # this is in seconds
+    "bypass_preflt_rej": "B",  # whether to bypass prefiltering rejection in dataset processing command
+    "rc_version": "B",  # this is the version of the models to be used
+    "ld_version": "B",  # this is the version of the models to be used
+    "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    "rtc_time": "I",  # Real-time clock time in Unix timestamp format (seconds since Jan 1, 1970)
     # ADCS
     "b_x": "f",  # Mag bias X (uT)
     "b_y": "f",  # Mag bias Y (uT)
@@ -492,13 +500,29 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", []),
     ("DIGIPEATER_DEACTIVATE", []),
     ("COMMS_MODE", ["mode_id"]),
-    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
-    
+    (
+        "SIMPLE_EXPERIMENT", 
+        [
+            "mode_id",
+            "ts",
+            "duration",
+            "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
+            "level_processing",
+            "width","height",
+            "downscale_factor",
+        ]
+    ),  # used  to run experiment with default camera params
     (
         "EXPERIMENT",
         [
+            "mode_id",
             "ts",
+            "duration",
             "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
             "level_processing",
             "width",
             "height",
@@ -538,8 +562,13 @@ command_list = [
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
     ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
+    # all experiment commands will have a duration. Some of the experiment will use that value
+    # but the satellite will always assume that the timeout for that command is duration + x seconds
+    # for now I have this in the end to minimize changes while developing
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "bypass_preflt_rej", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
+    ("SYNCHRONIZE_TIME",["rtc_time"]),
 ]
-
 
 # Command IDs (sorted alphabetically to ensure consistency)
 all_cmd_names = [x[0] for x in command_list]   # [check] - maybe this could go to the codec page
