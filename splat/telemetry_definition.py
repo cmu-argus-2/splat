@@ -219,7 +219,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
@@ -315,7 +314,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
@@ -345,7 +343,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
     },
@@ -458,6 +455,8 @@ argument_dict = {
     "crc_type": "B", # CRC type for modulation settings (for now only for fsk, 0=no crc, 1=crc8, 2=crc16, 3=crc32)
     "whitening": "B", # Whitening setting for modulation settings (for now only for fsk, 0=off, 1=on)
     "reboot_mode": "B",  # Reboot mode for REBOOT command
+    
+    "mode_id": "B",
 }
 
 
