@@ -58,7 +58,7 @@ var_dict = {
     "BOOT_COUNT": ["CDH", "B"],  # Count
     "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
-    #"DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
+    "DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
     "EPS_POWER_FLAG": ["EPS", "B"],
     "MAINBOARD_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
@@ -218,6 +218,8 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
+        "DEPLOYMENT_STATUS": "CDH",
+        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
@@ -312,6 +314,8 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
+        "DEPLOYMENT_STATUS": "CDH",
+        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
@@ -340,6 +344,7 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
+        "DEPLOYMENT_STATUS": "CDH",
         "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
@@ -391,12 +396,7 @@ argument_dict = {
     "target_state_id": "B",  # Target state ID
     "time_in_state": "I",  # Time to stay in the state (seconds)
     "time_reference": "I",  # Unix timestamp for time reference
-    "file_id": "I",  # ID of the file to request/downlink
-    "file_time": "I",  # Timestamp of the file to request/downlink
 
-    "op1": "I",  # Operand 1 for math operations
-    "op2": "I",  # Operand 2 for math operations
-    
     "string_command": "s",  # String command for evaluation
     
     "tid": "B",  # Transaction ID for image transfer commands
@@ -407,7 +407,6 @@ argument_dict = {
     "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
-    "mode_id": "B", # Mode ID for COMMS_MODE command
     "skip_elements": "H",  # Number of elements to skip in the directory listing
     "ts": "I",  # Timestamp for EXPERIMENT command
     "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
@@ -433,6 +432,7 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "selector": "B",  # Value shared between multiple commands, general purpose
     "imu_hz": "B",
     "capture_rate": "B",
     "duration": "H",   # this is in seconds
@@ -455,19 +455,9 @@ argument_dict = {
     "f_dev": "H", # Frequency deviation for modulation settings (for now only for fsk)
     "pre_length": "H", # Preamble length for modulation settings (for now only for fsk)
     "pre_detect": "B", # Preamble detection threshold for modulation settings (for now only for fsk)
-    "sync_length": "B", # Sync word length for modulation settings (for now only for fsk)
-    "addr_comp": "B", # Address compression setting for modulation settings (for now only for fsk)
-    "packet_type": "B", # Packet type for modulation settings (variable vs fixed size)
-    "payload_length": "B", # Payload length for modulation settings (for now only for fsk fixed size packets)
     "crc_type": "B", # CRC type for modulation settings (for now only for fsk, 0=no crc, 1=crc8, 2=crc16, 3=crc32)
     "whitening": "B", # Whitening setting for modulation settings (for now only for fsk, 0=off, 1=on)
-}
-
-# Return type definitions
-return_dict = {
-    "status": "B",  # Command status (success/fail)
-    "check": "B",  # Checksum or validation byte
-    "ack": "?",  # Boolean acknowledgment
+    "reboot_mode": "B",  # Reboot mode for REBOOT command
 }
 
 
@@ -476,17 +466,10 @@ return_dict = {
 # [check] - should i add the subsystem here
 command_list = [
     ("PING", ["string_command"]),
-    ("FORCE_REBOOT", []),
-    ("GRACEFUL_REBOOT", []),
-    ("MAIN_POWER_REBOOT", []),
-    ("REBOOT_ACK", []),
-    ("PET_REBOOT", []),
-    
-    ("SUM", ["op1", "op2"]),
+    ("REBOOT", ["reboot_mode"]),    
     ("SWITCH_TO_STATE", ["target_state_id", "time_in_state"]),
     ("UPLINK_TIME_REFERENCE", ["time_reference"]),
-    ("TURN_OFF_PAYLOAD", []),
-    ("TURN_ON_PAYLOAD", []),
+    ("PAYLOAD_SWITCH", ["selector"]),
     ("SCHEDULE_OD_EXPERIMENT", []),
     ("REQUEST_TM_NOMINAL", []),
     ("REQUEST_TM_HAL", []),
@@ -498,8 +481,7 @@ command_list = [
     # Commands to downlink images
     ("CREATE_TRANS", ["tid", "string_command"]),   # for now this is a string command, but eventually should change for a reference number
     ("INIT_TRANS", ["tid", "number_of_packets"]),   # for now this is a string command, but eventually should change for a reference number
-    ("GENERATE_ALL_PACKETS", ["tid"]), # sent from gs to satelltie to request sending all the packets in a transaction [check] - this could be the command bellow if x as -1 for example
-    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list
+    ("GENERATE_X_PACKETS", ["tid", "x"]), # sent from gs to satelltie to request sending x packets in a transaction from the missing list (0 will send all packets)
     ("GENERATE_SINGLE_PACKET", ["tid", "seq_number"]), # sent from gs to satelltie to request sending all the packets in a transaction
     ("CONFIRM_LAST_BATCH", ["tid", "bitmap_high", "bitmap_low"]), # send from gs to satellite to update missing_fragments after the last batch tx.
     ("UPDATE_MISSING_FRAGMENTS", ["tid", "seq_offset", "bitmap_high", "bitmap_low"]), # will allow to add or remove 64 packets out of the missing_packet list
@@ -508,11 +490,8 @@ command_list = [
     ("DELETE_ALL_FILES", []),  #  will call the DH function to delete all dh files (and images)
     ("UPDATE_SD_USAGE", []),  #  will call the DH function to calculate the sd card usage
 
-    ("RF_STOP", []),
-    ("RF_RESUME", []),
-    ("DIGIPEATER_ACTIVATE", []),
-    ("DIGIPEATER_DEACTIVATE", []),
-    ("COMMS_MODE", ["mode_id"]),
+    ("RF_SWITCH", ["selector"]),
+    ("DIGIPEATER_SWITCH", ["selector"]),
     (
         "SIMPLE_EXPERIMENT", 
         [
@@ -563,9 +542,11 @@ command_list = [
     ("GET_EXPERIMENT_LIST", ["skip_elements"]),  # this command will return the  timestamps for the next scheduled experiments
     ("CLEAR_EXPERIMENT_LIST", []),  # this command will clear the list of scheduled experiments in the payload
 
-    ("PING_EXP", ["ts"]),                     # this is the special ping command for experiment
-    ("EXPERIMENT_FINISHED", []),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    # these are commands reserved for experiment
+    ("PING_EXP", ["ts"]),           # this is the special ping command for experiment
+    ("EXPERIMENT_FINISHED", []),    # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
+    ("DOWNLOAD_FINISH", []),        # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    ("TURN_OFF_PAYLOAD", []),       # this is the command sent to the jetson from the mainboard to turn off the jetson
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
     ("SEND_ONES", []),
