@@ -446,6 +446,21 @@ argument_dict = {
     "b_x": "f",  # Mag bias X (uT)
     "b_y": "f",  # Mag bias Y (uT)
     "b_z": "f",  # Mag bias Z (uT)
+    
+    "frequency": "f", # Frequency for modulation settings (e.g., LoRa frequency in MHz) (for now only for fsk)
+    "power": "B", # Power for modulation settings (e.g., LoRa power in dBm) (for now only for fsk)
+    "bit_rate": "H", # Bit rate for modulation settings (for now only for fsk)
+    "pulse_shape": "B", # Pulse shape for modulation settings (for now only for fsk, 0x00 - 0, 0x08 - 0.3, 0x09 - 0.5, 0x0A 0.7, 0x0B - 1.0)
+    "bandwidth": "B", # Bandwidth for modulation settings (for now only for fsk, user should know the mapping)
+    "f_dev": "H", # Frequency deviation for modulation settings (for now only for fsk)
+    "pre_length": "H", # Preamble length for modulation settings (for now only for fsk)
+    "pre_detect": "B", # Preamble detection threshold for modulation settings (for now only for fsk)
+    "sync_length": "B", # Sync word length for modulation settings (for now only for fsk)
+    "addr_comp": "B", # Address compression setting for modulation settings (for now only for fsk)
+    "packet_type": "B", # Packet type for modulation settings (variable vs fixed size)
+    "payload_length": "B", # Payload length for modulation settings (for now only for fsk fixed size packets)
+    "crc_type": "B", # CRC type for modulation settings (for now only for fsk, 0=no crc, 1=crc8, 2=crc16, 3=crc32)
+    "whitening": "B", # Whitening setting for modulation settings (for now only for fsk, 0=off, 1=on)
 }
 
 # Return type definitions
@@ -557,6 +572,8 @@ command_list = [
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
+    
+    ("SET_FSK", ["frequency", "power", "bit_rate", "pulse_shape", "bandwidth", "f_dev", "pre_length", "pre_detect", "crc_type", "whitening"]),
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
     ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
