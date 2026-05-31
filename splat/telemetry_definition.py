@@ -408,7 +408,6 @@ argument_dict = {
     "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
-    "mode_id": "B", # Mode ID for COMMS_MODE command
     "skip_elements": "H",  # Number of elements to skip in the directory listing
     "ts": "I",  # Timestamp for EXPERIMENT command
     "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
@@ -494,7 +493,6 @@ command_list = [
 
     ("RF_SWITCH", ["selector"]),
     ("DIGIPEATER_SWITCH", ["selector"]),
-    ("COMMS_MODE", ["mode_id"]),
     (
         "SIMPLE_EXPERIMENT", 
         [
