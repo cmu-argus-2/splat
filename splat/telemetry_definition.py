@@ -54,12 +54,12 @@ var_dict = {
     "TIME": ["CDH", "I"],  # Unix timestamp
     "BOOT_TIME": ["CDH", "I"],  # Time since boot
     "SC_STATE": ["CDH", "B"],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I"],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
     "BOOT_COUNT": ["CDH", "B"],  # Count
     "WATCHDOG_TIMER": ["CDH", "B"],  # Status
     "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
+    #"DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
     "EPS_POWER_FLAG": ["EPS", "B"],
     "MAINBOARD_TEMPERATURE": ["EPS", "h"],  # 0.1°C -> °C
@@ -179,6 +179,8 @@ var_dict = {
     "CDH_DIR_SIZE": ["STORAGE", "I"],
     "EPS_NUM_FILES": ["STORAGE", "I"],
     "EPS_DIR_SIZE": ["STORAGE", "I"],
+    "EPS_WARNING_NUM_FILES": ["STORAGE", "I"],
+    "EPS_WARNING_DIR_SIZE": ["STORAGE", "I"],
     "ADCS_NUM_FILES": ["STORAGE", "I"],
     "ADCS_DIR_SIZE": ["STORAGE", "I"],
     "COMMS_NUM_FILES": ["STORAGE", "I"],
@@ -189,6 +191,8 @@ var_dict = {
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I"],
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I"],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I"],
+    "HAL_NUM_FILES": ["STORAGE", "I"],
+    "HAL_DIR_SIZE": ["STORAGE", "I"],
     # --- COMMS ---
     "RX_PACKET_COUNT": ["COMMS", "H"],
     "FAILED_UNPACK_COUNT": ["COMMS", "H"],
@@ -213,7 +217,6 @@ report_dict = {
         "TIME": "CDH",
         "BOOT_TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
@@ -309,7 +312,6 @@ report_dict = {
     "TM_STORAGE": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
@@ -320,6 +322,8 @@ report_dict = {
         "CDH_DIR_SIZE": "STORAGE",
         "EPS_NUM_FILES": "STORAGE",
         "EPS_DIR_SIZE": "STORAGE",
+        "EPS_WARNING_NUM_FILES": "STORAGE",
+        "EPS_WARNING_DIR_SIZE": "STORAGE",
         "ADCS_NUM_FILES": "STORAGE",
         "ADCS_DIR_SIZE": "STORAGE",
         "COMMS_NUM_FILES": "STORAGE",
@@ -330,12 +334,13 @@ report_dict = {
         "PAYLOAD_DIR_SIZE": "STORAGE",
         "CMD_LOGS_NUM_FILES": "STORAGE",
         "CMD_LOGS_DIR_SIZE": "STORAGE",
+        "HAL_NUM_FILES": "STORAGE",
+        "HAL_DIR_SIZE": "STORAGE",
     },
     # Corresponds to MSG_ID_SAT_TM_HAL (0x02)cd 
     "TM_HAL": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "WATCHDOG_TIMER": "CDH",
@@ -431,7 +436,15 @@ argument_dict = {
     "tnr_mode": "B",  # NoiseReductionMode enum [0..2]
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
+    "imu_hz": "B",
+    "capture_rate": "B",
+    "duration": "H",   # this is in seconds
+    "bypass_preflt_rej": "B",  # whether to bypass prefiltering rejection in dataset processing command
+    "rc_version": "B",  # this is the version of the models to be used
+    "ld_version": "B",  # this is the version of the models to be used
+    "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    "rtc_time": "I",  # Real-time clock time in Unix timestamp format (seconds since Jan 1, 1970)
     # ADCS
     "b_x": "f",  # Mag bias X (uT)
     "b_y": "f",  # Mag bias Y (uT)
@@ -503,13 +516,29 @@ command_list = [
     ("DIGIPEATER_ACTIVATE", []),
     ("DIGIPEATER_DEACTIVATE", []),
     ("COMMS_MODE", ["mode_id"]),
-    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
-    
+    (
+        "SIMPLE_EXPERIMENT", 
+        [
+            "mode_id",
+            "ts",
+            "duration",
+            "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
+            "level_processing",
+            "width","height",
+            "downscale_factor",
+        ]
+    ),  # used  to run experiment with default camera params
     (
         "EXPERIMENT",
         [
+            "mode_id",
             "ts",
+            "duration",
             "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
             "level_processing",
             "width",
             "height",
@@ -542,7 +571,7 @@ command_list = [
     ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
-    
+    ("SEND_ONES", []),
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
@@ -551,8 +580,13 @@ command_list = [
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
     ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
+    # all experiment commands will have a duration. Some of the experiment will use that value
+    # but the satellite will always assume that the timeout for that command is duration + x seconds
+    # for now I have this in the end to minimize changes while developing
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "bypass_preflt_rej", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
+    ("SYNCHRONIZE_TIME",["rtc_time"]),
 ]
-
 
 # Command IDs (sorted alphabetically to ensure consistency)
 all_cmd_names = [x[0] for x in command_list]   # [check] - maybe this could go to the codec page
