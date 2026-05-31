@@ -218,7 +218,6 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
@@ -313,7 +312,6 @@ report_dict = {
         "SC_STATE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        "WATCHDOG_TIMER": "CDH",
         "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
