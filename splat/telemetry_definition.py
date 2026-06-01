@@ -54,11 +54,8 @@ var_dict = {
     "TIME": ["CDH", "I"],  # Unix timestamp
     "BOOT_TIME": ["CDH", "I"],  # Time since boot
     "SC_STATE": ["CDH", "B"],  # Spacecraft state
-    "SD_USAGE": ["CDH", "I"],  # KBytes
     "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
     "BOOT_COUNT": ["CDH", "B"],  # Count
-    "WATCHDOG_TIMER": ["CDH", "B"],  # Status
-    "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
     "DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
@@ -180,6 +177,8 @@ var_dict = {
     "CDH_DIR_SIZE": ["STORAGE", "I"],
     "EPS_NUM_FILES": ["STORAGE", "I"],
     "EPS_DIR_SIZE": ["STORAGE", "I"],
+    "EPS_WARNING_NUM_FILES": ["STORAGE", "I"],
+    "EPS_WARNING_DIR_SIZE": ["STORAGE", "I"],
     "ADCS_NUM_FILES": ["STORAGE", "I"],
     "ADCS_DIR_SIZE": ["STORAGE", "I"],
     "COMMS_NUM_FILES": ["STORAGE", "I"],
@@ -190,6 +189,8 @@ var_dict = {
     "PAYLOAD_DIR_SIZE": ["STORAGE", "I"],
     "CMD_LOGS_NUM_FILES": ["STORAGE", "I"],
     "CMD_LOGS_DIR_SIZE": ["STORAGE", "I"],
+    "HAL_NUM_FILES": ["STORAGE", "I"],
+    "HAL_DIR_SIZE": ["STORAGE", "I"],
     # --- COMMS ---
     "RX_PACKET_COUNT": ["COMMS", "H"],
     "FAILED_UNPACK_COUNT": ["COMMS", "H"],
@@ -214,12 +215,9 @@ report_dict = {
         "TIME": "CDH",
         "BOOT_TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
-        "HAL_BITFLAGS": "CDH",
+        "DEPLOYMENT_STATUS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
         "EPS_POWER_FLAG": "EPS",
@@ -311,18 +309,17 @@ report_dict = {
     "TM_STORAGE": {
         "TIME": "CDH",
         "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
-        "HAL_BITFLAGS": "CDH",
+        "DEPLOYMENT_STATUS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
         "CDH_NUM_FILES": "STORAGE",
         "CDH_DIR_SIZE": "STORAGE",
         "EPS_NUM_FILES": "STORAGE",
         "EPS_DIR_SIZE": "STORAGE",
+        "EPS_WARNING_NUM_FILES": "STORAGE",
+        "EPS_WARNING_DIR_SIZE": "STORAGE",
         "ADCS_NUM_FILES": "STORAGE",
         "ADCS_DIR_SIZE": "STORAGE",
         "COMMS_NUM_FILES": "STORAGE",
@@ -333,20 +330,9 @@ report_dict = {
         "PAYLOAD_DIR_SIZE": "STORAGE",
         "CMD_LOGS_NUM_FILES": "STORAGE",
         "CMD_LOGS_DIR_SIZE": "STORAGE",
+        "HAL_NUM_FILES": "STORAGE",
+        "HAL_DIR_SIZE": "STORAGE",
     },
-    # Corresponds to MSG_ID_SAT_TM_HAL (0x02)cd 
-    "TM_HAL": {
-        "TIME": "CDH",
-        "SC_STATE": "CDH",
-        "SD_USAGE": "CDH",
-        "CURRENT_RAM_USAGE": "CDH",
-        "BOOT_COUNT": "CDH",
-        #"DEPLOYMENT_STATUS": "CDH",
-        "WATCHDOG_TIMER": "CDH",
-        "HAL_BITFLAGS": "CDH",
-        "DETUMBLING_ERROR_FLAG": "CDH",
-    },
-    
     "TM_TEST":{
         "TIME": "CDH",
         "SC_STATE": "CDH",
@@ -393,8 +379,6 @@ argument_dict = {
     "target_state_id": "B",  # Target state ID
     "time_in_state": "I",  # Time to stay in the state (seconds)
     "time_reference": "I",  # Unix timestamp for time reference
-    "file_id": "I",  # ID of the file to request/downlink
-    "file_time": "I",  # Timestamp of the file to request/downlink
 
     "string_command": "s",  # String command for evaluation
     
@@ -406,7 +390,6 @@ argument_dict = {
     "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
-    "mode_id": "B", # Mode ID for COMMS_MODE command
     "skip_elements": "H",  # Number of elements to skip in the directory listing
     "ts": "I",  # Timestamp for EXPERIMENT command
     "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
@@ -433,13 +416,33 @@ argument_dict = {
     "tnr_strength": "f",  # range [-1.0..1.0]
     "saturation": "f",  # range [0.0..2.0]
     "selector": "B",  # Value shared between multiple commands, general purpose
+    "imu_hz": "B",
+    "capture_rate": "B",
+    "duration": "H",   # this is in seconds
+    "bypass_preflt_rej": "B",  # whether to bypass prefiltering rejection in dataset processing command
+    "rc_version": "B",  # this is the version of the models to be used
+    "ld_version": "B",  # this is the version of the models to be used
+    "max_iteration": "H",  # this is the maximum number of iterations for batch optimization
     "level_id": "B",  # logging level index (0=NOTSET, 1=DEBUG, 2=INFO, 3=WARNING, 4=ERROR, 5=CRITICAL, 6=NOTHING)
+    "rtc_time": "I",  # Real-time clock time in Unix timestamp format (seconds since Jan 1, 1970)
     # ADCS
     "b_x": "f",  # Mag bias X (uT)
     "b_y": "f",  # Mag bias Y (uT)
     "b_z": "f",  # Mag bias Z (uT)
     
+    "frequency": "f", # Frequency for modulation settings (e.g., LoRa frequency in MHz) (for now only for fsk)
+    "power": "B", # Power for modulation settings (e.g., LoRa power in dBm) (for now only for fsk)
+    "bit_rate": "H", # Bit rate for modulation settings (for now only for fsk)
+    "pulse_shape": "B", # Pulse shape for modulation settings (for now only for fsk, 0x00 - 0, 0x08 - 0.3, 0x09 - 0.5, 0x0A 0.7, 0x0B - 1.0)
+    "bandwidth": "B", # Bandwidth for modulation settings (for now only for fsk, user should know the mapping)
+    "f_dev": "H", # Frequency deviation for modulation settings (for now only for fsk)
+    "pre_length": "H", # Preamble length for modulation settings (for now only for fsk)
+    "pre_detect": "B", # Preamble detection threshold for modulation settings (for now only for fsk)
+    "crc_type": "B", # CRC type for modulation settings (for now only for fsk, 0=no crc, 1=crc8, 2=crc16, 3=crc32)
+    "whitening": "B", # Whitening setting for modulation settings (for now only for fsk, 0=off, 1=on)
     "reboot_mode": "B",  # Reboot mode for REBOOT command
+    
+    "mode_id": "B",
 }
 
 
@@ -453,7 +456,6 @@ command_list = [
     ("PAYLOAD_SWITCH", ["selector"]),
     ("SCHEDULE_OD_EXPERIMENT", []),
     ("REQUEST_TM_NOMINAL", []),
-    ("REQUEST_TM_HAL", []),
     ("REQUEST_TM_STORAGE", []),
     ("REQUEST_TM_PAYLOAD", []),
     
@@ -473,14 +475,29 @@ command_list = [
 
     ("RF_SWITCH", ["selector"]),
     ("DIGIPEATER_SWITCH", ["selector"]),
-    ("COMMS_MODE", ["mode_id"]),
-    ("SIMPLE_EXPERIMENT", ["ts","camera_bit_flag","level_processing","width","height","downscale_factor",]),  # used  to run experiment with default camera params
-    
+    (
+        "SIMPLE_EXPERIMENT", 
+        [
+            "mode_id",
+            "ts",
+            "duration",
+            "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
+            "level_processing",
+            "width","height",
+            "downscale_factor",
+        ]
+    ),  # used  to run experiment with default camera params
     (
         "EXPERIMENT",
         [
+            "mode_id",
             "ts",
+            "duration",
             "camera_bit_flag",
+            "capture_rate",
+            "imu_hz",
             "level_processing",
             "width",
             "height",
@@ -508,20 +525,29 @@ command_list = [
     ("GET_EXPERIMENT_LIST", ["skip_elements"]),  # this command will return the  timestamps for the next scheduled experiments
     ("CLEAR_EXPERIMENT_LIST", []),  # this command will clear the list of scheduled experiments in the payload
 
-    ("PING_EXP", ["ts"]),                     # this is the special ping command for experiment
-    ("EXPERIMENT_FINISHED", []),   # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
-    ("DOWNLOAD_FINISH", []),   # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    # these are commands reserved for experiment
+    ("PING_EXP", ["ts"]),           # this is the special ping command for experiment
+    ("EXPERIMENT_FINISHED", []),    # this is the command send by the jetson to mainboard when it finishes the experiment. it will move on to download stage
+    ("DOWNLOAD_FINISH", []),        # this is the command sent by the jetson to the mainboard to indicate that it has sent all the files
+    ("TURN_OFF_PAYLOAD", []),       # this is the command sent to the jetson from the mainboard to turn off the jetson
     
     ("GET_COMMAND_LIST", ["skip_elements"]),  # return this command list
-    
+    ("SEND_ONES", []),
     ("PREPARE_LOG_DOWNLINK", []),
     ("CLEANUP_LOG_DOWNLINK", []),
     ("SET_LOG_LEVEL", ["level_id"]),
+    
+    ("SET_FSK", ["frequency", "power", "bit_rate", "pulse_shape", "bandwidth", "f_dev", "pre_length", "pre_detect", "crc_type", "whitening"]),
     # ADCS Commands
     ("ADCS_CTRL_MODE", ["mode_id"]),
     ("ADCS_UPDATE_MAG_BIAS", ["b_x", "b_y", "b_z"]),
+    # all experiment commands will have a duration. Some of the experiment will use that value
+    # but the satellite will always assume that the timeout for that command is duration + x seconds
+    # for now I have this in the end to minimize changes while developing
+    ("DATASET_PROCESSING", ["ts", "duration", "level_processing", "rc_version", "ld_version", "bypass_preflt_rej", "string_command"]),  # this command will be used to run the dataset processing script on the jetson for a specific dataset 
+    ("DATASET_OD", ["ts", "duration", "max_iteration", "string_command"]),
+    ("SYNCHRONIZE_TIME",["rtc_time"]),
 ]
-
 
 # Command IDs (sorted alphabetically to ensure consistency)
 all_cmd_names = [x[0] for x in command_list]   # [check] - maybe this could go to the codec page
