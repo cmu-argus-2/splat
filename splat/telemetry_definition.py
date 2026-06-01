@@ -56,7 +56,6 @@ var_dict = {
     "SC_STATE": ["CDH", "B"],  # Spacecraft state
     "CURRENT_RAM_USAGE": ["CDH", "B"],  # %
     "BOOT_COUNT": ["CDH", "B"],  # Count
-    "HAL_BITFLAGS": ["CDH", "B"],  # Flags
     "DETUMBLING_ERROR_FLAG": ["CDH", "B"],  # Flag
     "DEPLOYMENT_STATUS": ["CDH", "B"],  # Flag
     # --- EPS (Power) ---
@@ -219,7 +218,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "DEPLOYMENT_STATUS": "CDH",
-        "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         # EPS
         "EPS_POWER_FLAG": "EPS",
@@ -314,7 +312,6 @@ report_dict = {
         "CURRENT_RAM_USAGE": "CDH",
         "BOOT_COUNT": "CDH",
         "DEPLOYMENT_STATUS": "CDH",
-        "HAL_BITFLAGS": "CDH",
         "DETUMBLING_ERROR_FLAG": "CDH",
         "SD_TOTAL_USAGE": "STORAGE",
         "CDH_NUM_FILES": "STORAGE",
@@ -336,17 +333,6 @@ report_dict = {
         "HAL_NUM_FILES": "STORAGE",
         "HAL_DIR_SIZE": "STORAGE",
     },
-    # Corresponds to MSG_ID_SAT_TM_HAL (0x02)cd 
-    "TM_HAL": {
-        "TIME": "CDH",
-        "SC_STATE": "CDH",
-        "CURRENT_RAM_USAGE": "CDH",
-        "BOOT_COUNT": "CDH",
-        "DEPLOYMENT_STATUS": "CDH",
-        "HAL_BITFLAGS": "CDH",
-        "DETUMBLING_ERROR_FLAG": "CDH",
-    },
-    
     "TM_TEST":{
         "TIME": "CDH",
         "SC_STATE": "CDH",
@@ -471,7 +457,6 @@ command_list = [
     ("PAYLOAD_SWITCH", ["selector"]),
     ("SCHEDULE_OD_EXPERIMENT", []),
     ("REQUEST_TM_NOMINAL", []),
-    ("REQUEST_TM_HAL", []),
     ("REQUEST_TM_STORAGE", []),
     ("REQUEST_TM_PAYLOAD", []),
     
