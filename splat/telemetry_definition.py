@@ -389,7 +389,7 @@ argument_dict = {
     "seq_offset": "H",  # Offset of the sequence number for transaction packets
     "bitmap_high": "L",  # High 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
     "bitmap_low": "L",  # Low 32 bits of the missing-fragment bitmap (CONFIRM_LAST_BATCH / UPDATE_MISSING_FRAGMENTS)
-    "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command
+    "x": "H",  # Number of packets to generate for GENERATE_X_PACKETS command (also number of files to delete for DELETE_DP_FILES)
     "skip_elements": "H",  # Number of elements to skip in the directory listing
     "ts": "I",  # Timestamp for EXPERIMENT command
     "camera_bit_flag": "B",  # Camera bit flag for EXPERIMENT, bit0 = 1 -> camera 0 active, bit1 = 0 -> camera 1 not active
@@ -471,6 +471,7 @@ command_list = [
     ("LIST_DIR", ["skip_elements", "string_command"]),    # will list all the files in the given directory, skip the first skip_elements files
     ("GET_FILE_SIZE", ["string_command"]),  # will return the size of the file in bytes
     ("DELETE_ALL_FILES", []),  #  will call the DH function to delete all dh files (and images)
+    ("DELETE_DP_FILES", ["x", "string_command"]),  #   used to have more control over how many files are deleted
     ("UPDATE_SD_USAGE", []),  #  will call the DH function to calculate the sd card usage
 
     ("RF_SWITCH", ["selector"]),
