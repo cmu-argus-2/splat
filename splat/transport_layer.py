@@ -884,9 +884,7 @@ class Transaction:
             else:
                 last_batch_missing_list.append(self.last_batch[i])
         self.missing_fragments = sorted(missing_set)
-        
-        print(f"Missed packets: {last_batch_missing_list}")
-        
+                
         self.last_batch = []  # Clear last batch after confirmation
         return len(self.missing_fragments)
     
